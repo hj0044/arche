@@ -1,0 +1,7 @@
+[
+  { "id": "rrb",       "name": "리프트 대응국",   "type": "public",       "typeName": "공공기관 용병" },
+  { "id": "archon",    "name": "아르콘 에너지",   "type": "megacorp",     "typeName": "메가코프 용병" },
+  { "id": "dokkaebi",  "name": "도깨비불",       "type": "elite",        "typeName": "초강력 개방자 소수 용병단" },
+  { "id": "ironhound", "name": "철견 용병단",     "type": "private",      "typeName": "민간 용병단" },
+  { "id": "free",      "name": "무소속 개방자",   "type": "unaffiliated", "typeName": "무소속 개방자", "recruitPool": true }
+]

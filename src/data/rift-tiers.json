@@ -1,8 +1,137 @@
 [
-  { "id": "crack", "name": "균열", "monsterGrades": ["low", "mid"],      "monsterLevel": [1, 10],
-    "deadlineDays": [3, 5],   "durationDays": [1, 2], "reward": "자원 소량, 제로" },
-  { "id": "gate",  "name": "관문", "monsterGrades": ["mid", "high"],     "monsterLevel": [8, 20],
-    "deadlineDays": [5, 8],   "durationDays": [2, 4], "reward": "자원 중간, 고유 재료" },
-  { "id": "route", "name": "항로", "monsterGrades": ["high", "extreme"], "monsterLevel": [18, 35],
-    "deadlineDays": [10, 15], "durationDays": [4, 7], "reward": "자원 대량, 항로 안정화" }
+  {
+    "id": "crack",
+    "name": "균열",
+    "monsterGrades": [
+      "low",
+      "mid"
+    ],
+    "monsterLevel": [
+      1,
+      10
+    ],
+    "deadlineDays": [
+      3,
+      5
+    ],
+    "durationDays": [
+      1,
+      2
+    ],
+    "reward": "자원 소량, 제로",
+    "enemyCount": [
+      2,
+      3
+    ],
+    "rewards": {
+      "zero": [
+        80,
+        140
+      ],
+      "arche": [
+        10,
+        20
+      ],
+      "materials": {}
+    },
+    "stabilizes": false,
+    "names": [
+      "소형 균열",
+      "틈새 균열",
+      "잔류 균열"
+    ]
+  },
+  {
+    "id": "gate",
+    "name": "관문",
+    "monsterGrades": [
+      "mid",
+      "high"
+    ],
+    "monsterLevel": [
+      8,
+      20
+    ],
+    "deadlineDays": [
+      5,
+      8
+    ],
+    "durationDays": [
+      2,
+      4
+    ],
+    "reward": "자원 중간, 고유 재료",
+    "enemyCount": [
+      3,
+      4
+    ],
+    "rewards": {
+      "zero": [
+        200,
+        320
+      ],
+      "arche": [
+        30,
+        50
+      ],
+      "materials": {
+        "earth_parts": [
+          1,
+          2
+        ]
+      }
+    },
+    "stabilizes": false,
+    "names": [
+      "폐허 관문",
+      "붕괴 관문",
+      "심층 관문"
+    ]
+  },
+  {
+    "id": "route",
+    "name": "항로",
+    "monsterGrades": [
+      "high",
+      "extreme"
+    ],
+    "monsterLevel": [
+      18,
+      35
+    ],
+    "deadlineDays": [
+      10,
+      15
+    ],
+    "durationDays": [
+      4,
+      7
+    ],
+    "reward": "자원 대량, 항로 안정화",
+    "enemyCount": [
+      4,
+      5
+    ],
+    "rewards": {
+      "zero": [
+        500,
+        800
+      ],
+      "arche": [
+        80,
+        120
+      ],
+      "materials": {
+        "earth_parts": [
+          2,
+          4
+        ]
+      }
+    },
+    "stabilizes": true,
+    "names": [
+      "미지 항로",
+      "잠식 항로"
+    ]
+  }
 ]

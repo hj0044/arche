@@ -1,5 +1,8 @@
 [
-  { "id": "seoul", "name": "서울", "summary": "제로데이 이후 동아시아 최대의 리프트 밀집 지역." },
-  { "id": "tokyo", "name": "도쿄", "summary": "방어선이 촘촘하고 연합 등록소가 가장 붐비는 도시." },
-  { "id": "newyork", "name": "뉴욕", "summary": "기업 자본이 몰린 리프트 시장의 중심지." }
+  { "id": "seoul", "name": "서울", "summary": "제로데이 이후 동아시아 최대의 리프트 밀집 지역.",
+    "riftSpawn": { "maxActive": 5, "dailySpawnChance": 0.7, "initialCount": 3, "tierWeights": { "crack": 6, "gate": 3, "route": 1 } } },
+  { "id": "tokyo", "name": "도쿄", "summary": "방어선이 촘촘하고 연합 등록소가 가장 붐비는 도시.",
+    "riftSpawn": { "maxActive": 4, "dailySpawnChance": 0.6, "initialCount": 3, "tierWeights": { "crack": 7, "gate": 3, "route": 0 } } },
+  { "id": "newyork", "name": "뉴욕", "summary": "기업 자본이 몰린 리프트 시장의 중심지.",
+    "riftSpawn": { "maxActive": 5, "dailySpawnChance": 0.6, "initialCount": 2, "tierWeights": { "crack": 4, "gate": 4, "route": 2 } } }
 ]

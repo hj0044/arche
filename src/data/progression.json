@@ -1,0 +1,39 @@
+{
+  "startingResources": {
+    "zero": 500,
+    "arche": 60
+  },
+  "expToNextLevel": {
+    "base": 40,
+    "perLevel": 20
+  },
+  "expByOutcome": {
+    "victory": 30,
+    "retreat": 15,
+    "defeat": 8
+  },
+  "expTierMultiplier": {
+    "crack": 1.0,
+    "gate": 1.8,
+    "route": 3.0
+  },
+  "rewardRatioByOutcome": {
+    "victory": 1.0,
+    "retreat": 0.3,
+    "defeat": 0
+  },
+  "levelUpArcheCost": {
+    "base": 5,
+    "perLevel": 3
+  },
+  "recruitZeroCost": {
+    "base": 150,
+    "perLevel": 40
+  },
+  "protagonistGrowth": {
+    "cap": 40,
+    "speed": 1.0,
+    "initialLevel": 1
+  },
+  "reportHistoryLimit": 20
+}
