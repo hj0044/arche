@@ -14,6 +14,8 @@ import factionsJson from './factions.json';
 import monstersJson from './monsters.json';
 import rosterJson from './roster.json';
 import travelJson from './travel.json';
+import backgroundsJson from './backgrounds.json';
+import uiJson from './ui.json';
 
 export type Range = [number, number];
 export type StatId = 'hp' | 'atk' | 'def' | 'spd';
@@ -155,6 +157,15 @@ export interface GameTables {
   monsters: MonsterRow[];
   roster: RosterRow[];
   travel: TravelTable;
+  backgrounds: { id: string; name: string }[];
+  ui: UiTable;
+}
+
+/** 화면 쪽 수치(재생 속도, 경고 기준 등) */
+export interface UiTable {
+  storageWarnRatio: number;
+  replay: { stepMs: number; speeds: number[] };
+  recentReportsOnHome: number;
 }
 
 export const cities: readonly CityRow[] = citiesJson as CityRow[];
@@ -175,6 +186,8 @@ export const tables: GameTables = {
   monsters: monstersJson,
   roster: rosterJson,
   travel: travelJson,
+  backgrounds: backgroundsJson,
+  ui: uiJson,
 };
 
 export function findCity(id: string): CityRow | undefined {

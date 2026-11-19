@@ -1,0 +1,10 @@
+[
+  { "id": "survivor",   "name": "제로데이 생존자" },
+  { "id": "agent",      "name": "전직 공공기관 요원" },
+  { "id": "corporate",  "name": "메가코프 출신" },
+  { "id": "citizen",    "name": "평범한 시민" },
+  { "id": "soldier",    "name": "전직 연합군 군인" },
+  { "id": "researcher", "name": "리프트 연구자" },
+  { "id": "wanderer",   "name": "떠돌이 용병" },
+  { "id": "heir",       "name": "길드 계승자" }
+]
