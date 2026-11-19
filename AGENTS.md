@@ -46,7 +46,7 @@
 ## 기술 스택과 명령
 
 - TypeScript, Vite(정적 빌드), React(화면), Vitest(테스트). Node 22(`.node-version`).
-- 폴더: `src/engine/`(순수 규칙 로직, 화면·저장소 의존 금지), `src/data/`(데이터 표 JSON과 로더), `src/storage/`(세이브 저장소 인터페이스와 구현), `src/ui/`(화면).
+- 폴더: `src/engine/`(순수 규칙 로직, 화면·저장소 의존 금지), `src/data/`(데이터 표 JSON과 로더), `src/storage/`(세이브 형식, 저장소 인터페이스와 IndexedDB 구현, 슬롯 규칙), `src/app/`(엔진과 저장소를 잇는 층), `src/ui/`(화면).
 - 명령
   - 설치: `npm ci` (처음이면 `npm install`)
   - 실행(개발 서버): `npm run dev`

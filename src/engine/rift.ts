@@ -27,6 +27,8 @@ export interface Rift {
   durationDays: number;
   enemies: RiftEnemy[];
   reward: RiftReward;
+  /** 안정화된 통로: 마감이 없고 여러 번 공략할 수 있다 */
+  stable?: boolean;
 }
 
 function weightedPick(weights: Record<string, number>, rng: Rng): string {

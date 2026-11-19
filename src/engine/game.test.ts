@@ -151,33 +151,67 @@ describe('정산', () => {
     expect(state.resources.zero).toBe(zero);
     expect(report.injuries.length).toBe(report.party.length);
     for (const inj of report.injuries) {
-      expect(getMerc(state, inj.unitId).injury?.daysLeft).toBe(inj.days);
+      expect(getMerc(state, inj.unitId).injury?.recoverDay).toBe(state.day + inj.days + 1);
       expect(isAvailable(state, inj.unitId)).toBe(false);
     }
     expect(state.rifts.some((r) => r.id === 'A')).toBe(true);
   });
 
-  it('항로를 이기면 안정화 기록이 남는다', () => {
-    let s = withRift(opener(), { id: 'R', tier: 'route' });
+  it('항로를 이기면 마감 없는 안정화된 통로로 남고, 다시 공략하면 보상이 줄어든다', () => {
+    let s = withRift(opener(), { id: 'R', tier: 'route', reward: { zero: 100, arche: 20, materials: {} } });
     s = dispatch(tables, s, 'R', guildParty(s));
-    const { state } = advanceDay(tables, s);
-    expect(state.reports[0].stabilized).toBe(true);
-    expect(state.stabilizedRoutes.map((r) => r.riftId)).toEqual(['R']);
+    let r = advanceDay(tables, s);
+    expect(r.state.reports[0].stabilized).toBe(true);
+    expect(r.state.stabilizedRoutes.map((x) => x.riftId)).toEqual(['R']);
+    const passage = r.state.rifts.find((x) => x.id === 'R')!;
+    expect(passage.stable).toBe(true);
+    expect(passage.deadlineDay).toBeNull();
+
+    s = dispatch(tables, r.state, 'R', guildParty(r.state, ['hero', 'm001', 'm002', 'm003']));
+    r = advanceDay(tables, s);
+    const again = r.state.reports.at(-1)!;
+    expect(again.outcome).toBe('victory');
+    expect(again.stabilized).toBe(false);
+    expect(again.reward.zero).toBe(100 * tables.progression.stablePassageRewardRatio);
+    expect(r.state.rifts.some((x) => x.id === 'R')).toBe(true);
   });
 });
 
 describe('부상 회복', () => {
-  it('하루가 지날 때마다 1일씩 줄고 0이 되면 다시 파견할 수 있다', () => {
+  it('복귀 당일은 세지 않고, 부상 일수만큼 온전한 날이 지나야 다시 파견할 수 있다', () => {
+    // 1일에 복귀하며 2일 부상 → 2일·3일 파견 불가, 4일 회복
     let s = opener();
-    s = { ...s, mercenaries: s.mercenaries.map((m) => (m.id === 'm001' ? { ...m, injury: { severity: 'heavy', daysLeft: 2 } } : m)) };
-    s = withRift(s, { id: 'A' });
+    s = { ...s, mercenaries: s.mercenaries.map((m) => (m.id === 'm001' ? { ...m, injury: { severity: 'heavy', recoverDay: s.day + 2 + 1 } } : m)) };
+    s = withRift(s, { id: 'A', deadlineDay: 20 });
     expect(() => dispatch(tables, s, 'A', guildParty(s, ['m001']))).toThrow(/부상/);
-    s = advanceDay(tables, s).state;
-    expect(getMerc(s, 'm001').injury?.daysLeft).toBe(1);
-    const d = advanceDay(tables, s);
+    s = advanceDay(tables, s).state; // 2일
+    expect(isAvailable(s, 'm001')).toBe(false);
+    s = advanceDay(tables, s).state; // 3일
+    expect(isAvailable(s, 'm001')).toBe(false);
+    const d = advanceDay(tables, s); // 4일
     expect(getMerc(d.state, 'm001').injury).toBeUndefined();
     expect(d.events).toContainEqual({ type: 'recovered', mercId: 'm001' });
     expect(isAvailable(d.state, 'm001')).toBe(true);
+  });
+});
+
+describe('도시 간 이동', () => {
+  it('다른 도시 리프트는 왕복 이동 일수만큼 복귀가 늦다', () => {
+    let s = withRift(opener(), { id: 'NY', cityId: 'newyork', durationDays: 1, deadlineDay: 10 });
+    s = withRift(s, { id: 'TK', cityId: 'tokyo', durationDays: 1, deadlineDay: 10 });
+    s = dispatch(tables, s, 'NY', guildParty(s, ['hero', 'm001']));
+    s = dispatch(tables, s, 'TK', guildParty(s, ['m002', 'm003']));
+    const ny = s.expeditions.find((e) => e.rift.id === 'NY')!;
+    const tk = s.expeditions.find((e) => e.rift.id === 'TK')!;
+    expect(ny.travelDays).toBe(1);
+    expect(ny.returnDay).toBe(s.day + 1 + 2);
+    expect(tk.travelDays).toBe(0);
+    expect(tk.returnDay).toBe(s.day + 1);
+  });
+
+  it('이동하는 동안 마감이 지나면 보낼 수 없다', () => {
+    const s = withRift(opener(), { id: 'NY', cityId: 'newyork', deadlineDay: 1 });
+    expect(() => dispatch(tables, s, 'NY', guildParty(s, ['hero']))).toThrow(/이동/);
   });
 });
 

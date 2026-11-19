@@ -1,0 +1,9 @@
+{
+  "sameCityDays": 0,
+  "defaultDays": 1,
+  "routes": [
+    { "between": ["seoul", "tokyo"], "days": 0 },
+    { "between": ["seoul", "newyork"], "days": 1 },
+    { "between": ["tokyo", "newyork"], "days": 1 }
+  ]
+}

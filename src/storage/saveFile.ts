@@ -1,0 +1,71 @@
+import type { GameState } from '../engine/game';
+
+/** 세이브 형식 식별자와 현재 버전. 형식이 바뀌면 버전을 올리고 MIGRATIONS에 변환을 추가한다. */
+export const SAVE_FORMAT = 'arche-save';
+export const SAVE_VERSION = 1;
+
+export type SaveKind = 'manual' | 'auto';
+
+export interface SaveFile {
+  format: typeof SAVE_FORMAT;
+  version: number;
+  savedAt: string;
+  kind: SaveKind;
+  /** 화면에 보이는 요약 */
+  summary: { guildName: string; day: number; baseCityId: string };
+  state: GameState;
+}
+
+export class SaveFormatError extends Error {}
+
+/** version n → n+1 변환. 예: 1: (raw) => ({ ...raw, version: 2, state: { ...raw.state, 새필드: 기본값 } }) */
+const MIGRATIONS: Record<number, (raw: Record<string, unknown>) => Record<string, unknown>> = {};
+
+export function createSaveFile(state: GameState, kind: SaveKind, now: Date = new Date()): SaveFile {
+  return {
+    format: SAVE_FORMAT,
+    version: SAVE_VERSION,
+    savedAt: now.toISOString(),
+    kind,
+    summary: { guildName: state.guildName, day: state.day, baseCityId: state.baseCityId },
+    state: structuredClone(state),
+  };
+}
+
+export function serializeSave(file: SaveFile): string {
+  return JSON.stringify(file);
+}
+
+/** JSON 문자열이나 객체를 검사하고, 옛 버전이면 현재 버전으로 올린다. */
+export function parseSave(input: string | unknown): SaveFile {
+  let raw: unknown = input;
+  if (typeof input === 'string') {
+    try {
+      raw = JSON.parse(input);
+    } catch {
+      throw new SaveFormatError('JSON이 아니다');
+    }
+  }
+  if (!raw || typeof raw !== 'object') throw new SaveFormatError('세이브 형식이 아니다');
+  let obj = raw as Record<string, unknown>;
+  if (obj.format !== SAVE_FORMAT) throw new SaveFormatError('Arche 세이브 파일이 아니다');
+  if (typeof obj.version !== 'number' || !Number.isInteger(obj.version)) throw new SaveFormatError('버전 번호가 없다');
+  if (obj.version > SAVE_VERSION) throw new SaveFormatError(`더 새로운 버전(${obj.version})의 세이브다`);
+  while ((obj.version as number) < SAVE_VERSION) {
+    const migrate = MIGRATIONS[obj.version as number];
+    if (!migrate) throw new SaveFormatError(`버전 ${obj.version}을(를) 올리는 방법이 없다`);
+    obj = migrate(obj);
+  }
+  const state = obj.state as Partial<GameState> | undefined;
+  if (
+    !state ||
+    typeof state.day !== 'number' ||
+    typeof state.seed !== 'string' ||
+    !Array.isArray(state.mercenaries) ||
+    !Array.isArray(state.rifts) ||
+    !Array.isArray(state.expeditions)
+  ) {
+    throw new SaveFormatError('게임 상태가 손상됐다');
+  }
+  return obj as unknown as SaveFile;
+}

@@ -1,4 +1,4 @@
-import { getRiftTier, type GameTables, type Outcome, type Row } from '../data';
+import { getRiftTier, travelDays, type GameTables, type Outcome, type Row } from '../data';
 import { resolveCombat, validateParty, type CombatEvent, type CombatSlot } from './combat';
 import { rollInjuries, type Injury } from './injury';
 import { generateRift, riftEnemySlots, type Rift, type RiftReward } from './rift';
@@ -18,7 +18,8 @@ export interface MercenaryState {
   /** 개별 성장 수치. cap: 성장 한계(최대 레벨), speed: 성장 속도(경험치 배율) */
   growth: { cap: number; speed: number };
   affiliation: Affiliation;
-  injury?: { severity: string; daysLeft: number };
+  /** recoverDay가 되면 회복한다. 복귀 당일은 부상 일수에 세지 않는다. */
+  injury?: { severity: string; recoverDay: number };
   isProtagonist?: boolean;
 }
 
@@ -45,6 +46,8 @@ export interface Expedition {
   rift: Rift;
   party: PartyMember[];
   departDay: number;
+  /** 거점에서 리프트 도시까지 편도 이동 일수 */
+  travelDays: number;
   returnDay: number;
 }
 
@@ -228,7 +231,10 @@ export function dispatch(tables: GameTables, prev: GameState, riftId: string, pa
   const state = structuredClone(prev);
   const rift = state.rifts.find((r) => r.id === riftId);
   if (!rift) throw new GameError('리프트가 없거나 이미 파견 중이다');
-  if (rift.deadlineDay !== null && state.day > rift.deadlineDay) throw new GameError('마감이 지난 리프트다');
+  const travel = travelDays(tables, state.baseCityId, rift.cityId);
+  if (rift.deadlineDay !== null && state.day + travel > rift.deadlineDay) {
+    throw new GameError(travel ? '이동하는 동안 마감이 지난다' : '마감이 지난 리프트다');
+  }
   for (const p of party) {
     const m = getMerc(state, p.mercId);
     if (!isGuildMember(m)) throw new GameError(`${m.name}은(는) 길드 소속이 아니다`);
@@ -245,7 +251,8 @@ export function dispatch(tables: GameTables, prev: GameState, riftId: string, pa
     rift,
     party: party.map((p) => ({ ...p })),
     departDay: state.day,
-    returnDay: state.day + rift.durationDays,
+    travelDays: travel,
+    returnDay: state.day + travel * 2 + rift.durationDays,
   });
   state.rifts = state.rifts.filter((r) => r.id !== riftId);
   return state;
@@ -304,7 +311,7 @@ function settleExpedition(tables: GameTables, state: GameState, ex: Expedition):
   const prog = tables.progression;
   const outcome = result.outcome;
 
-  const ratio = prog.rewardRatioByOutcome[outcome];
+  const ratio = prog.rewardRatioByOutcome[outcome] * (ex.rift.stable ? prog.stablePassageRewardRatio : 1);
   const reward: RiftReward = {
     zero: Math.floor(ex.rift.reward.zero * ratio),
     arche: Math.floor(ex.rift.reward.arche * ratio),
@@ -328,14 +335,18 @@ function settleExpedition(tables: GameTables, state: GameState, ex: Expedition):
 
   const injuries = rollInjuries(tables, units, result.downedUnitIds, outcome, createRng(`${combatSeed}:injury`));
   for (const inj of injuries) {
-    getMerc(state, inj.unitId).injury = { severity: inj.severity, daysLeft: inj.days };
+    getMerc(state, inj.unitId).injury = { severity: inj.severity, recoverDay: state.day + inj.days + 1 };
   }
 
-  const stabilized = outcome === 'victory' && getRiftTier(tables, ex.rift.tier).stabilizes;
-  if (stabilized) state.stabilizedRoutes.push({ riftId: ex.rift.id, name: ex.rift.name, day: state.day });
-
-  // 실패하면 마감이 남은 리프트는 목록으로 돌아온다.
-  if (outcome !== 'victory' && (ex.rift.deadlineDay === null || ex.rift.deadlineDay >= state.day)) {
+  const stabilized = outcome === 'victory' && !ex.rift.stable && getRiftTier(tables, ex.rift.tier).stabilizes;
+  if (stabilized) {
+    // 항로를 이기면 마감 없는 안정화된 통로로 남는다.
+    state.stabilizedRoutes.push({ riftId: ex.rift.id, name: ex.rift.name, day: state.day });
+    state.rifts.push({ ...ex.rift, stable: true, deadlineDay: null });
+  } else if (ex.rift.stable) {
+    state.rifts.push(ex.rift);
+  } else if (outcome !== 'victory' && (ex.rift.deadlineDay === null || ex.rift.deadlineDay >= state.day)) {
+    // 실패하면 마감이 남은 리프트는 목록으로 돌아온다.
     state.rifts.push(ex.rift);
   }
 
@@ -365,8 +376,7 @@ export function advanceDay(tables: GameTables, prev: GameState): { state: GameSt
 
   for (const m of state.mercenaries) {
     if (!m.injury) continue;
-    m.injury.daysLeft -= 1;
-    if (m.injury.daysLeft <= 0) {
+    if (state.day >= m.injury.recoverDay) {
       delete m.injury;
       events.push({ type: 'recovered', mercId: m.id });
     }
