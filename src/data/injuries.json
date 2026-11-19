@@ -1,0 +1,10 @@
+{
+  "severities": [
+    { "id": "light", "name": "경상", "days": [1, 2] },
+    { "id": "heavy", "name": "중상", "days": [3, 5] }
+  ],
+  "heavyChanceByOutcome": { "victory": 0.2, "retreat": 0.4, "defeat": 0.6 },
+  "healerReductionDays": 1,
+  "minimumDays": 1,
+  "healerRoles": ["healer"]
+}

@@ -1,0 +1,16 @@
+{
+  "stats": [
+    { "id": "hp",  "name": "체력" },
+    { "id": "atk", "name": "공격" },
+    { "id": "def", "name": "방어" },
+    { "id": "spd", "name": "속도" }
+  ],
+  "roleBase": {
+    "shield":    { "base": { "hp": 140, "atk": 14, "def": 22, "spd": 8 },  "perLevel": { "hp": 14, "atk": 1.4, "def": 2.2, "spd": 0.3 } },
+    "warrior":   { "base": { "hp": 115, "atk": 22, "def": 14, "spd": 10 }, "perLevel": { "hp": 11, "atk": 2.2, "def": 1.4, "spd": 0.4 } },
+    "archer":    { "base": { "hp": 80,  "atk": 24, "def": 8,  "spd": 13 }, "perLevel": { "hp": 8,  "atk": 2.4, "def": 0.8, "spd": 0.5 } },
+    "mage":      { "base": { "hp": 75,  "atk": 26, "def": 7,  "spd": 11 }, "perLevel": { "hp": 7,  "atk": 2.6, "def": 0.7, "spd": 0.4 } },
+    "healer":    { "base": { "hp": 85,  "atk": 16, "def": 9,  "spd": 12 }, "perLevel": { "hp": 8,  "atk": 1.6, "def": 0.9, "spd": 0.4 } },
+    "commander": { "base": { "hp": 95,  "atk": 17, "def": 11, "spd": 12 }, "perLevel": { "hp": 9,  "atk": 1.7, "def": 1.1, "spd": 0.4 } }
+  }
+}

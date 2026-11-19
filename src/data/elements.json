@@ -1,0 +1,9 @@
+[
+  { "id": "fire",      "name": "화염", "loreName": "연소", "strongAgainst": ["wind"] },
+  { "id": "wind",      "name": "바람", "loreName": "확산", "strongAgainst": ["earth"] },
+  { "id": "earth",     "name": "대지", "loreName": "지맥", "strongAgainst": ["lightning"] },
+  { "id": "lightning", "name": "전격", "loreName": "방전", "strongAgainst": ["frost"] },
+  { "id": "frost",     "name": "냉기", "loreName": "응결", "strongAgainst": ["fire"] },
+  { "id": "light",     "name": "빛",   "loreName": "봉합", "strongAgainst": ["void"] },
+  { "id": "void",      "name": "어둠", "loreName": "공허", "strongAgainst": ["light"] }
+]
