@@ -1,34 +1,116 @@
-import { findCity } from '../../data';
+import { tables } from '../../data';
+import { isOnExpedition } from '../../engine/game';
 import { AppShell } from '../AppShell';
+import { ElementTag, Panel, RoleTag } from '../components';
+import { cityName, materialName, num, outcomeName, severityName } from '../format';
+import { MainTabs } from '../MainTabs';
+import type { Ctx } from '../nav';
 
-interface GuildHomeProps {
-  cityId: string;
-  onBack: () => void;
-}
+export function GuildHome({ ctx }: { ctx: Ctx }) {
+  const s = ctx.game.state;
+  const guild = s.mercenaries.filter((m) => m.affiliation.kind === 'guild');
+  const recent = s.reports.slice(-tables.ui.recentReportsOnHome).reverse();
+  const materials = Object.entries(s.resources.materials).filter(([, n]) => n > 0);
 
-export function GuildHome({ cityId, onBack }: GuildHomeProps) {
-  const city = findCity(cityId);
   return (
     <AppShell
-      title="길드 홈"
-      subtitle={city ? `${city.name} 거점` : undefined}
-      footer={
-        <nav className="tabbar">
-          <button className="tab" onClick={onBack}>도시</button>
-          <button className="tab" disabled>리프트</button>
-          <button className="tab" disabled>용병</button>
-          <button className="tab primary" disabled>다음 날</button>
-        </nav>
-      }
+      title={s.guildName}
+      subtitle={`${cityName(s.baseCityId)} 거점 · ${s.day}일차 · ${s.protagonist.mode === 'opener' ? '개방자' : '길드 마스터'} ${s.protagonist.name}`}
+      footer={<MainTabs ctx={ctx} current="home" />}
     >
-      <section className="panel">
-        <h2>오늘</h2>
-        <p className="muted">날짜, 자원, 파견 현황이 여기에 표시됩니다.</p>
-      </section>
-      <section className="panel">
-        <h2>용병</h2>
-        <p className="muted">아직 용병이 없습니다.</p>
-      </section>
+      <div className="resources">
+        <div className="res">
+          <span className="res-label">제로</span>
+          <span className="res-value">{num(s.resources.zero)}</span>
+        </div>
+        <div className="res">
+          <span className="res-label">아르케</span>
+          <span className="res-value">{num(s.resources.arche)}</span>
+        </div>
+        {materials.map(([id, n]) => (
+          <div className="res" key={id}>
+            <span className="res-label">{materialName(id)}</span>
+            <span className="res-value">{num(n)}</span>
+          </div>
+        ))}
+      </div>
+
+      <Panel title={`진행 중인 파견 ${s.expeditions.length}`}>
+        {s.expeditions.length === 0 ? (
+          <p className="muted">
+            보낸 파티가 없습니다.{' '}
+            <button className="link" onClick={() => ctx.go({ name: 'rifts' })}>
+              리프트 보기
+            </button>
+          </p>
+        ) : (
+          <ul className="rows">
+            {s.expeditions.map((e) => (
+              <li key={e.id} className="row-item">
+                <div>
+                  <div className="strong">{e.rift.name}</div>
+                  <div className="muted small">
+                    {e.party.map((p) => s.mercenaries.find((m) => m.id === p.mercId)?.name).join(', ')}
+                  </div>
+                </div>
+                <span className="pill">{e.returnDay - s.day}일 뒤 복귀</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Panel>
+
+      {recent.length > 0 && (
+        <Panel title="최근 복귀">
+          <ul className="rows">
+            {recent.map((r) => (
+              <li key={r.expeditionId}>
+                <button
+                  className="row-item row-button"
+                  disabled={!r.events}
+                  onClick={() => ctx.go({ name: 'replay', expeditionId: r.expeditionId, back: { name: 'home' } })}
+                >
+                  <div>
+                    <div className="strong">{r.rift.name}</div>
+                    <div className="muted small">{r.day}일차 복귀 · 제로 +{num(r.reward.zero)} · 아르케 +{num(r.reward.arche)}</div>
+                  </div>
+                  <span className={`pill outcome-${r.outcome}`}>{outcomeName[r.outcome]}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </Panel>
+      )}
+
+      <Panel title={`용병 ${guild.length}`} action={<button className="link" onClick={() => ctx.go({ name: 'mercs' })}>전체</button>}>
+        <ul className="rows">
+          {guild.map((m) => (
+            <li key={m.id}>
+              <button className="row-item row-button" onClick={() => ctx.go({ name: 'merc', mercId: m.id })}>
+                <div>
+                  <div className="strong">
+                    {m.name} {m.isProtagonist && <span className="pill small">주인공</span>}
+                  </div>
+                  <div className="tags">
+                    <ElementTag id={m.element} />
+                    <RoleTag id={m.role} />
+                    <span className="muted small">Lv{m.level}</span>
+                  </div>
+                </div>
+                {m.injury ? (
+                  <span className="pill bad">
+                    {severityName(m.injury.severity)} {m.injury.recoverDay - s.day}일
+                  </span>
+                ) : isOnExpedition(s, m.id) ? (
+                  <span className="pill">파견 중</span>
+                ) : (
+                  <span className="pill ok">대기</span>
+                )}
+              </button>
+            </li>
+          ))}
+        </ul>
+      </Panel>
     </AppShell>
   );
 }
