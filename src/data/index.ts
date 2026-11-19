@@ -16,6 +16,9 @@ import rosterJson from './roster.json';
 import travelJson from './travel.json';
 import backgroundsJson from './backgrounds.json';
 import uiJson from './ui.json';
+import growthSpeedsJson from './growth-speeds.json';
+import worldsJson from './worlds.json';
+import racesJson from './races.json';
 
 export type Range = [number, number];
 export type StatId = 'hp' | 'atk' | 'def' | 'spd';
@@ -27,7 +30,17 @@ export interface CityRow {
   id: string;
   name: string;
   summary: string;
-  riftSpawn: { maxActive: number; dailySpawnChance: number; initialCount: number; tierWeights: Record<string, number> };
+  riftSpawn: {
+    maxActive: number;
+    dailySpawnChance: number;
+    initialCount: number;
+    /** 시작 리프트 중 앞쪽을 이 등급으로 고정한다(입문용) */
+    initialGuaranteed: string[];
+    tierWeights: Record<string, number>;
+    /** 1보다 크면 등급 레벨 범위 안에서 낮은 레벨이 더 자주 나온다 */
+    levelSkew: number;
+  };
+  recruitment: { otherHometownCostMultiplier: number };
 }
 
 export interface ElementRow { id: string; name: string; loreName: string; strongAgainst: string[] }
@@ -59,15 +72,22 @@ export interface SkillRow {
   amount?: number;
 }
 
-export interface RoleStatRow { base: Stats; perLevel: Stats }
-export interface StatsTable { stats: { id: StatId; name: string }[]; roleBase: Record<string, RoleStatRow> }
+export interface RoleStatRow { base: Stats }
+export interface StatsTable {
+  stats: { id: StatId; name: string }[];
+  roleBase: Record<string, RoleStatRow>;
+  /** 레벨당 복리 성장률 */
+  levelGrowthRate: Stats;
+}
 
-export interface MonsterGradeRow { id: string; name: string; statMultiplier: number }
+export interface MonsterGradeRow { id: string; name: string; statMultiplier: number; level: Range }
 
 export interface RiftTierRow {
   id: string;
   name: string;
   monsterGrades: string[];
+  /** 등급 안에서 몬스터 등급을 고르는 가중치 */
+  monsterGradeWeights: Record<string, number>;
   monsterLevel: Range;
   deadlineDays: Range;
   durationDays: Range;
@@ -91,8 +111,16 @@ export interface ProgressionTable {
   expTierMultiplier: Record<string, number>;
   rewardRatioByOutcome: Record<Outcome, number>;
   levelUpArcheCost: { base: number; perLevel: number };
-  recruitZeroCost: { base: number; perLevel: number };
-  protagonistGrowth: { cap: number; speed: number; initialLevel: number };
+  /** 영입비 = (base + perCapAbove30 × (한계 − capBaseline) + perLevel × (레벨 − 1)) × 세력 배율 × 도시 배율 */
+  recruitZeroCost: { base: number; perCapAbove30: number; perLevel: number; capBaseline: number };
+  protagonistGrowth: { cap: number; speed: string; initialLevel: number };
+  /** 보상 = 등급 보상 × (1 + rewardLevelScale × 몬스터 레벨) */
+  rewardLevelScale: number;
+  /** 경험치 = 결과별 경험치 × 등급 배율 × (1 + expLevelScale × 몬스터 레벨) */
+  expLevelScale: number;
+  /** 하루 유지비 = base + perLevel × 레벨 */
+  upkeepZeroPerDay: { base: number; perLevel: number };
+  protagonistUpkeep: boolean;
   /** 전투 로그까지 보관하는 최근 복귀 보고 수 */
   reportHistoryLimit: number;
   /** 안정화된 통로를 다시 공략할 때 보상 배율 */
@@ -106,21 +134,47 @@ export interface TravelTable {
   routes: { between: string[]; days: number }[];
 }
 
-export interface FactionRow { id: string; name: string; type: string; typeName: string; recruitPool?: boolean }
+export interface FactionRow {
+  id: string;
+  name: string;
+  type: string;
+  typeName: string;
+  recruitCostMultiplier: number;
+  /** 도시별 영향력 비중(1단계는 표시용). 세력은 도시에 고정되지 않는다. */
+  cityInfluence: Record<string, number>;
+}
 
 export interface MonsterRow { id: string; name: string; role: string; element: string; grades: string[] }
 
+export type UnlockRule =
+  | { type: 'totalVictories'; count: number }
+  | { type: 'tierVictories'; tier: string; count: number };
+
 export interface RosterRow {
   id: string;
+  /** CSV 번호 */
+  no: number;
   name: string;
   element: string;
   role: string;
-  initialLevel: number;
-  /** cap: 성장 한계(최대 레벨), speed: 성장 속도(경험치 배율) */
-  growth: { cap: number; speed: number };
-  /** 'guild'는 플레이어 길드, 그 밖에는 factions.json의 id */
+  hometown: string;
+  /** 'guild'는 플레이어 길드(시작 용병 후보), 그 밖에는 factions.json의 id */
   faction: string;
+  startingCandidate: boolean;
+  background: string;
+  /** cap: 성장 한계(최대 레벨), speed: growth-speeds.json의 id */
+  growth: { cap: number; speed: string };
+  initialLevel: number;
+  age: number;
+  gender: string;
+  /** 조합 축 "세계"(지구 개방자, 이세계인 등). 시너지는 2단계 */
+  world: string;
+  race: string;
+  unlock?: UnlockRule;
 }
+
+export interface GrowthSpeedRow { id: string; name: string; expToNextMultiplier: number }
+export interface BackgroundRow { id: string; name: string; shortName: string; forProtagonist: boolean; aliases: string[] }
 
 export interface CombatTable {
   party: { maxSize: number; maxPerRow: number };
@@ -157,8 +211,11 @@ export interface GameTables {
   monsters: MonsterRow[];
   roster: RosterRow[];
   travel: TravelTable;
-  backgrounds: { id: string; name: string }[];
+  backgrounds: BackgroundRow[];
   ui: UiTable;
+  growthSpeeds: GrowthSpeedRow[];
+  worlds: { id: string; name: string }[];
+  races: { id: string; name: string; world: string }[];
 }
 
 /** 화면 쪽 수치(재생 속도, 경고 기준 등) */
@@ -175,8 +232,8 @@ export const tables: GameTables = {
   roles: rolesJson as RoleRow[],
   skills: skillsJson as SkillRow[],
   stats: statsJson as StatsTable,
-  monsterGrades: monsterGradesJson,
-  riftTiers: riftTiersJson as RiftTierRow[],
+  monsterGrades: monsterGradesJson as MonsterGradeRow[],
+  riftTiers: riftTiersJson as unknown as RiftTierRow[],
   combat: combatJson as CombatTable,
   injuries: injuriesJson as InjuryTable,
   cities: citiesJson as CityRow[],
@@ -184,10 +241,13 @@ export const tables: GameTables = {
   progression: progressionJson as ProgressionTable,
   factions: factionsJson as FactionRow[],
   monsters: monstersJson,
-  roster: rosterJson,
+  roster: rosterJson as RosterRow[],
   travel: travelJson,
   backgrounds: backgroundsJson,
   ui: uiJson,
+  growthSpeeds: growthSpeedsJson,
+  worlds: worldsJson,
+  races: racesJson,
 };
 
 export function findCity(id: string): CityRow | undefined {
@@ -215,3 +275,5 @@ export function travelDays(t: GameTables, from: string, to: string): number {
   const route = t.travel.routes.find((r) => r.between.includes(from) && r.between.includes(to));
   return route ? route.days : t.travel.defaultDays;
 }
+export const getGrowthSpeed = (t: GameTables, id: string) => byId(t.growthSpeeds, id, '성장 속도');
+export const getBackground = (t: GameTables, id: string) => byId(t.backgrounds, id, '배경');

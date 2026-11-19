@@ -9,7 +9,7 @@ import {
   type StatId,
 } from '../data';
 import { createRng, type Rng } from './rng';
-import type { Unit } from './unit';
+import { levelScale, type Unit } from './unit';
 
 export interface CombatSlot {
   unit: Unit;
@@ -207,7 +207,7 @@ export function resolveCombat(tables: GameTables, input: CombatInput): CombatRes
   };
 
   const dealDamage = (actor: Combatant, target: Combatant, skill: SkillRow): CombatEffect => {
-    const k = cfg.damage.defenseConstant;
+    const k = cfg.damage.defenseConstant * levelScale(tables, 'def', actor.unit.level);
     const elem = elementMultiplier(tables, actor.unit.element, target.unit.element);
     let dmg = statWithBuffs(actor, 'atk') * (skill.power ?? 1) * (k / (k + statWithBuffs(target, 'def')));
     dmg *= elem * comp[actor.side];

@@ -1,10 +1,12 @@
 [
-  { "id": "survivor",   "name": "제로데이 생존자" },
-  { "id": "agent",      "name": "전직 공공기관 요원" },
-  { "id": "corporate",  "name": "메가코프 출신" },
-  { "id": "citizen",    "name": "평범한 시민" },
-  { "id": "soldier",    "name": "전직 연합군 군인" },
-  { "id": "researcher", "name": "리프트 연구자" },
-  { "id": "wanderer",   "name": "떠돌이 용병" },
-  { "id": "heir",       "name": "길드 계승자" }
+  { "id": "survivor",          "name": "제로데이 생존자",   "shortName": "제로데이 생존자", "forProtagonist": true,  "aliases": [] },
+  { "id": "agent",             "name": "전직 공공기관 요원", "shortName": "공공기관 요원",   "forProtagonist": true,  "aliases": ["공공기관 요원"] },
+  { "id": "corporate",         "name": "메가코프 출신",     "shortName": "기업 요원",       "forProtagonist": true,  "aliases": ["기업 요원"] },
+  { "id": "citizen",           "name": "평범한 시민",       "shortName": "시민",            "forProtagonist": true,  "aliases": ["시민"] },
+  { "id": "soldier",           "name": "전직 연합군 군인",   "shortName": "군인",            "forProtagonist": true,  "aliases": ["군인"] },
+  { "id": "researcher",        "name": "리프트 연구자",     "shortName": "연구원",          "forProtagonist": true,  "aliases": ["연구원"] },
+  { "id": "wanderer",          "name": "떠돌이 용병",       "shortName": "떠돌이 용병",     "forProtagonist": true,  "aliases": [] },
+  { "id": "heir",              "name": "길드 계승자",       "shortName": "길드 계승자",     "forProtagonist": true,  "aliases": [] },
+  { "id": "mercenary_company", "name": "용병단 출신",       "shortName": "용병단",          "forProtagonist": false, "aliases": ["용병단"] },
+  { "id": "freelancer",        "name": "민간 프리랜서",     "shortName": "민간 프리랜서",   "forProtagonist": false, "aliases": ["민간 프리랜서"] }
 ]

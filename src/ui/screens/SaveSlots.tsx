@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { tables } from '../../data';
 import type { GameState } from '../../engine/game';
 import { storageUsageRatio } from '../../storage/quota';
-import { serializeSave, type SaveFile } from '../../storage/saveFile';
+import { isLoadable, serializeSave, type SaveFile } from '../../storage/saveFile';
 import { newSlotId, type SlotSummary } from '../../storage/saveService';
 import { AppShell } from '../AppShell';
 import { ConfirmDialog, Panel } from '../components';
@@ -171,9 +171,13 @@ export function SaveSlots({ ctx, onLoad, onBack, toast }: SaveSlotsProps) {
                     <button className="btn small" onClick={() => downloadText(fileName(f), serializeSave(f))} aria-label="파일로 내보내기">
                       내보내기
                     </button>
-                    <button className="btn small primary" onClick={() => load(slot.slotId, f)}>
-                      불러오기
-                    </button>
+                    {isLoadable(f) ? (
+                      <button className="btn small primary" onClick={() => load(slot.slotId, f)}>
+                        불러오기
+                      </button>
+                    ) : (
+                      <span className="pill">이전 버전</span>
+                    )}
                   </div>
                 </li>
               ))}

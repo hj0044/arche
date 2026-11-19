@@ -53,6 +53,8 @@
   - 테스트: `npm test` (감시 모드는 `npm run test:watch`)
   - 샘플 전투 로그: `npm run sim -- [시드] [몬스터 레벨] [몬스터 등급]`
   - 며칠 자동 진행 요약: `npm run days -- [일수] [시드]`
+  - 레벨·등급별 승률 표: `npm run balance -- [시드 수]`
+  - 용병 표 다시 만들기(CSV → `src/data/roster.json`): `npm run import-roster`
   - 타입 검사: `npm run typecheck`
   - 빌드: `npm run build` → `dist/`
   - 빌드 결과 미리보기: `npm run preview`

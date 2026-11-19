@@ -28,15 +28,23 @@ export interface Unit {
   dropTableId?: string;
   usesGrowth: boolean;
   usesInjury: boolean;
+  /** 조합 축 "세계"와 종족(시너지는 2단계). 몬스터는 비워 둔다. */
+  world?: string;
+  race?: string;
 }
 
-/** 역할 기본 스탯과 레벨별 증가량으로 스탯을 만든다. multiplier는 몬스터 등급 등 외부 배율. */
-export function statsForLevel(tables: GameTables, roleId: string, level: number, multiplier = 1, perLevelScale = 1): Stats {
+/** 레벨 성장 배율: (1 + 성장률)^(레벨-1) */
+export function levelScale(tables: GameTables, stat: keyof Stats, level: number): number {
+  return Math.pow(1 + tables.stats.levelGrowthRate[stat], level - 1);
+}
+
+/** 역할 기본 스탯에 레벨 성장 배율을 곱한다. multiplier는 몬스터 등급 등 외부 배율. */
+export function statsForLevel(tables: GameTables, roleId: string, level: number, multiplier = 1): Stats {
   const row = tables.stats.roleBase[roleId];
   if (!row) throw new Error(`역할 스탯 표에 없는 역할: ${roleId}`);
   const out = {} as Stats;
   for (const { id } of tables.stats.stats) {
-    out[id] = Math.round((row.base[id] + row.perLevel[id] * perLevelScale * (level - 1)) * multiplier);
+    out[id] = Math.round(row.base[id] * levelScale(tables, id, level) * multiplier);
   }
   return out;
 }

@@ -9,7 +9,11 @@ import {
   isAvailable,
   levelUp,
   newGame,
+  pickCandidateToLeave,
   recruit,
+  recruitInfo,
+  guildUpkeepPerDay,
+  upkeepPerDay,
   type GameState,
   type PartyMember,
 } from './game';
@@ -20,7 +24,7 @@ const opener = () =>
     seed: 'test',
     guildName: '새벽 길드',
     baseCityId: 'seoul',
-    protagonist: { mode: 'opener', name: '주인공', element: 'fire', role: 'warrior', background: 'survivor' },
+    protagonist: { mode: 'opener', name: '주인공', element: 'fire', role: 'mage', background: 'survivor' },
   });
 
 /** 확실히 이기는/지는 리프트를 직접 끼워 넣는다. */
@@ -100,12 +104,12 @@ describe('리프트 마감', () => {
 describe('파견', () => {
   it('동시에 여러 파견을 보낼 수 있고 한 용병은 한 파견에만 간다', () => {
     let s = withRift(withRift(opener(), { id: 'A' }), { id: 'B', durationDays: 2 });
-    s = dispatch(tables, s, 'A', guildParty(s, ['hero', 'm001']));
-    expect(() => dispatch(tables, s, 'B', guildParty(s, ['m001']))).toThrow(/이미 파견/);
-    s = dispatch(tables, s, 'B', guildParty(s, ['m002', 'm003']));
+    s = dispatch(tables, s, 'A', guildParty(s, ['hero', 'm01']));
+    expect(() => dispatch(tables, s, 'B', guildParty(s, ['m01']))).toThrow(/이미 파견/);
+    s = dispatch(tables, s, 'B', guildParty(s, ['m02', 'm03']));
     expect(s.expeditions).toHaveLength(2);
     expect(isAvailable(s, 'hero')).toBe(false);
-    expect(isAvailable(s, 'm004')).toBe(true);
+    expect(isAvailable(s, 'm04')).toBe(false); // 주인공(술사)과 역할이 겹쳐 시작 길드에서 빠짐
 
     const d2 = advanceDay(tables, s);
     expect(d2.events.filter((e) => e.type === 'returned')).toHaveLength(1);
@@ -117,9 +121,9 @@ describe('파견', () => {
 
   it('길드 소속이 아닌 용병, 6인 파티는 보낼 수 없다', () => {
     const s = withRift(opener(), { id: 'A' });
-    expect(() => dispatch(tables, s, 'A', [{ mercId: 'm005', row: 'back' }])).toThrow(/길드 소속/);
-    const six = recruit(tables, { ...s, resources: { ...s.resources, zero: 99999 } }, 'm005');
-    expect(() => dispatch(tables, six, 'A', guildParty(six, ['hero', 'm001', 'm002', 'm003', 'm004', 'm005']).concat({ mercId: 'm005', row: 'back' })),).toThrow();
+    expect(() => dispatch(tables, s, 'A', [{ mercId: 'm05', row: 'back' }])).toThrow(/길드 소속/);
+    const six = recruit(tables, { ...s, resources: { ...s.resources, zero: 99999 } }, 'm05');
+    expect(() => dispatch(tables, six, 'A', guildParty(six, ['hero', 'm01', 'm02', 'm03', 'm004', 'm05']).concat({ mercId: 'm05', row: 'back' })),).toThrow();
   });
 });
 
@@ -131,11 +135,13 @@ describe('정산', () => {
     const { state } = advanceDay(tables, s);
     const report = state.reports[0];
     expect(report.outcome).toBe('victory');
-    expect(state.resources.zero).toBe(before.zero + 100);
-    expect(state.resources.arche).toBe(before.arche + 20);
+    const scale = 1 + tables.progression.rewardLevelScale * 1; // 몬스터 레벨 1
+    const upkeep = guildUpkeepPerDay(tables, s);
+    expect(state.resources.zero).toBe(before.zero - upkeep + Math.floor(100 * scale));
+    expect(state.resources.arche).toBe(before.arche + Math.floor(20 * scale));
     for (const g of report.expGains) {
       const m = getMerc(state, g.mercId);
-      expect(g.exp).toBe(Math.round(tables.progression.expByOutcome.victory * m.growth.speed));
+      expect(g.exp).toBe(Math.round(tables.progression.expByOutcome.victory * (1 + tables.progression.expLevelScale * 1)));
       expect(m.exp).toBe(g.exp);
     }
     expect(report.events?.at(-1)).toMatchObject({ type: 'end', outcome: 'victory' });
@@ -148,7 +154,8 @@ describe('정산', () => {
     const { state } = advanceDay(tables, s);
     const report = state.reports[0];
     expect(report.outcome).toBe('defeat');
-    expect(state.resources.zero).toBe(zero);
+    expect(report.reward.zero).toBe(0);
+    expect(state.resources.zero).toBe(zero - guildUpkeepPerDay(tables, s));
     expect(report.injuries.length).toBe(report.party.length);
     for (const inj of report.injuries) {
       expect(getMerc(state, inj.unitId).injury?.recoverDay).toBe(state.day + inj.days + 1);
@@ -167,12 +174,12 @@ describe('정산', () => {
     expect(passage.stable).toBe(true);
     expect(passage.deadlineDay).toBeNull();
 
-    s = dispatch(tables, r.state, 'R', guildParty(r.state, ['hero', 'm001', 'm002', 'm003']));
+    s = dispatch(tables, r.state, 'R', guildParty(r.state, ['hero', 'm01', 'm02', 'm03']));
     r = advanceDay(tables, s);
     const again = r.state.reports.at(-1)!;
     expect(again.outcome).toBe('victory');
     expect(again.stabilized).toBe(false);
-    expect(again.reward.zero).toBe(100 * tables.progression.stablePassageRewardRatio);
+    expect(again.reward.zero).toBe(Math.floor(100 * tables.progression.stablePassageRewardRatio * (1 + tables.progression.rewardLevelScale)));
     expect(r.state.rifts.some((x) => x.id === 'R')).toBe(true);
   });
 });
@@ -181,17 +188,17 @@ describe('부상 회복', () => {
   it('복귀 당일은 세지 않고, 부상 일수만큼 온전한 날이 지나야 다시 파견할 수 있다', () => {
     // 1일에 복귀하며 2일 부상 → 2일·3일 파견 불가, 4일 회복
     let s = opener();
-    s = { ...s, mercenaries: s.mercenaries.map((m) => (m.id === 'm001' ? { ...m, injury: { severity: 'heavy', recoverDay: s.day + 2 + 1 } } : m)) };
+    s = { ...s, mercenaries: s.mercenaries.map((m) => (m.id === 'm01' ? { ...m, injury: { severity: 'heavy', recoverDay: s.day + 2 + 1 } } : m)) };
     s = withRift(s, { id: 'A', deadlineDay: 20 });
-    expect(() => dispatch(tables, s, 'A', guildParty(s, ['m001']))).toThrow(/부상/);
+    expect(() => dispatch(tables, s, 'A', guildParty(s, ['m01']))).toThrow(/부상/);
     s = advanceDay(tables, s).state; // 2일
-    expect(isAvailable(s, 'm001')).toBe(false);
+    expect(isAvailable(s, 'm01')).toBe(false);
     s = advanceDay(tables, s).state; // 3일
-    expect(isAvailable(s, 'm001')).toBe(false);
+    expect(isAvailable(s, 'm01')).toBe(false);
     const d = advanceDay(tables, s); // 4일
-    expect(getMerc(d.state, 'm001').injury).toBeUndefined();
-    expect(d.events).toContainEqual({ type: 'recovered', mercId: 'm001' });
-    expect(isAvailable(d.state, 'm001')).toBe(true);
+    expect(getMerc(d.state, 'm01').injury).toBeUndefined();
+    expect(d.events).toContainEqual({ type: 'recovered', mercId: 'm01' });
+    expect(isAvailable(d.state, 'm01')).toBe(true);
   });
 });
 
@@ -199,8 +206,8 @@ describe('도시 간 이동', () => {
   it('다른 도시 리프트는 왕복 이동 일수만큼 복귀가 늦다', () => {
     let s = withRift(opener(), { id: 'NY', cityId: 'newyork', durationDays: 1, deadlineDay: 10 });
     s = withRift(s, { id: 'TK', cityId: 'tokyo', durationDays: 1, deadlineDay: 10 });
-    s = dispatch(tables, s, 'NY', guildParty(s, ['hero', 'm001']));
-    s = dispatch(tables, s, 'TK', guildParty(s, ['m002', 'm003']));
+    s = dispatch(tables, s, 'NY', guildParty(s, ['hero', 'm01']));
+    s = dispatch(tables, s, 'TK', guildParty(s, ['m02', 'm03']));
     const ny = s.expeditions.find((e) => e.rift.id === 'NY')!;
     const tk = s.expeditions.find((e) => e.rift.id === 'TK')!;
     expect(ny.travelDays).toBe(1);
@@ -218,35 +225,124 @@ describe('도시 간 이동', () => {
 describe('육성과 영입', () => {
   it('경험치가 차면 아르케를 내고 레벨을 올린다', () => {
     let s = opener();
-    const need = expToNextLevel(tables, 1);
+    const hero = getMerc(s, 'hero');
+    const need = expToNextLevel(tables, hero.level, hero.growth.speed);
     expect(() => levelUp(tables, s, 'hero')).toThrow(/경험치/);
     s = { ...s, mercenaries: s.mercenaries.map((m) => (m.id === 'hero' ? { ...m, exp: need + 5 } : m)) };
     const up = levelUp(tables, s, 'hero');
-    expect(getMerc(up, 'hero').level).toBe(2);
+    expect(getMerc(up, 'hero').level).toBe(hero.level + 1);
     expect(getMerc(up, 'hero').exp).toBe(5);
     expect(up.resources.arche).toBeLessThan(s.resources.arche);
   });
 
   it('성장 한계에서는 더 오르지 않는다', () => {
     const s = opener();
-    const capped = { ...s, mercenaries: s.mercenaries.map((m) => (m.id === 'm001' ? { ...m, level: m.growth.cap, exp: 99999 } : m)) };
-    expect(() => levelUp(tables, capped, 'm001')).toThrow(/한계/);
+    const capped = { ...s, mercenaries: s.mercenaries.map((m) => (m.id === 'm01' ? { ...m, level: m.growth.cap, exp: 99999 } : m)) };
+    expect(() => levelUp(tables, capped, 'm01')).toThrow(/한계/);
   });
 
-  it('성장 속도가 빠른 용병이 경험치를 더 받는다', () => {
-    let s = withRift(opener(), { id: 'A' });
-    s = dispatch(tables, s, 'A', guildParty(s, ['m002', 'm003'])); // 속도 1.2, 0.9
-    const { state } = advanceDay(tables, s);
-    const gain = Object.fromEntries(state.reports[0].expGains.map((g) => [g.mercId, g.exp]));
-    expect(gain.m002).toBeGreaterThan(gain.m003);
+  it('성장 속도는 레벨업에 필요한 경험치 배율이다(빠름 ×0.75, 보통 ×1.0, 느림 ×1.3)', () => {
+    const base = expToNextLevel(tables, 10, 'normal');
+    expect(expToNextLevel(tables, 10, 'fast')).toBe(Math.round(base * 0.75));
+    expect(expToNextLevel(tables, 10, 'slow')).toBe(Math.round(base * 1.3));
   });
 
-  it('무소속만 영입할 수 있고 제로를 쓴다', () => {
+  it('NPC 세력 용병을 영입비를 내고 영입하면 소속이 길드로 바뀐다', () => {
     const s = opener();
-    const r = recruit(tables, s, 'm005');
-    expect(getMerc(r, 'm005').affiliation).toEqual({ kind: 'guild' });
-    expect(r.resources.zero).toBeLessThan(s.resources.zero);
-    expect(() => recruit(tables, s, 'm008')).toThrow(/영입 대상/);
+    const info = recruitInfo(tables, s, 'm05');
+    expect(info.eligible && info.unlocked).toBe(true);
+    const r = recruit(tables, s, 'm05');
+    expect(getMerc(r, 'm05').affiliation).toEqual({ kind: 'guild' });
+    expect(r.resources.zero).toBe(s.resources.zero - info.cost);
+    expect(() => recruit(tables, s, 'hero')).toThrow(/영입 대상/);
+    expect(() => recruit(tables, { ...s, resources: { ...s.resources, zero: 0 } }, 'm05')).toThrow(/제로/);
+  });
+
+  it('영입비는 성장 한계가 높을수록 비싸다', () => {
+    const s = { ...opener(), resources: { zero: 0, arche: 0, materials: {} } };
+    const flat = (id: string) => {
+      const m = getMerc(s, id);
+      return recruitInfo(tables, { ...s, mercenaries: s.mercenaries.map((x) => (x.id === id ? { ...x, level: 1, profile: { ...x.profile, hometown: 'seoul' }, affiliation: { kind: 'faction', factionId: 'rrb' } } : x)) }, id).cost + m.level * 0;
+    };
+    expect(flat('m12')).toBeGreaterThan(flat('m13')); // 한계 70 > 40
+  });
+
+  it('해금 조건이 있는 용병은 조건을 채우기 전까지 영입할 수 없다', () => {
+    let s = { ...opener(), resources: { zero: 99999, arche: 0, materials: {} } };
+    const info = recruitInfo(tables, s, 'm18');
+    expect(info.unlock).toEqual({ type: 'tierVictories', tier: 'gate', count: 1 });
+    expect(info.unlocked).toBe(false);
+    expect(() => recruit(tables, s, 'm18')).toThrow(/해금/);
+    s = withRift(s, { id: 'G', tier: 'gate' });
+    s = dispatch(tables, s, 'G', guildParty(s));
+    s = advanceDay(tables, s).state;
+    expect(s.reports[0].outcome).toBe('victory');
+    expect(recruitInfo(tables, s, 'm18').unlocked).toBe(true);
+    expect(getMerc(recruit(tables, s, 'm18'), 'm18').affiliation).toEqual({ kind: 'guild' });
+  });
+});
+
+describe('시작 구성', () => {
+  const start = (protagonist: Parameters<typeof newGame>[1]['protagonist']) =>
+    newGame(tables, { seed: 's', guildName: 'g', baseCityId: 'seoul', protagonist });
+  const guildIds = (s: GameState) => s.mercenaries.filter((m) => m.affiliation.kind === 'guild').map((m) => m.id);
+  const groups = (s: GameState) =>
+    new Set(s.mercenaries.filter((m) => m.affiliation.kind === 'guild').map((m) => tables.roles.find((r) => r.id === m.role)!.group));
+
+  it('용병 30명이 모두 존재한다', () => {
+    expect(start({ mode: 'guildMaster', name: 'gm', background: 'heir' }).mercenaries).toHaveLength(30);
+  });
+
+  it('길드 마스터 모드는 시작 후보 4명 전부로 시작한다', () => {
+    const s = start({ mode: 'guildMaster', name: 'gm', background: 'heir' });
+    expect(guildIds(s)).toEqual(['m01', 'm02', 'm03', 'm04']);
+    expect(groups(s)).toEqual(new Set(['vanguard', 'damage', 'support']));
+  });
+
+  it.each(tables.roles.filter((r) => r.enabled).map((r) => r.id))('개방자(%s)는 주인공 + 3명이고 전위·딜러·지원이 갖춰진다', (role) => {
+    const s = start({ mode: 'opener', name: 'p', element: 'fire', role, background: 'survivor' });
+    const ids = guildIds(s);
+    expect(ids).toHaveLength(4);
+    expect(ids[0]).toBe('hero');
+    expect(groups(s)).toEqual(new Set(['vanguard', 'damage', 'support']));
+    const left = pickCandidateToLeave(tables, role)!;
+    expect(ids).not.toContain(left);
+    expect(getMerc(s, left).affiliation).toEqual({ kind: 'faction', factionId: 'free' });
+    const sameRole = tables.roster.find((r) => r.startingCandidate && r.role === role);
+    if (sameRole) expect(left).toBe(sameRole.id);
+  });
+
+  it('용병 프로필(나이, 성별, 고향, 배경, 성장 한계·속도, 최초 레벨)이 CSV 값으로 들어온다', () => {
+    const m = getMerc(start({ mode: 'guildMaster', name: 'gm', background: 'heir' }), 'm12');
+    expect(m.name).toBe('카게야마 쇼');
+    expect(m.growth).toEqual({ cap: 70, speed: 'fast' });
+    expect(m.level).toBe(8);
+    expect(m.initialLevel).toBe(8);
+    expect(m.profile).toMatchObject({ hometown: 'tokyo', background: 'corporate', world: 'earth' });
+    expect(typeof m.profile.age).toBe('number');
+    expect(m.profile.gender).toBeTruthy();
+  });
+});
+
+describe('유지비', () => {
+  it('하루가 끝나면 길드 용병 유지비를 제로에서 차감한다(주인공 제외)', () => {
+    const s = opener();
+    const fee = guildUpkeepPerDay(tables, s);
+    expect(fee).toBeGreaterThan(0);
+    expect(upkeepPerDay(tables, getMerc(s, 'hero'))).toBe(0);
+    const d = advanceDay(tables, s);
+    expect(d.state.resources.zero).toBe(s.resources.zero - fee);
+    expect(d.events).toContainEqual({ type: 'upkeep', paid: fee, unpaid: 0, unpaidMercIds: [] });
+  });
+
+  it('제로가 모자라면 미납만 기록하고 진행은 멈추지 않는다', () => {
+    let s = { ...opener(), resources: { zero: 0, arche: 0, materials: {} } };
+    for (let i = 0; i < 3; i++) s = advanceDay(tables, s).state;
+    expect(s.day).toBe(4);
+    expect(s.resources.zero).toBe(0);
+    const m = getMerc(s, 'm01');
+    expect(m.unpaidUpkeep).toEqual({ days: 3, zero: upkeepPerDay(tables, m) * 3 });
+    expect(isAvailable(s, 'm01')).toBe(true);
   });
 });
 

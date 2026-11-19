@@ -11,6 +11,7 @@ export function DayResult({ ctx, events }: { ctx: Ctx; events: DayEvent[] }) {
   const recovered = events.flatMap((e) => (e.type === 'recovered' ? [e.mercId] : []));
   const expired = events.flatMap((e) => (e.type === 'riftExpired' ? [e.name] : []));
   const spawned = events.flatMap((e) => (e.type === 'riftSpawned' ? [s.rifts.find((r) => r.id === e.riftId)] : [])).filter((r) => r !== undefined);
+  const upkeep = events.find((e) => e.type === 'upkeep');
   const quiet = !returned.length && !recovered.length && !expired.length && !spawned.length;
 
   return (
@@ -23,6 +24,12 @@ export function DayResult({ ctx, events }: { ctx: Ctx; events: DayEvent[] }) {
         </button>
       }
     >
+      {upkeep?.type === 'upkeep' && (
+        <p className={`small ${upkeep.unpaid ? 'warn' : 'muted'}`}>
+          유지비 제로 −{num(upkeep.paid)}
+          {upkeep.unpaid > 0 && ` · 미납 ${num(upkeep.unpaid)} (${upkeep.unpaidMercIds.map(name).join(', ')})`}
+        </p>
+      )}
       {quiet && <p className="muted">조용한 하루였습니다.</p>}
       {returned.map((r) => (
         <Panel
