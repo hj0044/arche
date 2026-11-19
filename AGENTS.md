@@ -45,7 +45,16 @@
 
 ## 기술 스택과 명령
 
-아직 정하지 않았다. 첫 구현 작업에서 정하고 이 섹션에 빌드, 실행, 테스트 명령을 적는다. 정적 사이트로 Render에 배포할 수 있어야 한다(서버 없이 시작).
+- TypeScript, Vite(정적 빌드), React(화면), Vitest(테스트). Node 22(`.node-version`).
+- 폴더: `src/engine/`(순수 규칙 로직, 화면·저장소 의존 금지), `src/data/`(데이터 표 JSON과 로더), `src/storage/`(세이브 저장소 인터페이스와 구현), `src/ui/`(화면).
+- 명령
+  - 설치: `npm ci` (처음이면 `npm install`)
+  - 실행(개발 서버): `npm run dev`
+  - 테스트: `npm test` (감시 모드는 `npm run test:watch`)
+  - 타입 검사: `npm run typecheck`
+  - 빌드: `npm run build` → `dist/`
+  - 빌드 결과 미리보기: `npm run preview`
+- 배포: Render Static Site. 설정은 `render.yaml`, 안내는 `docs/deploy.md`.
 
 ## 언어와 표기
 
