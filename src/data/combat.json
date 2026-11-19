@@ -29,7 +29,8 @@
     "defenseConstant": 100,
     "varianceMin": 0.9,
     "varianceMax": 1.1,
-    "minimum": 1
+    "minimum": 1,
+    "_note": "방어 상수는 공격자 레벨의 방어 성장률만큼 커진다(같은 레벨 싸움이 레벨과 무관하게 같은 비율)"
   },
   "ai": {
     "healThreshold": 0.7

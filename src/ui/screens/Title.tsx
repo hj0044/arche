@@ -4,6 +4,7 @@ import type { SlotSummary } from '../../storage/saveService';
 import { AppShell } from '../AppShell';
 import { cityName, formatDateTime } from '../format';
 import { saves } from '../saves';
+import { isLoadable } from '../../storage/saveFile';
 
 interface TitleProps {
   onNew: () => void;
@@ -20,7 +21,10 @@ export function Title({ onNew, onLoad, onOpenSaves }: TitleProps) {
   const [recent, setRecent] = useState<SlotSummary | null | undefined>(undefined);
 
   useEffect(() => {
-    saves.listSlots().then((slots) => setRecent(slots[0] ?? null), () => setRecent(null));
+    saves.listSlots().then(
+      (slots) => setRecent(slots.find((x) => { const f = latestFile(x); return f && isLoadable(f); }) ?? null),
+      () => setRecent(null),
+    );
   }, []);
 
   const latest = recent ? latestFile(recent) : undefined;

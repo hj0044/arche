@@ -1,4 +1,4 @@
-import { getRiftTier, travelDays, type GameTables, type Outcome, type Row } from '../data';
+import { getGrowthSpeed, getRiftTier, travelDays, type GameTables, type Outcome, type Row, type UnlockRule } from '../data';
 import { resolveCombat, validateParty, type CombatEvent, type CombatSlot } from './combat';
 import { rollInjuries, type Injury } from './injury';
 import { generateRift, riftEnemySlots, type Rift, type RiftReward } from './rift';
@@ -15,12 +15,29 @@ export interface MercenaryState {
   level: number;
   /** 다음 레벨까지 쌓인 경험치 */
   exp: number;
-  /** 개별 성장 수치. cap: 성장 한계(최대 레벨), speed: 성장 속도(경험치 배율) */
-  growth: { cap: number; speed: number };
+  /** 개별 성장 수치(용병마다 고정). cap: 성장 한계(최대 레벨), speed: growth-speeds.json id */
+  growth: { cap: number; speed: string };
+  initialLevel: number;
+  /** 표시용 프로필(1단계는 전투·성장에 영향 없음) */
+  profile: MercProfile;
   affiliation: Affiliation;
   /** recoverDay가 되면 회복한다. 복귀 당일은 부상 일수에 세지 않는다. */
   injury?: { severity: string; recoverDay: number };
   isProtagonist?: boolean;
+  /** 유지비 미납 누적(2단계 충성도 하락 요인 자리) */
+  unpaidUpkeep?: { days: number; zero: number };
+}
+
+export interface MercProfile {
+  age?: number;
+  gender?: string;
+  /** 도시 id */
+  hometown?: string;
+  /** backgrounds.json id */
+  background: string;
+  /** 조합 축 "세계" id */
+  world: string;
+  race: string;
 }
 
 export type ProtagonistSetup =
@@ -86,13 +103,16 @@ export interface GameState {
   /** 승리로 안정화한 항로 기록(1단계는 기록만) */
   stabilizedRoutes: { riftId: string; name: string; day: number }[];
   counters: { rift: number; expedition: number };
+  /** 영입 해금 조건 판정용 누적 기록 */
+  records: { victories: number; victoriesByTier: Record<string, number> };
 }
 
 export type DayEvent =
   | { type: 'recovered'; mercId: string }
   | { type: 'returned'; expeditionId: string; outcome: Outcome }
   | { type: 'riftExpired'; riftId: string; name: string }
-  | { type: 'riftSpawned'; riftId: string; cityId: string };
+  | { type: 'riftSpawned'; riftId: string; cityId: string }
+  | { type: 'upkeep'; paid: number; unpaid: number; unpaidMercIds: string[] };
 
 export interface NewGameOptions {
   seed: string;
@@ -121,9 +141,10 @@ export function isAvailable(state: GameState, mercId: string): boolean {
   return isGuildMember(m) && !m.injury && !isOnExpedition(state, mercId);
 }
 
-export function expToNextLevel(tables: GameTables, level: number): number {
+/** 다음 레벨까지 필요한 경험치. 성장 속도가 필요 경험치 배율이다(빠름 ×0.75, 보통 ×1.0, 느림 ×1.3). */
+export function expToNextLevel(tables: GameTables, level: number, speed = 'normal'): number {
   const { base, perLevel } = tables.progression.expToNextLevel;
-  return base + perLevel * (level - 1);
+  return Math.round((base + perLevel * (level - 1)) * getGrowthSpeed(tables, speed).expToNextMultiplier);
 }
 
 export function levelUpCost(tables: GameTables, level: number): number {
@@ -131,9 +152,51 @@ export function levelUpCost(tables: GameTables, level: number): number {
   return base + perLevel * (level - 1);
 }
 
-export function recruitCost(tables: GameTables, level: number): number {
-  const { base, perLevel } = tables.progression.recruitZeroCost;
-  return base + perLevel * (level - 1);
+/** 하루 유지비. 주인공은 데이터 설정에 따라 뺀다. */
+export function upkeepPerDay(tables: GameTables, m: MercenaryState): number {
+  if (m.isProtagonist && !tables.progression.protagonistUpkeep) return 0;
+  const { base, perLevel } = tables.progression.upkeepZeroPerDay;
+  return base + perLevel * m.level;
+}
+
+export function guildUpkeepPerDay(tables: GameTables, state: GameState): number {
+  return state.mercenaries.filter(isGuildMember).reduce((sum, m) => sum + upkeepPerDay(tables, m), 0);
+}
+
+export interface RecruitInfo {
+  /** 영입 대상(NPC 세력 소속)인가 */
+  eligible: boolean;
+  cost: number;
+  unlock?: UnlockRule;
+  /** 해금 조건 진행도 */
+  progress?: { current: number; required: number };
+  unlocked: boolean;
+}
+
+function unlockProgress(state: GameState, rule: UnlockRule): { current: number; required: number } {
+  const current = rule.type === 'totalVictories' ? state.records.victories : (state.records.victoriesByTier[rule.tier] ?? 0);
+  return { current, required: rule.count };
+}
+
+/** 영입비는 용병마다 다르고 성장 한계가 높을수록 비싸다. 세력 배율, 거점 도시 밖 고향 배율을 곱한다. */
+export function recruitInfo(tables: GameTables, state: GameState, mercId: string): RecruitInfo {
+  const m = getMerc(state, mercId);
+  const aff = m.affiliation;
+  const faction = aff.kind === 'faction' ? tables.factions.find((f) => f.id === aff.factionId) : undefined;
+  const c = tables.progression.recruitZeroCost;
+  const city = tables.cities.find((x) => x.id === state.baseCityId);
+  const away = m.profile.hometown !== state.baseCityId ? (city?.recruitment.otherHometownCostMultiplier ?? 1) : 1;
+  const raw = c.base + c.perCapAbove30 * Math.max(0, m.growth.cap - c.capBaseline) + c.perLevel * (m.level - 1);
+  const cost = Math.round(raw * (faction?.recruitCostMultiplier ?? 1) * away);
+  const rule = tables.roster.find((r) => r.id === m.id)?.unlock;
+  const progress = rule && unlockProgress(state, rule);
+  return {
+    eligible: !!faction,
+    cost,
+    unlock: rule,
+    progress,
+    unlocked: !progress || progress.current >= progress.required,
+  };
 }
 
 export function mercToUnit(tables: GameTables, m: MercenaryState): Unit {
@@ -149,6 +212,8 @@ export function mercToUnit(tables: GameTables, m: MercenaryState): Unit {
     skills: [...role.skills],
     affiliation: m.affiliation,
     ai: 'default',
+    world: m.profile.world,
+    race: m.profile.race,
     usesGrowth: true,
     usesInjury: true,
   };
@@ -158,9 +223,25 @@ export function mercToUnit(tables: GameTables, m: MercenaryState): Unit {
 
 const PROTAGONIST_ID = 'hero';
 
-function spawnRiftInto(tables: GameTables, state: GameState, cityId: string, rngSeed: string): Rift {
+/** 개방자 모드에서 빠지는 시작 후보를 고르는 무소속 세력 id */
+const LEFTOVER_FACTION = 'free';
+
+/**
+ * 개방자 모드에서 시작 후보 4명 중 빠질 1명.
+ * 같은 역할 → 같은 분류(전위·딜러·지원) → 후보 목록의 마지막 순서로 고른다.
+ * 주인공이 그 분류를 채우므로 시작 구성의 전위·딜러·지원은 그대로 갖춰진다.
+ */
+export function pickCandidateToLeave(tables: GameTables, protagonistRole: string): string | undefined {
+  const candidates = tables.roster.filter((r) => r.startingCandidate);
+  const group = (role: string) => tables.roles.find((r) => r.id === role)?.group;
+  const sameRole = candidates.filter((c) => c.role === protagonistRole);
+  const sameGroup = candidates.filter((c) => group(c.role) === group(protagonistRole));
+  return (sameRole.at(-1) ?? sameGroup.at(-1) ?? candidates.at(-1))?.id;
+}
+
+function spawnRiftInto(tables: GameTables, state: GameState, cityId: string, rngSeed: string, tier?: string): Rift {
   state.counters.rift += 1;
-  const rift = generateRift(tables, cityId, state.day, `r${state.counters.rift}`, createRng(rngSeed));
+  const rift = generateRift(tables, cityId, state.day, `r${state.counters.rift}`, createRng(rngSeed), tier);
   state.rifts.push(rift);
   return rift;
 }
@@ -178,6 +259,8 @@ export function newGame(tables: GameTables, opts: NewGameOptions): GameState {
     level: r.initialLevel,
     exp: 0,
     growth: { ...r.growth },
+    initialLevel: r.initialLevel,
+    profile: { age: r.age, gender: r.gender, hometown: r.hometown, background: r.background, world: r.world, race: r.race },
     affiliation: r.faction === 'guild' ? { kind: 'guild' } : { kind: 'faction', factionId: r.faction },
   }));
 
@@ -196,10 +279,16 @@ export function newGame(tables: GameTables, opts: NewGameOptions): GameState {
       level: g.initialLevel,
       exp: 0,
       growth: { cap: g.cap, speed: g.speed },
+      initialLevel: g.initialLevel,
+      profile: { background: p.background, hometown: opts.baseCityId, world: 'earth', race: 'human' },
       affiliation: { kind: 'guild' },
       isProtagonist: true,
     });
     protagonist.mercId = PROTAGONIST_ID;
+    // 주인공 역할과 겹치는 시작 후보 1명은 무소속으로 남는다.
+    const left = pickCandidateToLeave(tables, p.role);
+    const merc = mercenaries.find((m) => m.id === left);
+    if (merc) merc.affiliation = { kind: 'faction', factionId: LEFTOVER_FACTION };
   }
 
   const state: GameState = {
@@ -215,10 +304,11 @@ export function newGame(tables: GameTables, opts: NewGameOptions): GameState {
     reports: [],
     stabilizedRoutes: [],
     counters: { rift: 0, expedition: 0 },
+    records: { victories: 0, victoriesByTier: {} },
   };
   for (const city of tables.cities) {
     for (let i = 0; i < city.riftSpawn.initialCount; i++) {
-      spawnRiftInto(tables, state, city.id, `${state.seed}:init:${city.id}:${i}`);
+      spawnRiftInto(tables, state, city.id, `${state.seed}:init:${city.id}:${i}`, city.riftSpawn.initialGuaranteed[i]);
     }
   }
   return state;
@@ -264,7 +354,7 @@ export function levelUp(tables: GameTables, prev: GameState, mercId: string): Ga
   const m = getMerc(state, mercId);
   if (!isGuildMember(m)) throw new GameError('길드 용병만 키울 수 있다');
   if (m.level >= m.growth.cap) throw new GameError('성장 한계에 도달했다');
-  const need = expToNextLevel(tables, m.level);
+  const need = expToNextLevel(tables, m.level, m.growth.speed);
   if (m.exp < need) throw new GameError('경험치가 부족하다');
   const cost = levelUpCost(tables, m.level);
   if (state.resources.arche < cost) throw new GameError('아르케가 부족하다');
@@ -279,26 +369,30 @@ export function canLevelUp(tables: GameTables, state: GameState, mercId: string)
   return (
     isGuildMember(m) &&
     m.level < m.growth.cap &&
-    m.exp >= expToNextLevel(tables, m.level) &&
+    m.exp >= expToNextLevel(tables, m.level, m.growth.speed) &&
     state.resources.arche >= levelUpCost(tables, m.level)
   );
 }
 
-/** 영입 대상 풀(무소속)의 용병을 제로로 영입한다. */
+/** NPC 세력 소속 용병을 제로로 영입한다. 해금 조건이 있으면 채운 뒤에만 영입할 수 있다. 영입하면 소속이 길드로 바뀐다. */
 export function recruit(tables: GameTables, prev: GameState, mercId: string): GameState {
   const state = structuredClone(prev);
   const m = getMerc(state, mercId);
-  const aff = m.affiliation;
-  const inPool = aff.kind === 'faction' && tables.factions.some((f) => f.id === aff.factionId && f.recruitPool);
-  if (!inPool) throw new GameError('영입 대상이 아니다');
-  const cost = recruitCost(tables, m.level);
-  if (state.resources.zero < cost) throw new GameError('제로가 부족하다');
-  state.resources.zero -= cost;
+  const info = recruitInfo(tables, state, mercId);
+  if (!info.eligible) throw new GameError('영입 대상이 아니다');
+  if (!info.unlocked) throw new GameError('해금 조건을 채우지 않았다');
+  if (state.resources.zero < info.cost) throw new GameError('제로가 부족하다');
+  state.resources.zero -= info.cost;
   m.affiliation = { kind: 'guild' };
   return state;
 }
 
 // ── 하루 진행 ─────────────────────────────────────────
+
+/** 리프트의 대표 몬스터 레벨(가장 높은 레벨) */
+export function riftLevel(rift: Rift): number {
+  return Math.max(...rift.enemies.map((e) => e.level));
+}
 
 function settleExpedition(tables: GameTables, state: GameState, ex: Expedition): ExpeditionReport {
   const combatSeed = `${state.seed}:${ex.id}`;
@@ -311,7 +405,14 @@ function settleExpedition(tables: GameTables, state: GameState, ex: Expedition):
   const prog = tables.progression;
   const outcome = result.outcome;
 
-  const ratio = prog.rewardRatioByOutcome[outcome] * (ex.rift.stable ? prog.stablePassageRewardRatio : 1);
+  const ratio =
+    prog.rewardRatioByOutcome[outcome] *
+    (ex.rift.stable ? prog.stablePassageRewardRatio : 1) *
+    (1 + prog.rewardLevelScale * riftLevel(ex.rift));
+  if (outcome === 'victory') {
+    state.records.victories += 1;
+    state.records.victoriesByTier[ex.rift.tier] = (state.records.victoriesByTier[ex.rift.tier] ?? 0) + 1;
+  }
   const reward: RiftReward = {
     zero: Math.floor(ex.rift.reward.zero * ratio),
     arche: Math.floor(ex.rift.reward.arche * ratio),
@@ -326,9 +427,10 @@ function settleExpedition(tables: GameTables, state: GameState, ex: Expedition):
   for (const [k, v] of Object.entries(reward.materials)) state.resources.materials[k] = (state.resources.materials[k] ?? 0) + v;
 
   const tierMult = prog.expTierMultiplier[ex.rift.tier] ?? 1;
+  const levelMult = 1 + prog.expLevelScale * riftLevel(ex.rift);
   const expGains: ExpGain[] = ex.party.map((p) => {
     const m = getMerc(state, p.mercId);
-    const exp = Math.round(prog.expByOutcome[outcome] * tierMult * m.growth.speed);
+    const exp = Math.round(prog.expByOutcome[outcome] * tierMult * levelMult);
     m.exp += exp;
     return { mercId: m.id, exp };
   });
@@ -367,11 +469,30 @@ function settleExpedition(tables: GameTables, state: GameState, ex: Expedition):
 }
 
 /**
- * 하루를 넘긴다. 순서: 날짜 +1 → 부상 회복 → 복귀한 파견 정산 → 마감 지난 리프트 소멸 → 새 리프트 출현.
+ * 하루를 넘긴다. 순서: 유지비 → 날짜 +1 → 부상 회복 → 복귀한 파견 정산 → 마감 지난 리프트 소멸 → 새 리프트 출현.
  */
 export function advanceDay(tables: GameTables, prev: GameState): { state: GameState; events: DayEvent[] } {
   const state = structuredClone(prev);
   const events: DayEvent[] = [];
+
+  // 하루가 끝날 때 유지비를 낸다. 모자라면 그 용병 몫은 미납으로 기록만 한다.
+  let paid = 0;
+  let unpaid = 0;
+  const unpaidMercIds: string[] = [];
+  for (const m of state.mercenaries.filter(isGuildMember)) {
+    const fee = upkeepPerDay(tables, m);
+    if (fee <= 0) continue;
+    if (state.resources.zero >= fee) {
+      state.resources.zero -= fee;
+      paid += fee;
+    } else {
+      unpaid += fee;
+      unpaidMercIds.push(m.id);
+      m.unpaidUpkeep = { days: (m.unpaidUpkeep?.days ?? 0) + 1, zero: (m.unpaidUpkeep?.zero ?? 0) + fee };
+    }
+  }
+  if (paid || unpaid) events.push({ type: 'upkeep', paid, unpaid, unpaidMercIds });
+
   state.day += 1;
 
   for (const m of state.mercenaries) {

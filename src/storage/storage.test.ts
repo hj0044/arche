@@ -6,7 +6,7 @@ import { advanceDayWithAutosave } from '../app/session';
 import { advanceDay, dispatch, newGame, type GameState } from '../engine/game';
 import { IndexedDbSaveRepository } from './indexedDb';
 import { MemorySaveRepository, type SaveRepository } from './repository';
-import { createSaveFile, parseSave, SAVE_FORMAT, SAVE_VERSION, SaveFormatError, serializeSave } from './saveFile';
+import { createSaveFile, isLoadable, parseSave, SAVE_FORMAT, SAVE_VERSION, SaveFormatError, serializeSave } from './saveFile';
 import { AUTO_SAVES_PER_SLOT, SaveService } from './saveService';
 
 /** 며칠 진행하고 파견 중인 상태까지 들어간 게임 */
@@ -21,7 +21,7 @@ function playedState(): GameState {
   const rift = s.rifts.find((r) => r.cityId === 'seoul')!;
   s = dispatch(tables, s, rift.id, [
     { mercId: 'hero', row: 'back' },
-    { mercId: 'm001', row: 'front' },
+    { mercId: 'm01', row: 'front' },
   ]);
   return advanceDay(tables, s).state;
 }
@@ -54,6 +54,14 @@ describe('세이브 파일 형식', () => {
     expect(() => parseSave({ format: SAVE_FORMAT })).toThrow(/버전/);
     expect(() => parseSave({ format: SAVE_FORMAT, version: SAVE_VERSION + 1, state: {} })).toThrow(/새로운/);
     expect(() => parseSave({ format: SAVE_FORMAT, version: SAVE_VERSION, state: { day: 1 } })).toThrow(/손상/);
+  });
+
+  it('이전 버전(v1) 세이브는 불러오지 않는다(용병·세력 id 변경으로 폐기)', () => {
+    const v1 = { ...createSaveFile(playedState(), 'manual'), version: 1 };
+    expect(SAVE_VERSION).toBe(2);
+    expect(() => parseSave(v1)).toThrow(/이전 버전/);
+    expect(isLoadable(v1)).toBe(false);
+    expect(isLoadable(createSaveFile(playedState(), 'auto'))).toBe(true);
   });
 });
 

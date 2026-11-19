@@ -1,5 +1,5 @@
 import { tables } from '../../data';
-import { isOnExpedition } from '../../engine/game';
+import { guildUpkeepPerDay, isOnExpedition } from '../../engine/game';
 import { AppShell } from '../AppShell';
 import { ElementTag, Panel, RoleTag } from '../components';
 import { cityName, materialName, num, outcomeName, severityName } from '../format';
@@ -11,6 +11,7 @@ export function GuildHome({ ctx }: { ctx: Ctx }) {
   const guild = s.mercenaries.filter((m) => m.affiliation.kind === 'guild');
   const recent = s.reports.slice(-tables.ui.recentReportsOnHome).reverse();
   const materials = Object.entries(s.resources.materials).filter(([, n]) => n > 0);
+  const unpaid = guild.reduce((sum, m) => sum + (m.unpaidUpkeep?.zero ?? 0), 0);
 
   return (
     <AppShell
@@ -27,6 +28,10 @@ export function GuildHome({ ctx }: { ctx: Ctx }) {
           <span className="res-label">아르케</span>
           <span className="res-value">{num(s.resources.arche)}</span>
         </div>
+        <div className="res">
+          <span className="res-label">하루 유지비</span>
+          <span className="res-value">−{num(guildUpkeepPerDay(tables, s))}</span>
+        </div>
         {materials.map(([id, n]) => (
           <div className="res" key={id}>
             <span className="res-label">{materialName(id)}</span>
@@ -34,6 +39,8 @@ export function GuildHome({ ctx }: { ctx: Ctx }) {
           </div>
         ))}
       </div>
+
+      {unpaid > 0 && <p className="error small">유지비 미납 누적 제로 {num(unpaid)}. 지금은 기록만 남습니다.</p>}
 
       <Panel title={`진행 중인 파견 ${s.expeditions.length}`}>
         {s.expeditions.length === 0 ? (

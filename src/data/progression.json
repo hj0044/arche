@@ -27,14 +27,23 @@
     "perLevel": 3
   },
   "recruitZeroCost": {
-    "base": 150,
-    "perLevel": 40
+    "base": 100,
+    "perCapAbove30": 6,
+    "perLevel": 15,
+    "capBaseline": 30
   },
   "protagonistGrowth": {
-    "cap": 40,
-    "speed": 1.0,
-    "initialLevel": 1
+    "cap": 50,
+    "speed": "normal",
+    "initialLevel": 5
   },
   "reportHistoryLimit": 20,
-  "stablePassageRewardRatio": 0.5
+  "stablePassageRewardRatio": 0.5,
+  "rewardLevelScale": 0.05,
+  "upkeepZeroPerDay": {
+    "base": 5,
+    "perLevel": 1
+  },
+  "protagonistUpkeep": false,
+  "expLevelScale": 0.05
 }

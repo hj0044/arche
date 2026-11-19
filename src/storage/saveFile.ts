@@ -2,7 +2,7 @@ import type { GameState } from '../engine/game';
 
 /** 세이브 형식 식별자와 현재 버전. 형식이 바뀌면 버전을 올리고 MIGRATIONS에 변환을 추가한다. */
 export const SAVE_FORMAT = 'arche-save';
-export const SAVE_VERSION = 1;
+export const SAVE_VERSION = 2;
 
 export type SaveKind = 'manual' | 'auto';
 
@@ -18,7 +18,10 @@ export interface SaveFile {
 
 export class SaveFormatError extends Error {}
 
-/** version n → n+1 변환. 예: 1: (raw) => ({ ...raw, version: 2, state: { ...raw.state, 새필드: 기본값 } }) */
+/**
+ * version n → n+1 변환. 비어 있는 버전은 지원하지 않는다.
+ * v1 → v2: 용병 30명 교체와 세력 id 변경(ironhound → waypoint)으로 호환하지 않고 폐기한다(사용자 결정).
+ * 예: 1: (raw) => ({ ...raw, version: 2, state: { ...raw.state, 새필드: 기본값 } }) */
 const MIGRATIONS: Record<number, (raw: Record<string, unknown>) => Record<string, unknown>> = {};
 
 export function createSaveFile(state: GameState, kind: SaveKind, now: Date = new Date()): SaveFile {
@@ -53,7 +56,7 @@ export function parseSave(input: string | unknown): SaveFile {
   if (obj.version > SAVE_VERSION) throw new SaveFormatError(`더 새로운 버전(${obj.version})의 세이브다`);
   while ((obj.version as number) < SAVE_VERSION) {
     const migrate = MIGRATIONS[obj.version as number];
-    if (!migrate) throw new SaveFormatError(`버전 ${obj.version}을(를) 올리는 방법이 없다`);
+    if (!migrate) throw new SaveFormatError(`이전 버전(${obj.version}) 세이브는 이 버전에서 불러올 수 없다`);
     obj = migrate(obj);
   }
   const state = obj.state as Partial<GameState> | undefined;
@@ -68,4 +71,14 @@ export function parseSave(input: string | unknown): SaveFile {
     throw new SaveFormatError('게임 상태가 손상됐다');
   }
   return obj as unknown as SaveFile;
+}
+
+/** 이 버전에서 불러올 수 있는 세이브인가 */
+export function isLoadable(file: { version?: unknown }): boolean {
+  try {
+    parseSave({ ...file, format: SAVE_FORMAT });
+    return true;
+  } catch {
+    return false;
+  }
 }

@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { tables } from '../../data';
-import { GameError, newGame, type GameState, type ProtagonistSetup } from '../../engine/game';
+import { GameError, newGame, pickCandidateToLeave, type GameState, type ProtagonistSetup } from '../../engine/game';
 import { newSlotId } from '../../storage/saveService';
 import { AppShell } from '../AppShell';
-import { Segmented } from '../components';
+import { ElementTag, RoleTag, Segmented } from '../components';
 import { saves } from '../saves';
 
 interface NewGameProps {
@@ -24,6 +24,8 @@ export function NewGame({ onBack, onStart }: NewGameProps) {
   const [error, setError] = useState('');
 
   const ready = name.trim() && guildName.trim();
+  const leaving = mode === 'opener' ? pickCandidateToLeave(tables, role) : undefined;
+  const leavingRow = tables.roster.find((r) => r.id === leaving);
 
   const start = async () => {
     const protagonist: ProtagonistSetup =
@@ -96,7 +98,7 @@ export function NewGame({ onBack, onStart }: NewGameProps) {
                   </button>
                 ))}
             </div>
-            <p className="hint">출신은 지구, 종족은 인간이다(1단계).</p>
+            <p className="hint">세계는 지구, 종족은 인간이다(1단계).</p>
           </section>
         </>
       )}
@@ -104,12 +106,36 @@ export function NewGame({ onBack, onStart }: NewGameProps) {
       <section className="field">
         <label htmlFor="bg">배경</label>
         <select id="bg" value={background} onChange={(e) => setBackground(e.target.value)}>
-          {tables.backgrounds.map((b) => (
+          {tables.backgrounds.filter((b) => b.forProtagonist).map((b) => (
             <option key={b.id} value={b.id}>
               {b.name}
             </option>
           ))}
         </select>
+      </section>
+
+      <section className="field">
+        <label>시작 용병</label>
+        <ul className="rows">
+          {tables.roster
+            .filter((r) => r.startingCandidate && (mode === 'guildMaster' || r.id !== leaving))
+            .map((r) => (
+              <li key={r.id} className="row-item">
+                <span className="strong">{r.name}</span>
+                <span className="tags">
+                  <ElementTag id={r.element} />
+                  <RoleTag id={r.role} />
+                  <span className="muted small">Lv{r.initialLevel}</span>
+                </span>
+              </li>
+            ))}
+        </ul>
+        {mode === 'opener' && leavingRow && (
+          <p className="hint">
+            주인공({tables.roles.find((r) => r.id === role)?.name})과{' '}
+            {leavingRow.role === role ? '역할이 겹치는' : '같은 분류(전위·딜러·지원)인'} {leavingRow.name}은(는) 합류하지 않습니다.
+          </p>
+        )}
       </section>
 
       <section className="field">

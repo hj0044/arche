@@ -14,7 +14,9 @@
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "sim": "tsx scripts/sim.ts",
-    "days": "tsx scripts/days.ts"
+    "days": "tsx scripts/days.ts",
+    "import-roster": "tsx scripts/import-roster.ts",
+    "balance": "tsx scripts/balance.ts"
   },
   "dependencies": {
     "react": "^19.3.1",
