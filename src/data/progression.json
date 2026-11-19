@@ -35,5 +35,6 @@
     "speed": 1.0,
     "initialLevel": 1
   },
-  "reportHistoryLimit": 20
+  "reportHistoryLimit": 20,
+  "stablePassageRewardRatio": 0.5
 }

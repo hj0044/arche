@@ -13,6 +13,7 @@ import progressionJson from './progression.json';
 import factionsJson from './factions.json';
 import monstersJson from './monsters.json';
 import rosterJson from './roster.json';
+import travelJson from './travel.json';
 
 export type Range = [number, number];
 export type StatId = 'hp' | 'atk' | 'def' | 'spd';
@@ -92,6 +93,15 @@ export interface ProgressionTable {
   protagonistGrowth: { cap: number; speed: number; initialLevel: number };
   /** 전투 로그까지 보관하는 최근 복귀 보고 수 */
   reportHistoryLimit: number;
+  /** 안정화된 통로를 다시 공략할 때 보상 배율 */
+  stablePassageRewardRatio: number;
+}
+
+/** 도시 간 편도 이동 일수 */
+export interface TravelTable {
+  sameCityDays: number;
+  defaultDays: number;
+  routes: { between: string[]; days: number }[];
 }
 
 export interface FactionRow { id: string; name: string; type: string; typeName: string; recruitPool?: boolean }
@@ -144,6 +154,7 @@ export interface GameTables {
   factions: FactionRow[];
   monsters: MonsterRow[];
   roster: RosterRow[];
+  travel: TravelTable;
 }
 
 export const cities: readonly CityRow[] = citiesJson as CityRow[];
@@ -163,6 +174,7 @@ export const tables: GameTables = {
   factions: factionsJson as FactionRow[],
   monsters: monstersJson,
   roster: rosterJson,
+  travel: travelJson,
 };
 
 export function findCity(id: string): CityRow | undefined {
@@ -184,3 +196,9 @@ export const getMonster = (t: GameTables, id: string) => byId(t.monsters, id, '�
 export const getFaction = (t: GameTables, id: string) => byId(t.factions, id, '세력');
 export const getMaterial = (t: GameTables, id: string) => byId(t.materials, id, '재료');
 export const getCity = (t: GameTables, id: string) => byId(t.cities, id, '도시');
+
+export function travelDays(t: GameTables, from: string, to: string): number {
+  if (from === to) return t.travel.sameCityDays;
+  const route = t.travel.routes.find((r) => r.between.includes(from) && r.between.includes(to));
+  return route ? route.days : t.travel.defaultDays;
+}
