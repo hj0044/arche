@@ -239,9 +239,15 @@ export function pickCandidateToLeave(tables: GameTables, protagonistRole: string
   return (sameRole.at(-1) ?? sameGroup.at(-1) ?? candidates.at(-1))?.id;
 }
 
-function spawnRiftInto(tables: GameTables, state: GameState, cityId: string, rngSeed: string, tier?: string): Rift {
+function spawnRiftInto(
+  tables: GameTables,
+  state: GameState,
+  cityId: string,
+  rngSeed: string,
+  fixed?: { tier: string; grade?: string },
+): Rift {
   state.counters.rift += 1;
-  const rift = generateRift(tables, cityId, state.day, `r${state.counters.rift}`, createRng(rngSeed), tier);
+  const rift = generateRift(tables, cityId, state.day, `r${state.counters.rift}`, createRng(rngSeed), fixed);
   state.rifts.push(rift);
   return rift;
 }
