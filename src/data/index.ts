@@ -8,6 +8,11 @@ import monsterGradesJson from './monster-grades.json';
 import riftTiersJson from './rift-tiers.json';
 import combatJson from './combat.json';
 import injuriesJson from './injuries.json';
+import materialsJson from './materials.json';
+import progressionJson from './progression.json';
+import factionsJson from './factions.json';
+import monstersJson from './monsters.json';
+import rosterJson from './roster.json';
 
 export type Range = [number, number];
 export type StatId = 'hp' | 'atk' | 'def' | 'spd';
@@ -15,7 +20,12 @@ export type Stats = Record<StatId, number>;
 export type Row = 'front' | 'back';
 export type Side = 'ally' | 'enemy';
 
-export interface CityRow { id: string; name: string; summary: string }
+export interface CityRow {
+  id: string;
+  name: string;
+  summary: string;
+  riftSpawn: { maxActive: number; dailySpawnChance: number; initialCount: number; tierWeights: Record<string, number> };
+}
 
 export interface ElementRow { id: string; name: string; loreName: string; strongAgainst: string[] }
 
@@ -58,7 +68,46 @@ export interface RiftTierRow {
   monsterLevel: Range;
   deadlineDays: Range;
   durationDays: Range;
+  /** 보상 설명(화면용) */
   reward: string;
+  enemyCount: Range;
+  rewards: { zero: Range; arche: Range; materials: Record<string, Range> };
+  /** 승리하면 항로 안정화 기록을 남긴다(1단계는 기록만). */
+  stabilizes: boolean;
+  names: string[];
+}
+
+export interface MaterialRow { id: string; name: string; world: string; note: string }
+
+export type Outcome = 'victory' | 'retreat' | 'defeat';
+
+export interface ProgressionTable {
+  startingResources: { zero: number; arche: number };
+  expToNextLevel: { base: number; perLevel: number };
+  expByOutcome: Record<Outcome, number>;
+  expTierMultiplier: Record<string, number>;
+  rewardRatioByOutcome: Record<Outcome, number>;
+  levelUpArcheCost: { base: number; perLevel: number };
+  recruitZeroCost: { base: number; perLevel: number };
+  protagonistGrowth: { cap: number; speed: number; initialLevel: number };
+  /** 전투 로그까지 보관하는 최근 복귀 보고 수 */
+  reportHistoryLimit: number;
+}
+
+export interface FactionRow { id: string; name: string; type: string; typeName: string; recruitPool?: boolean }
+
+export interface MonsterRow { id: string; name: string; role: string; element: string; grades: string[] }
+
+export interface RosterRow {
+  id: string;
+  name: string;
+  element: string;
+  role: string;
+  initialLevel: number;
+  /** cap: 성장 한계(최대 레벨), speed: 성장 속도(경험치 배율) */
+  growth: { cap: number; speed: number };
+  /** 'guild'는 플레이어 길드, 그 밖에는 factions.json의 id */
+  faction: string;
 }
 
 export interface CombatTable {
@@ -73,7 +122,7 @@ export interface CombatTable {
 
 export interface InjuryTable {
   severities: { id: string; name: string; days: Range }[];
-  heavyChanceByOutcome: Record<'victory' | 'retreat' | 'defeat', number>;
+  heavyChanceByOutcome: Record<Outcome, number>;
   healerReductionDays: number;
   minimumDays: number;
   healerRoles: string[];
@@ -89,9 +138,15 @@ export interface GameTables {
   riftTiers: RiftTierRow[];
   combat: CombatTable;
   injuries: InjuryTable;
+  cities: CityRow[];
+  materials: MaterialRow[];
+  progression: ProgressionTable;
+  factions: FactionRow[];
+  monsters: MonsterRow[];
+  roster: RosterRow[];
 }
 
-export const cities: readonly CityRow[] = citiesJson;
+export const cities: readonly CityRow[] = citiesJson as CityRow[];
 
 export const tables: GameTables = {
   elements: elementsJson,
@@ -102,6 +157,12 @@ export const tables: GameTables = {
   riftTiers: riftTiersJson as RiftTierRow[],
   combat: combatJson as CombatTable,
   injuries: injuriesJson as InjuryTable,
+  cities: citiesJson as CityRow[],
+  materials: materialsJson,
+  progression: progressionJson as ProgressionTable,
+  factions: factionsJson as FactionRow[],
+  monsters: monstersJson,
+  roster: rosterJson,
 };
 
 export function findCity(id: string): CityRow | undefined {
@@ -119,3 +180,7 @@ export const getRole = (t: GameTables, id: string) => byId(t.roles, id, '역할'
 export const getSkill = (t: GameTables, id: string) => byId(t.skills, id, '스킬');
 export const getMonsterGrade = (t: GameTables, id: string) => byId(t.monsterGrades, id, '몬스터 등급');
 export const getRiftTier = (t: GameTables, id: string) => byId(t.riftTiers, id, '리프트 등급');
+export const getMonster = (t: GameTables, id: string) => byId(t.monsters, id, '몬스터');
+export const getFaction = (t: GameTables, id: string) => byId(t.factions, id, '세력');
+export const getMaterial = (t: GameTables, id: string) => byId(t.materials, id, '재료');
+export const getCity = (t: GameTables, id: string) => byId(t.cities, id, '도시');

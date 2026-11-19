@@ -1,0 +1,10 @@
+[
+  { "id": "m001", "name": "한도윤", "element": "frost",     "role": "shield",    "initialLevel": 3, "growth": { "cap": 30, "speed": 1.0 }, "faction": "guild" },
+  { "id": "m002", "name": "서지호", "element": "fire",      "role": "warrior",   "initialLevel": 2, "growth": { "cap": 35, "speed": 1.2 }, "faction": "guild" },
+  { "id": "m003", "name": "유하린", "element": "lightning", "role": "archer",    "initialLevel": 2, "growth": { "cap": 40, "speed": 0.9 }, "faction": "guild" },
+  { "id": "m004", "name": "정예린", "element": "light",     "role": "healer",    "initialLevel": 1, "growth": { "cap": 35, "speed": 1.1 }, "faction": "guild" },
+  { "id": "m005", "name": "백서연", "element": "wind",      "role": "mage",      "initialLevel": 4, "growth": { "cap": 25, "speed": 0.8 }, "faction": "free" },
+  { "id": "m006", "name": "강태오", "element": "earth",     "role": "warrior",   "initialLevel": 3, "growth": { "cap": 30, "speed": 1.0 }, "faction": "free" },
+  { "id": "m007", "name": "문채원", "element": "light",     "role": "commander", "initialLevel": 2, "growth": { "cap": 45, "speed": 1.3 }, "faction": "free" },
+  { "id": "m008", "name": "오세진", "element": "fire",      "role": "archer",    "initialLevel": 6, "growth": { "cap": 30, "speed": 1.0 }, "faction": "rrb" }
+]

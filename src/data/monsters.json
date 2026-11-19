@@ -1,0 +1,8 @@
+[
+  { "id": "void_hound",   "name": "공허 사냥개",   "role": "warrior",   "element": "void", "grades": ["low", "mid"] },
+  { "id": "husk_guard",   "name": "껍데기 수호자", "role": "shield",    "element": "void", "grades": ["low", "mid", "high"] },
+  { "id": "spore_spitter","name": "잠식 포자",     "role": "archer",    "element": "void", "grades": ["low", "mid", "high"] },
+  { "id": "rift_caller",  "name": "균열 술사",     "role": "mage",      "element": "void", "grades": ["mid", "high", "extreme"] },
+  { "id": "devourer",     "name": "포식 거수",     "role": "warrior",   "element": "void", "grades": ["high", "extreme"] },
+  { "id": "hollow_herald","name": "공동의 전령",   "role": "commander", "element": "void", "grades": ["high", "extreme"] }
+]
