@@ -51,6 +51,7 @@
   - 설치: `npm ci` (처음이면 `npm install`)
   - 실행(개발 서버): `npm run dev`
   - 테스트: `npm test` (감시 모드는 `npm run test:watch`)
+  - 샘플 전투 로그: `npm run sim -- [시드] [몬스터 레벨] [몬스터 등급]`
   - 타입 검사: `npm run typecheck`
   - 빌드: `npm run build` → `dist/`
   - 빌드 결과 미리보기: `npm run preview`

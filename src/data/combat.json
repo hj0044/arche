@@ -1,0 +1,37 @@
+{
+  "party": {
+    "maxSize": 5,
+    "maxPerRow": 5
+  },
+  "maxRounds": 15,
+  "element": {
+    "advantage": 1.3,
+    "disadvantage": 0.75,
+    "neutral": 1.0
+  },
+  "composition": {
+    "groups": [
+      "vanguard",
+      "damage",
+      "support"
+    ],
+    "bonusPerPresentGroup": 0.05,
+    "penaltyPerMissingGroup": 0.1,
+    "appliesToSides": [
+      "ally"
+    ]
+  },
+  "offRow": {
+    "damageDealtMultiplier": 0.85,
+    "damageTakenMultiplier": 1.15
+  },
+  "damage": {
+    "defenseConstant": 100,
+    "varianceMin": 0.9,
+    "varianceMax": 1.1,
+    "minimum": 1
+  },
+  "ai": {
+    "healThreshold": 0.7
+  }
+}

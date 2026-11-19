@@ -1,0 +1,8 @@
+[
+  { "id": "crack", "name": "균열", "monsterGrades": ["low", "mid"],      "monsterLevel": [1, 10],
+    "deadlineDays": [3, 5],   "durationDays": [1, 2], "reward": "자원 소량, 제로" },
+  { "id": "gate",  "name": "관문", "monsterGrades": ["mid", "high"],     "monsterLevel": [8, 20],
+    "deadlineDays": [5, 8],   "durationDays": [2, 4], "reward": "자원 중간, 고유 재료" },
+  { "id": "route", "name": "항로", "monsterGrades": ["high", "extreme"], "monsterLevel": [18, 35],
+    "deadlineDays": [10, 15], "durationDays": [4, 7], "reward": "자원 대량, 항로 안정화" }
+]
