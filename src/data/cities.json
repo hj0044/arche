@@ -1,14 +1,81 @@
 [
-  { "id": "seoul", "name": "서울", "summary": "균열이 잦아 입문하기 좋은 도시.",
-    "riftSpawn": { "maxActive": 5, "dailySpawnChance": 0.75, "initialCount": 3, "initialGuaranteed": ["crack", "crack"],
-                   "tierWeights": { "crack": 7, "gate": 3, "route": 0.5 }, "levelSkew": 2.5 },
-    "recruitment": { "otherHometownCostMultiplier": 1.5 } },
-  { "id": "tokyo", "name": "도쿄", "summary": "관문 비중이 높고 항로는 열리지 않는 도시.",
-    "riftSpawn": { "maxActive": 4, "dailySpawnChance": 0.6, "initialCount": 3, "initialGuaranteed": ["crack"],
-                   "tierWeights": { "crack": 4, "gate": 6, "route": 0 }, "levelSkew": 1.8 },
-    "recruitment": { "otherHometownCostMultiplier": 1.5 } },
-  { "id": "newyork", "name": "뉴욕", "summary": "영입 기회가 많고 항로가 가끔 열리는 도시.",
-    "riftSpawn": { "maxActive": 5, "dailySpawnChance": 0.6, "initialCount": 3, "initialGuaranteed": ["crack"],
-                   "tierWeights": { "crack": 5, "gate": 4, "route": 1.5 }, "levelSkew": 1.8 },
-    "recruitment": { "otherHometownCostMultiplier": 1.0 } }
+  {
+    "id": "seoul",
+    "name": "서울",
+    "summary": "균열이 잦아 입문하기 좋은 도시.",
+    "riftSpawn": {
+      "maxActive": 5,
+      "dailySpawnChance": 0.75,
+      "initialCount": 3,
+      "initialGuaranteed": [
+        {
+          "tier": "crack",
+          "grade": "low"
+        },
+        {
+          "tier": "crack",
+          "grade": "low"
+        }
+      ],
+      "tierWeights": {
+        "crack": 7,
+        "gate": 3,
+        "route": 0.5
+      },
+      "levelSkew": 2.5
+    },
+    "recruitment": {
+      "otherHometownCostMultiplier": 1.5
+    }
+  },
+  {
+    "id": "tokyo",
+    "name": "도쿄",
+    "summary": "관문 비중이 높고 항로는 열리지 않는 도시.",
+    "riftSpawn": {
+      "maxActive": 4,
+      "dailySpawnChance": 0.6,
+      "initialCount": 3,
+      "initialGuaranteed": [
+        {
+          "tier": "crack",
+          "grade": "low"
+        }
+      ],
+      "tierWeights": {
+        "crack": 4,
+        "gate": 6,
+        "route": 0
+      },
+      "levelSkew": 1.8
+    },
+    "recruitment": {
+      "otherHometownCostMultiplier": 1.5
+    }
+  },
+  {
+    "id": "newyork",
+    "name": "뉴욕",
+    "summary": "영입 기회가 많고 항로가 가끔 열리는 도시.",
+    "riftSpawn": {
+      "maxActive": 5,
+      "dailySpawnChance": 0.6,
+      "initialCount": 3,
+      "initialGuaranteed": [
+        {
+          "tier": "crack",
+          "grade": "low"
+        }
+      ],
+      "tierWeights": {
+        "crack": 5,
+        "gate": 4,
+        "route": 1.5
+      },
+      "levelSkew": 1.8
+    },
+    "recruitment": {
+      "otherHometownCostMultiplier": 1.0
+    }
+  }
 ]

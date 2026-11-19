@@ -34,8 +34,8 @@ export interface CityRow {
     maxActive: number;
     dailySpawnChance: number;
     initialCount: number;
-    /** 시작 리프트 중 앞쪽을 이 등급으로 고정한다(입문용) */
-    initialGuaranteed: string[];
+    /** 시작 리프트 중 앞쪽을 이 리프트 등급·몬스터 등급으로 고정한다(입문용) */
+    initialGuaranteed: { tier: string; grade?: string }[];
     tierWeights: Record<string, number>;
     /** 1보다 크면 등급 레벨 범위 안에서 낮은 레벨이 더 자주 나온다 */
     levelSkew: number;

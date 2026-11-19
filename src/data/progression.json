@@ -23,8 +23,8 @@
     "defeat": 0
   },
   "levelUpArcheCost": {
-    "base": 5,
-    "perLevel": 3
+    "base": 4,
+    "perLevel": 2
   },
   "recruitZeroCost": {
     "base": 100,

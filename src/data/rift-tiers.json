@@ -41,7 +41,7 @@
       "잔류 균열"
     ],
     "monsterGradeWeights": {
-      "low": 3,
+      "low": 4,
       "mid": 1
     }
   },
@@ -117,8 +117,8 @@
     ],
     "reward": "자원 대량, 항로 안정화",
     "enemyCount": [
-      4,
-      5
+      3,
+      4
     ],
     "rewards": {
       "zero": [

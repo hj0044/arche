@@ -45,11 +45,18 @@ function weightedPick(weights: Record<string, number>, rng: Rng): string {
 const rollRange = (rng: Rng, [lo, hi]: [number, number]) => rng.int(lo, hi);
 
 /** 도시의 출현 가중치로 등급을 골라 리프트 하나를 만든다. 1단계 몬스터는 모두 흑막 쪽이다. */
-export function generateRift(tables: GameTables, cityId: string, day: number, id: string, rng: Rng, fixedTier?: string): Rift {
+export function generateRift(
+  tables: GameTables,
+  cityId: string,
+  day: number,
+  id: string,
+  rng: Rng,
+  fixed?: { tier: string; grade?: string },
+): Rift {
   const city = tables.cities.find((c) => c.id === cityId);
   if (!city) throw new Error(`도시 데이터에 없는 id: ${cityId}`);
-  const tier = getRiftTier(tables, fixedTier ?? weightedPick(city.riftSpawn.tierWeights, rng));
-  const grade = weightedPick(tier.monsterGradeWeights, rng);
+  const tier = getRiftTier(tables, fixed?.tier ?? weightedPick(city.riftSpawn.tierWeights, rng));
+  const grade = fixed?.grade ?? weightedPick(tier.monsterGradeWeights, rng);
   // 몬스터 등급의 레벨 범위와 리프트 등급의 레벨 범위가 겹치는 구간에서 고른다.
   const gradeRange = getMonsterGrade(tables, grade).level;
   const lo = Math.max(gradeRange[0], tier.monsterLevel[0]);
