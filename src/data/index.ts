@@ -352,6 +352,8 @@ export interface UiTable {
   deadlineWarnDays: number;
   /** 영입 확인에서 버틸 일수가 이보다 적으면 경고 색 */
   upkeepWarnDays: number;
+  /** 출전 가능 인원이 이보다 적으면 '지금 상황'에서 이유별 인원을 보인다 */
+  lowAvailableWarn: number;
 }
 
 export const cities: readonly CityRow[] = citiesJson as CityRow[];

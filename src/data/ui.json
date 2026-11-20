@@ -11,5 +11,6 @@
   "recentReportsOnHome": 3,
   "toastMs": 2500,
   "deadlineWarnDays": 1,
-  "upkeepWarnDays": 7
+  "upkeepWarnDays": 7,
+  "lowAvailableWarn": 3
 }

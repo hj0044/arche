@@ -19,6 +19,7 @@ export function PartyBuilder({ ctx, riftId }: { ctx: Ctx; riftId: string }) {
   const rift = s.rifts.find((r) => r.id === riftId);
   const [party, setParty] = useState<PartyMember[]>([]);
   const [error, setError] = useState('');
+  const [showDetails, setShowDetails] = useState(false);
   const { maxSize } = tables.combat.party;
 
   // 전투력과 예상 위험도: 편성이 바뀔 때만 다시 계산한다(같은 입력은 엔진에서도 메모이제이션).
@@ -54,6 +55,7 @@ export function PartyBuilder({ ctx, riftId }: { ctx: Ctx; riftId: string }) {
             : '불가';
   // 이미 짜 둔 파티에 오늘 쓸 수 없게 된 용병이 있으면 빼고 알린다(거부 판정은 하루 시작 때 정해진다).
   const dropped = party.filter((p) => !isAvailable(s, p.mercId));
+  const trainingCount = candidates.filter((m) => assignedFacility(s.facilities, m.id)).length;
 
   const toggle = (id: string) => {
     setError('');
@@ -107,29 +109,8 @@ export function PartyBuilder({ ctx, riftId }: { ctx: Ctx; riftId: string }) {
       <RiftCard rift={rift} day={s.day} baseCityId={s.baseCityId} facilities={s.facilities} compact />
 
       <section className="panel party-summary" aria-live="polite">
+        {/* 첫 화면 우선: 위험도, 복귀일, 한 명당 경험치. 나머지는 "자세히"로 펼친다. */}
         <div className="summary-grid">
-          <span className="muted small">복귀 예정</span>
-          <span className="strong">
-            {returnDay}일차 <span className="muted small">({returnDay - s.day}일 뒤{travel ? `, 이동 왕복 ${travel * 2}일 포함` : ''})</span>
-          </span>
-          <span className="muted small">길드 하루 유지비</span>
-          <span>제로 {num(guildUpkeepPerDay(tables, s))}</span>
-          <span className="muted small">
-            배치 {party.length}/{maxSize}
-          </span>
-          <span className="ellipsis">
-            {party.length === 0 ? (
-              <span className="muted">비어 있음</span>
-            ) : (
-              <>
-                {rowName.front} {front.length ? front.join(', ') : '-'} / {rowName.back} {back.length ? back.join(', ') : '-'}
-              </>
-            )}
-          </span>
-          <span className="muted small">전투력</span>
-          <span>
-            {risk ? num(risk.power) : '-'} <span className="muted small">/ 상대 추정 {risk ? fmtRange(risk.estimate.enemyPower) : '-'}</span>
-          </span>
           <span className="muted small">예상 위험도</span>
           <span className={risk && party.length ? `risk risk-${risk.estimate.worst.id}` : 'muted'}>
             {!risk || party.length === 0
@@ -139,12 +120,17 @@ export function PartyBuilder({ ctx, riftId }: { ctx: Ctx; riftId: string }) {
                 : `${risk.estimate.best.name} ~ ${risk.estimate.worst.name}`}
             {risk && party.length > 0 && risk.estimate.estimated && <span className="muted small"> (추정)</span>}
           </span>
+          <span className="muted small">복귀 예정</span>
+          <span className="strong">
+            {returnDay}일차 <span className="muted small">({returnDay - s.day}일 뒤{travel ? `, 이동 왕복 ${travel * 2}일 포함` : ''})</span>
+          </span>
           <span className="muted small">예상 경험치</span>
           <span>{expPreview}</span>
-          <span className="muted small">구성</span>
-          <span className={comp >= 1 ? 'ok' : 'warn'}>
-            {party.length ? pct(comp - 1) : '-'}
-            {party.length > 0 && (missing.length ? ` · 없음: ${missing.map((g) => GROUP_NAME[g] ?? g).join(', ')}` : ' · 전위·딜러·지원')}
+          <span className="muted small">
+            배치 {party.length}/{maxSize}
+          </span>
+          <span className={`ellipsis ${party.length && comp < 1 ? 'warn' : ''}`}>
+            {party.length === 0 ? <span className="muted">비어 있음</span> : `구성 ${pct(comp - 1)}${missing.length ? ` · 없음: ${missing.map((g) => GROUP_NAME[g] ?? g).join(', ')}` : ''}`}
           </span>
         </div>
         <div className="btn-row">
@@ -155,15 +141,41 @@ export function PartyBuilder({ ctx, riftId }: { ctx: Ctx; riftId: string }) {
             비우기
           </button>
         </div>
+        <button className="btn block details-toggle" aria-expanded={showDetails} onClick={() => setShowDetails(!showDetails)}>
+          <span>자세히</span>
+          <span className="muted small">전투력·유지비·도움말 {showDetails ? '▴' : '▾'}</span>
+        </button>
+        {showDetails && (
+          <div className="summary-grid">
+            <span className="muted small">전투력</span>
+            <span>
+              {risk ? num(risk.power) : '-'} <span className="muted small">/ 상대 추정 {risk ? fmtRange(risk.estimate.enemyPower) : '-'}</span>
+            </span>
+            <span className="muted small">길드 하루 유지비</span>
+            <span>제로 {num(guildUpkeepPerDay(tables, s))}</span>
+            <span className="muted small">열 배치</span>
+            <span className="ellipsis">
+              {rowName.front} {front.length ? front.join(', ') : '-'} / {rowName.back} {back.length ? back.join(', ') : '-'}
+            </span>
+            <span className="muted small">도움말</span>
+            <span className="small muted">
+              예상 위험도는 보이는 정보로 여러 번 모의 전투한 결과이며, 실제 전투에는 변수가 있어 보장되지 않습니다. 탭해서 넣고 빼며, 넣은 용병은 오른쪽에서
+              열을 고릅니다. 기본 위치가 아닌 열은 주는 피해가 줄고 받는 피해가 늡니다.
+            </span>
+          </div>
+        )}
       </section>
 
-      <p className="hint">예상 위험도는 보이는 정보로 여러 번 모의 전투한 결과입니다. 실제 전투에는 변수가 있어 보장되지 않습니다.</p>
+      {trainingCount > 0 && (
+        <button className="link" onClick={() => ctx.go({ name: 'base' })}>
+          훈련 중 {trainingCount}명은 파견할 수 없습니다 · 배치 해제하러 거점으로 ›
+        </button>
+      )}
       {dropped.length > 0 && (
         <p className="warn small" role="status">
           {dropped.map((p) => merc(p.mercId).name).join(', ')}은(는) 오늘 파견할 수 없어 파티에서 빠집니다.
         </p>
       )}
-      <p className="hint">탭해서 넣고 빼며, 넣은 용병은 오른쪽에서 열을 고릅니다. 기본 위치가 아닌 열은 주는 피해가 줄고 받는 피해가 늡니다.</p>
 
       <ul className="rows candidate-list">
         {candidates.map((m) => {
