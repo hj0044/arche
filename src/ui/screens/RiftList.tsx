@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { tables, travelDays } from '../../data';
 import type { Rift } from '../../engine/rift';
 import { AppShell } from '../AppShell';
-import { ElementTag, Segmented } from '../components';
-import { gradeName, materialName, monsterName, num, tierName } from '../format';
+import { ElementTag, OmenBadge, Segmented } from '../components';
+import { gradeName, materialName, monsterName, num, omenText, tierName } from '../format';
 import { MainTabs } from '../MainTabs';
 import type { Ctx } from '../nav';
 
@@ -20,6 +20,7 @@ export function RiftCard({ rift, day, baseCityId, onClick }: { rift: Rift; day: 
       <div className="rift-head">
         <span className="tag tier">{tierName(rift.tier)}</span>
         <span className="card-title">{rift.name}</span>
+        {rift.omen && <OmenBadge />}
         {rift.stable ? (
           <span className="pill ok">안정화</span>
         ) : (
@@ -36,6 +37,7 @@ export function RiftCard({ rift, day, baseCityId, onClick }: { rift: Rift; day: 
           소요 {total}일{travel ? ` (이동 왕복 ${travel * 2}일)` : ''}
         </span>
       </div>
+      {rift.omen && <div className="omen-text small">{omenText(rift.omen.textId)}</div>}
       <div className="rift-enemies muted small">
         {[...counts].map(([id, n]) => `${monsterName(id)}×${n}`).join(' · ')}
       </div>

@@ -88,3 +88,12 @@ export function Segmented<T extends string>(props: {
     </div>
   );
 }
+
+/** 흑막 징조 표식. 색만이 아니라 글자로도 구분한다. */
+export function OmenBadge() {
+  return (
+    <span className="tag omen" aria-label="징조 표식">
+      <span aria-hidden="true">◈</span> 징조
+    </span>
+  );
+}

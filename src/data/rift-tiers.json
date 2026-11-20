@@ -43,7 +43,8 @@
     "monsterGradeWeights": {
       "low": 4,
       "mid": 1
-    }
+    },
+    "omenChance": 0
   },
   {
     "id": "gate",
@@ -94,7 +95,8 @@
     "monsterGradeWeights": {
       "mid": 3,
       "high": 1
-    }
+    },
+    "omenChance": 0
   },
   {
     "id": "route",
@@ -144,6 +146,7 @@
     "monsterGradeWeights": {
       "high": 3,
       "extreme": 1
-    }
+    },
+    "omenChance": 1.0
   }
 ]

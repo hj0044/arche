@@ -29,6 +29,16 @@ export interface Rift {
   reward: RiftReward;
   /** 안정화된 통로: 마감이 없고 여러 번 공략할 수 있다 */
   stable?: boolean;
+  /**
+   * 흑막 징조 표식. 1단계는 연출(배지와 문구)만 하고 전투·보상·난이도에 영향을 주지 않는다.
+   * 없으면 표식 없음. 징조 단계(공허 농도, 간부급·본체)는 확장에서 이 객체에 필드를 얹는다.
+   */
+  omen?: RiftOmen;
+}
+
+export interface RiftOmen {
+  /** omens.json의 문구 id */
+  textId: string;
 }
 
 function weightedPick(weights: Record<string, number>, rng: Rng): string {
@@ -73,16 +83,24 @@ export function generateRift(
   });
   const materials: Record<string, number> = {};
   for (const [mat, range] of Object.entries(tier.rewards.materials)) materials[mat] = rollRange(rng, range);
+  const name = `${city.name} ${rng.pick(tier.names)}`;
+  const deadlineDay = day + rollRange(rng, tier.deadlineDays);
+  const durationDays = rollRange(rng, tier.durationDays);
+  const reward = { zero: rollRange(rng, tier.rewards.zero), arche: rollRange(rng, tier.rewards.arche), materials };
+  // 징조 표식은 다른 값을 모두 정한 뒤에 굴려서, 표식 확률이나 문구를 바꿔도 리프트의 나머지 내용은 그대로다.
+  const omen: RiftOmen | undefined =
+    tables.omens.length > 0 && rng.chance(tier.omenChance) ? { textId: rng.pick(tables.omens).id } : undefined;
   return {
     id,
     cityId,
     tier: tier.id,
-    name: `${city.name} ${rng.pick(tier.names)}`,
+    name,
     appearedDay: day,
-    deadlineDay: day + rollRange(rng, tier.deadlineDays),
-    durationDays: rollRange(rng, tier.durationDays),
+    deadlineDay,
+    durationDays,
     enemies,
-    reward: { zero: rollRange(rng, tier.rewards.zero), arche: rollRange(rng, tier.rewards.arche), materials },
+    reward,
+    ...(omen ? { omen } : {}),
   };
 }
 

@@ -181,3 +181,7 @@ input, select { min-height: var(--touch); padding: 0 12px; border-radius: 10px; 
 .chips.scroll { flex-shrink: 0; flex-wrap: nowrap; overflow-x: auto; margin: 0 -16px; padding: 0 16px 2px; scrollbar-width: none; }
 .chips.scroll::-webkit-scrollbar { display: none; }
 .chip.small { min-height: 40px; min-width: 0; padding: 0 12px; font-size: 0.8125rem; font-weight: 500; flex-shrink: 0; }
+
+/* 흑막 징조 표식 */
+.tag.omen { color: var(--el-void); background: rgba(178, 140, 255, 0.14); border: 1px solid rgba(178, 140, 255, 0.45); }
+.omen-text { color: #cdb8ff; margin: 0; font-style: italic; }
