@@ -153,6 +153,11 @@ export interface VisibleReward {
 
 /** 화면과 자동 편성이 쓰는 리프트 정보. 실제 값은 바꾸지 않는다. */
 export interface VisibleRift {
+  /** 리프트 id(위험도 추정 시드용) */
+  riftId: string;
+  tier: string;
+  /** 몬스터 등급(화면에 항상 보임) */
+  grade: string;
   scouting: ScoutingRow;
   /** 공개되지 않으면 null */
   elements: string[] | null;
@@ -208,6 +213,9 @@ export function visibleRift(tables: GameTables, fs: FacilitiesState, rift: Rift)
   const counts: Record<string, number> = {};
   for (const e of rift.enemies) counts[e.monsterId] = (counts[e.monsterId] ?? 0) + 1;
   return {
+    riftId: rift.id,
+    tier: rift.tier,
+    grade: rift.enemies[0].grade,
     scouting: row,
     elements: row.revealElements ? elements : null,
     monsterIds,

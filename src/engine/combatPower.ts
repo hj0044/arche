@@ -1,0 +1,115 @@
+/**
+ * 전투력과 예상 위험도(지시서 010). 화면에 의존하지 않는 순수 함수.
+ * 위험도는 탐지소로 "보이는 정보"(VisibleRift)만 받는다. 실제 Rift를 받지 않으므로 숨은 값을 쓸 수 없다.
+ * 시뮬레이션은 전용 시드(power:리프트id:회차)만 써서 세이브 상태와 실제 전투 난수 흐름을 건드리지 않는다.
+ */
+import { getRole, type GameTables } from '../data';
+import { resolveCombat, type CombatSlot } from './combat';
+import type { ValueRange, VisibleRift } from './facilities';
+import { createMonster, type Unit } from './unit';
+
+export function unitPower(tables: GameTables, u: Unit): number {
+  const w = tables.combatPower.statWeights;
+  return u.stats.hp * w.hp + u.stats.atk * w.atk + u.stats.def * w.def + u.stats.spd * w.spd;
+}
+
+/** 파티 전투력: 파티원의 실제 현재 스탯(충성도 보정 포함, 호출 쪽이 mercToUnit으로 만든 유닛) 가중 합 */
+export function combatPower(tables: GameTables, party: CombatSlot[]): number {
+  return Math.round(party.reduce((s, p) => s + unitPower(tables, p.unit), 0));
+}
+
+/** 보이는 정보의 한 경우(레벨, 마릿수)로 상대 무리를 만든다. 정확한 구성이 보이면 그 구성을 쓴다. */
+export function estimatedEnemies(tables: GameTables, v: VisibleRift, level: number, count: number): CombatSlot[] {
+  const species: string[] = [];
+  if (v.monsterCounts) {
+    for (const [id, n] of Object.entries(v.monsterCounts)) for (let i = 0; i < n; i++) species.push(id);
+  } else {
+    for (let i = 0; i < count; i++) species.push(v.monsterIds[i % v.monsterIds.length]);
+  }
+  return species.map((id, i) => {
+    const m = tables.monsters.find((x) => x.id === id);
+    if (!m) throw new Error(`몬스터 데이터에 없는 id: ${id}`);
+    return {
+      unit: createMonster(tables, { id: `est${i}`, name: m.name, element: m.element, role: m.role, grade: v.grade, level }),
+      row: getRole(tables, m.role).defaultRow,
+    };
+  });
+}
+
+/** 보이는 범위의 양 끝 조합(레벨 × 마릿수). 정확하면 한 경우뿐 */
+export function visibleCases(v: VisibleRift): { level: number; count: number }[] {
+  const levels = [...new Set([v.level[0], v.level[1]])];
+  const counts = v.monsterCounts ? [Object.values(v.monsterCounts).reduce((a, b) => a + b, 0)] : [...new Set([v.count[0], v.count[1]])];
+  return levels.flatMap((level) => counts.map((count) => ({ level, count })));
+}
+
+export interface RiskTierRow {
+  id: string;
+  name: string;
+  minWinRate: number;
+}
+
+export function riskTierOf(tables: GameTables, winRate: number): RiskTierRow {
+  const tiers = [...tables.combatPower.riskTiers].sort((a, b) => b.minWinRate - a.minWinRate);
+  return tiers.find((t) => winRate >= t.minWinRate) ?? tiers[tiers.length - 1];
+}
+
+export interface RiskEstimate {
+  /** 가장 좋은 경우의 단계 */
+  best: RiskTierRow;
+  /** 가장 나쁜 경우의 단계 */
+  worst: RiskTierRow;
+  /** 보이는 정보가 범위라 여러 경우를 계산했는가("추정" 표시) */
+  estimated: boolean;
+  /** 상대 추정 전투력(범위) */
+  enemyPower: ValueRange;
+}
+
+/** 승률(0~1): 전용 시드 power:리프트id:회차로 simulations번 */
+export function simulatedWinRate(tables: GameTables, party: CombatSlot[], enemies: CombatSlot[], riftId: string): number {
+  const n = tables.combatPower.simulations;
+  let win = 0;
+  for (let i = 0; i < n; i++) {
+    if (resolveCombat(tables, { allies: party, enemies, seed: `power:${riftId}:${i}` }).outcome === 'victory') win++;
+  }
+  return n > 0 ? win / n : 0;
+}
+
+const memo = new Map<string, RiskEstimate>();
+const MEMO_LIMIT = 200;
+
+/** 예상 위험도. 같은 입력이면 같은 결과(메모이제이션). */
+export function estimateRisk(tables: GameTables, party: CombatSlot[], visible: VisibleRift): RiskEstimate {
+  const key = JSON.stringify([
+    party.map((p) => [p.unit.id, p.unit.level, p.unit.element, p.unit.role, p.unit.stats, p.row]),
+    visible.riftId,
+    visible.grade,
+    visible.level,
+    visible.count,
+    visible.monsterIds,
+    visible.monsterCounts,
+    tables.combatPower,
+  ]);
+  const hit = memo.get(key);
+  if (hit && tables === lastTables) return hit;
+  const cases = visibleCases(visible);
+  const order = [...tables.combatPower.riskTiers].sort((a, b) => b.minWinRate - a.minWinRate);
+  const rank = (t: RiskTierRow) => order.findIndex((x) => x.id === t.id);
+  let best: RiskTierRow | undefined;
+  let worst: RiskTierRow | undefined;
+  const powers: number[] = [];
+  for (const c of cases) {
+    const enemies = estimatedEnemies(tables, visible, c.level, c.count);
+    powers.push(combatPower(tables, enemies));
+    const tier = party.length ? riskTierOf(tables, simulatedWinRate(tables, party, enemies, visible.riftId)) : order[order.length - 1];
+    if (!best || rank(tier) < rank(best)) best = tier;
+    if (!worst || rank(tier) > rank(worst)) worst = tier;
+  }
+  const result: RiskEstimate = { best: best!, worst: worst!, estimated: cases.length > 1, enemyPower: [Math.min(...powers), Math.max(...powers)] };
+  if (tables !== lastTables) memo.clear();
+  lastTables = tables;
+  if (memo.size >= MEMO_LIMIT) memo.delete(memo.keys().next().value as string);
+  memo.set(key, result);
+  return result;
+}
+let lastTables: GameTables | undefined;

@@ -251,3 +251,8 @@ button.rift-main:active:not(:disabled) { background: var(--surface-2); }
 .loyalty-log { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
 .poach-news { margin: 0; padding: 8px 12px; border-radius: 10px; background: var(--surface-2); border-left: 3px solid var(--accent); }
 .assign-block { display: flex; flex-direction: column; gap: 6px; border-top: 1px solid var(--border); padding-top: 8px; }
+.risk { font-weight: 600; }
+.risk-safe { color: var(--ok); }
+.risk-fair { color: var(--text); }
+.risk-risky { color: var(--warn); }
+.risk-hopeless { color: var(--bad); }

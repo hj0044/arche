@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { getRole, tables, travelDays, type Row } from '../../data';
 import { autoParty } from '../../engine/autoParty';
+import { combatPower, estimateRisk } from '../../engine/combatPower';
 import { assignedFacility, getFacility, visibleRift } from '../../engine/facilities';
 import { compositionMultiplier, elementMultiplier } from '../../engine/combat';
-import { dispatch, expPerMemberAt, GameError, guildUpkeepPerDay, shareOf, isAvailable, isOnExpedition, refusedToday, type PartyMember } from '../../engine/game';
+import { dispatch, expPerMemberAt, GameError, guildUpkeepPerDay, mercToUnit, shareOf, isAvailable, isOnExpedition, refusedToday, type PartyMember } from '../../engine/game';
 import { AppShell } from '../AppShell';
 import { ElementTag, RoleTag } from '../components';
 import { elementName, num, pct, rowName } from '../format';
@@ -11,6 +12,7 @@ import type { Ctx } from '../nav';
 import { RiftCard } from './RiftList';
 
 const GROUP_NAME: Record<string, string> = { vanguard: '전위', damage: '딜러', support: '지원' };
+const fmtRange = (r: [number, number]) => (r[0] === r[1] ? num(r[0]) : `${num(r[0])}~${num(r[1])}`);
 
 export function PartyBuilder({ ctx, riftId }: { ctx: Ctx; riftId: string }) {
   const s = ctx.game.state;
@@ -18,6 +20,16 @@ export function PartyBuilder({ ctx, riftId }: { ctx: Ctx; riftId: string }) {
   const [party, setParty] = useState<PartyMember[]>([]);
   const [error, setError] = useState('');
   const { maxSize } = tables.combat.party;
+
+  // 전투력과 예상 위험도: 편성이 바뀔 때만 다시 계산한다(같은 입력은 엔진에서도 메모이제이션).
+  // 위험도는 탐지소로 보이는 정보만 쓴다.
+  const risk = useMemo(() => {
+    if (!rift) return null;
+    const slots = party
+      .filter((p) => s.mercenaries.some((m) => m.id === p.mercId))
+      .map((p) => ({ unit: mercToUnit(tables, s.mercenaries.find((m) => m.id === p.mercId)!), row: p.row }));
+    return { power: combatPower(tables, slots), estimate: estimateRisk(tables, slots, visibleRift(tables, s.facilities, rift)) };
+  }, [party, rift, s.mercenaries, s.facilities]);
 
   if (!rift) {
     return (
@@ -114,6 +126,19 @@ export function PartyBuilder({ ctx, riftId }: { ctx: Ctx; riftId: string }) {
               </>
             )}
           </span>
+          <span className="muted small">전투력</span>
+          <span>
+            {risk ? num(risk.power) : '-'} <span className="muted small">/ 상대 추정 {risk ? fmtRange(risk.estimate.enemyPower) : '-'}</span>
+          </span>
+          <span className="muted small">예상 위험도</span>
+          <span className={risk && party.length ? `risk risk-${risk.estimate.worst.id}` : 'muted'}>
+            {!risk || party.length === 0
+              ? '용병을 넣으면 보입니다'
+              : risk.estimate.best.id === risk.estimate.worst.id
+                ? risk.estimate.best.name
+                : `${risk.estimate.best.name} ~ ${risk.estimate.worst.name}`}
+            {risk && party.length > 0 && risk.estimate.estimated && <span className="muted small"> (추정)</span>}
+          </span>
           <span className="muted small">예상 경험치</span>
           <span>{expPreview}</span>
           <span className="muted small">구성</span>
@@ -132,6 +157,7 @@ export function PartyBuilder({ ctx, riftId }: { ctx: Ctx; riftId: string }) {
         </div>
       </section>
 
+      <p className="hint">예상 위험도는 보이는 정보로 여러 번 모의 전투한 결과입니다. 실제 전투에는 변수가 있어 보장되지 않습니다.</p>
       {dropped.length > 0 && (
         <p className="warn small" role="status">
           {dropped.map((p) => merc(p.mercId).name).join(', ')}은(는) 오늘 파견할 수 없어 파티에서 빠집니다.
