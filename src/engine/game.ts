@@ -3,6 +3,7 @@ import { resolveCombat, validateParty, type CombatEvent, type CombatSlot } from 
 import { rollInjuries, type Injury } from './injury';
 import { generateRift, riftEnemySlots, type Rift, type RiftReward } from './rift';
 import { createRng } from './rng';
+import { applyLoyalty, loyaltyTier, newLoyalty, type LoyaltyState } from './loyalty';
 import { statsForLevel, type Affiliation, type Unit } from './unit';
 
 export class GameError extends Error {}
@@ -24,8 +25,10 @@ export interface MercenaryState {
   /** recoverDay가 되면 회복한다. 복귀 당일은 부상 일수에 세지 않는다. */
   injury?: { severity: string; recoverDay: number };
   isProtagonist?: boolean;
-  /** 유지비 미납 누적(2단계 충성도 하락 요인 자리) */
+  /** 유지비 미납 누적(2단계부터 충성도 하락 요인) */
   unpaidUpkeep?: { days: number; zero: number };
+  /** 충성도(길드 소속 용병만, 개방자 주인공은 없음) */
+  loyalty?: LoyaltyState;
 }
 
 export interface MercProfile {
@@ -112,7 +115,10 @@ export type DayEvent =
   | { type: 'returned'; expeditionId: string; outcome: Outcome }
   | { type: 'riftExpired'; riftId: string; name: string }
   | { type: 'riftSpawned'; riftId: string; cityId: string }
-  | { type: 'upkeep'; paid: number; unpaid: number; unpaidMercIds: string[] };
+  | { type: 'upkeep'; paid: number; unpaid: number; unpaidMercIds: string[] }
+  | { type: 'loyaltyTier'; mercId: string; from: string; to: string }
+  | { type: 'departed'; mercId: string; factionId: string }
+  | { type: 'refused'; mercId: string };
 
 export interface NewGameOptions {
   seed: string;
@@ -138,7 +144,12 @@ export function isOnExpedition(state: GameState, mercId: string): boolean {
 /** 파견 가능: 길드 소속이고 부상이 없고 다른 파견 중이 아님 */
 export function isAvailable(state: GameState, mercId: string): boolean {
   const m = getMerc(state, mercId);
-  return isGuildMember(m) && !m.injury && !isOnExpedition(state, mercId);
+  return isGuildMember(m) && !m.injury && !isOnExpedition(state, mercId) && !refusedToday(state, m);
+}
+
+/** 오늘 파견을 거부했는가(하루 시작 때 정해진 채 그날 유지) */
+export function refusedToday(state: GameState, m: MercenaryState): boolean {
+  return m.loyalty?.refusedOnDay === state.day;
 }
 
 /** 다음 레벨까지 필요한 경험치. 성장 속도가 필요 경험치 배율이다(빠름 ×0.75, 보통 ×1.0, 느림 ×1.3). */
@@ -222,6 +233,14 @@ export function recruitInfo(tables: GameTables, state: GameState, mercId: string
   };
 }
 
+/** 충성도 구간의 능력 배율을 공격·방어에 적용한 스탯(전투 엔진은 만들어진 유닛만 안다) */
+export function loyaltyAdjustedStats(tables: GameTables, m: MercenaryState) {
+  const stats = statsForLevel(tables, m.role, m.level);
+  if (!m.loyalty) return stats;
+  const bonus = loyaltyTier(tables, m.loyalty.value).statBonus;
+  return { ...stats, atk: Math.round(stats.atk * (1 + bonus)), def: Math.round(stats.def * (1 + bonus)) };
+}
+
 export function mercToUnit(tables: GameTables, m: MercenaryState): Unit {
   const role = tables.roles.find((r) => r.id === m.role);
   if (!role) throw new GameError(`없는 역할: ${m.role}`);
@@ -231,10 +250,11 @@ export function mercToUnit(tables: GameTables, m: MercenaryState): Unit {
     element: m.element,
     role: m.role,
     level: m.level,
-    stats: statsForLevel(tables, m.role, m.level),
+    stats: loyaltyAdjustedStats(tables, m),
     skills: [...role.skills],
     affiliation: m.affiliation,
     ai: 'default',
+    usesLoyalty: !!m.loyalty,
     world: m.profile.world,
     race: m.profile.race,
     usesGrowth: true,
@@ -288,6 +308,7 @@ export function newGame(tables: GameTables, opts: NewGameOptions): GameState {
     initialLevel: r.initialLevel,
     profile: { age: r.age, gender: r.gender, hometown: r.hometown, background: r.background, world: r.world, race: r.race },
     affiliation: r.faction === 'guild' ? { kind: 'guild' } : { kind: 'faction', factionId: r.faction },
+    ...(r.faction === 'guild' ? { loyalty: newLoyalty(tables) } : {}),
   }));
 
   const p = opts.protagonist;
@@ -315,7 +336,10 @@ export function newGame(tables: GameTables, opts: NewGameOptions): GameState {
     // 주인공 역할과 겹치는 시작 후보 1명은 무소속으로 남는다.
     const left = pickCandidateToLeave(tables, p.role);
     const merc = mercenaries.find((m) => m.id === left);
-    if (merc) merc.affiliation = { kind: 'faction', factionId: tables.progression.openerLeftoverFaction };
+    if (merc) {
+      merc.affiliation = { kind: 'faction', factionId: tables.progression.openerLeftoverFaction };
+      delete merc.loyalty;
+    }
   }
 
   const state: GameState = {
@@ -357,6 +381,7 @@ export function dispatch(tables: GameTables, prev: GameState, riftId: string, pa
     if (!isGuildMember(m)) throw new GameError(`${m.name}은(는) 길드 소속이 아니다`);
     if (m.injury) throw new GameError(`${m.name}은(는) 부상 중이다`);
     if (isOnExpedition(state, m.id)) throw new GameError(`${m.name}은(는) 이미 파견 중이다`);
+    if (refusedToday(state, m)) throw new GameError(`${m.name}은(는) 오늘 파견을 거부했다`);
   }
   const slots: CombatSlot[] = party.map((p) => ({ unit: mercToUnit(tables, getMerc(state, p.mercId)), row: p.row }));
   const errors = validateParty(tables, slots);
@@ -406,6 +431,24 @@ export function canLevelUp(tables: GameTables, state: GameState, mercId: string)
   );
 }
 
+export function salaryBonusCost(tables: GameTables, m: MercenaryState): number {
+  return tables.loyalty.salaryBonus.costPerLevel * m.level;
+}
+
+/** 급료 보너스: 제로를 더 지급해 충성도를 올린다. 용병당 하루 1회. */
+export function paySalaryBonus(tables: GameTables, prev: GameState, mercId: string): GameState {
+  const state = structuredClone(prev);
+  const m = getMerc(state, mercId);
+  if (!isGuildMember(m) || !m.loyalty) throw new GameError('충성도가 있는 길드 용병에게만 줄 수 있다');
+  if (m.loyalty.bonusDay === state.day) throw new GameError('오늘은 이미 급료 보너스를 줬다');
+  const cost = salaryBonusCost(tables, m);
+  if (state.resources.zero < cost) throw new GameError('제로가 부족하다');
+  state.resources.zero -= cost;
+  m.loyalty.bonusDay = state.day;
+  applyLoyalty(tables, m.loyalty, m.profile.background, 'salaryBonus', state.day);
+  return state;
+}
+
 /** NPC 세력 소속 용병을 제로로 영입한다. 해금 조건이 있으면 채운 뒤에만 영입할 수 있다. 영입하면 소속이 길드로 바뀐다. */
 export function recruit(tables: GameTables, prev: GameState, mercId: string): GameState {
   const state = structuredClone(prev);
@@ -416,6 +459,8 @@ export function recruit(tables: GameTables, prev: GameState, mercId: string): Ga
   if (state.resources.zero < info.cost) throw new GameError('제로가 부족하다');
   state.resources.zero -= info.cost;
   m.affiliation = { kind: 'guild' };
+  // 다시 영입하면 충성도는 시작값으로 돌아간다.
+  m.loyalty = newLoyalty(tables);
   return state;
 }
 
@@ -510,11 +555,17 @@ function settleExpedition(tables: GameTables, state: GameState, ex: Expedition):
 }
 
 /**
- * 하루를 넘긴다. 순서: 유지비 → 날짜 +1 → 부상 회복 → 복귀한 파견 정산 → 마감 지난 리프트 소멸 → 새 리프트 출현.
+ * 하루를 넘긴다. 순서: 유지비 → 날짜 +1 → (충성도 정산·이탈은 복귀 정산 뒤) → → 부상 회복 → 복귀한 파견 정산 → 마감 지난 리프트 소멸 → 새 리프트 출현.
  */
 export function advanceDay(tables: GameTables, prev: GameState): { state: GameState; events: DayEvent[] } {
   const state = structuredClone(prev);
   const events: DayEvent[] = [];
+  const cfg = tables.loyalty;
+  // 충성도: 오늘(넘기기 전 날짜) 길드에서 쉰 용병 = 파견 중도 부상 중도 아닌 길드 용병
+  const restedIds = state.mercenaries
+    .filter((m) => m.loyalty && isGuildMember(m) && !m.injury && !isOnExpedition(state, m.id))
+    .map((m) => m.id);
+  const tierBefore = new Map(state.mercenaries.filter((m) => m.loyalty).map((m) => [m.id, loyaltyTier(tables, m.loyalty!.value).id]));
 
   // 하루가 끝날 때 유지비를 낸다. 모자라면 그 용병 몫은 미납으로 기록만 한다.
   let paid = 0;
@@ -551,6 +602,44 @@ export function advanceDay(tables: GameTables, prev: GameState): { state: GameSt
     state.reports.push(report);
     events.push({ type: 'returned', expeditionId: ex.id, outcome: report.outcome });
   }
+  // ── 충성도 정산(하루가 끝날 때 한꺼번에): 변동 적용 → 위험 연속 일수 갱신 → 이탈 판정
+  const changeDay = state.day;
+  for (const ex of returning) {
+    const report = state.reports.find((r) => r.expeditionId === ex.id)!;
+    const hard = ex.rift.enemies.some((e) => cfg.hardRiftGrades.includes(e.grade));
+    for (const p of ex.party) {
+      const m = getMerc(state, p.mercId);
+      if (!m.loyalty) continue;
+      if (report.outcome === 'victory') applyLoyalty(tables, m.loyalty, m.profile.background, 'victory', changeDay, hard);
+      else if (report.outcome === 'defeat') applyLoyalty(tables, m.loyalty, m.profile.background, 'defeat', changeDay);
+      if (report.injuries.some((i) => i.unitId === m.id)) applyLoyalty(tables, m.loyalty, m.profile.background, 'injury', changeDay);
+    }
+  }
+  for (const id of restedIds) {
+    const m = getMerc(state, id);
+    if (m.loyalty && isGuildMember(m)) applyLoyalty(tables, m.loyalty, m.profile.background, 'restDay', changeDay);
+  }
+  for (const id of unpaidMercIds) {
+    const m = getMerc(state, id);
+    if (m.loyalty) applyLoyalty(tables, m.loyalty, m.profile.background, 'unpaidDay', changeDay);
+  }
+  for (const m of state.mercenaries) {
+    if (!m.loyalty) continue;
+    const tier = loyaltyTier(tables, m.loyalty.value).id;
+    m.loyalty.dangerDays = tier === cfg.departure.tier ? m.loyalty.dangerDays + 1 : 0;
+    const before = tierBefore.get(m.id);
+    if (before && before !== tier) events.push({ type: 'loyaltyTier', mercId: m.id, from: before, to: tier });
+  }
+  // 위험 구간이 정해진 일수만큼 이어진 뒤부터 하루가 끝날 때마다 확률로 이탈. 파견 중이면 복귀할 때까지 제외.
+  for (const m of state.mercenaries) {
+    if (!m.loyalty || m.loyalty.dangerDays <= cfg.departure.afterConsecutiveDays) continue;
+    if (cfg.departure.excludeOnExpedition && isOnExpedition(state, m.id)) continue;
+    if (!createRng(`${state.seed}:depart:${state.day}:${m.id}`).chance(cfg.departure.chance)) continue;
+    m.affiliation = { kind: 'faction', factionId: cfg.departure.toFaction };
+    delete m.loyalty;
+    events.push({ type: 'departed', mercId: m.id, factionId: cfg.departure.toFaction });
+  }
+
   const limit = tables.progression.reportHistoryLimit;
   state.reports.forEach((r, i) => {
     if (i < state.reports.length - limit) delete r.events;
@@ -566,6 +655,16 @@ export function advanceDay(tables: GameTables, prev: GameState): { state: GameSt
     if (active < city.riftSpawn.maxActive && rng.chance(city.riftSpawn.dailySpawnChance)) {
       const rift = spawnRiftInto(tables, state, city.id, `${state.seed}:day${state.day}:${city.id}`);
       events.push({ type: 'riftSpawned', riftId: rift.id, cityId: city.id });
+    }
+  }
+
+  // ── 새 날이 시작될 때 거부 판정을 미리 한다(시드 = 세이브 시드, 날짜, 용병 id). 그날 편성 화면에서 보인다.
+  for (const m of state.mercenaries) {
+    if (!m.loyalty || m.injury || isOnExpedition(state, m.id)) continue;
+    const chance = loyaltyTier(tables, m.loyalty.value).refuseChance;
+    if (chance > 0 && createRng(`${state.seed}:refuse:${state.day}:${m.id}`).chance(chance)) {
+      m.loyalty.refusedOnDay = state.day;
+      events.push({ type: 'refused', mercId: m.id });
     }
   }
 

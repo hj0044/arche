@@ -57,9 +57,22 @@ describe('세이브 파일 형식', () => {
     expect(() => parseSave({ format: SAVE_FORMAT, version: SAVE_VERSION, state: { day: 1 } })).toThrow(/손상/);
   });
 
+  it('v2 세이브는 충성도 시작값을 채워 v3로 올린다(주인공·길드 밖 용병은 없음)', () => {
+    const v3 = createSaveFile(playedState(), 'manual');
+    const v2 = JSON.parse(serializeSave(v3));
+    v2.version = 2;
+    for (const m of v2.state.mercenaries) delete m.loyalty;
+    const up = parseSave(v2);
+    expect(up.version).toBe(SAVE_VERSION);
+    for (const m of up.state.mercenaries) {
+      if (m.affiliation.kind === 'guild' && !m.isProtagonist) expect(m.loyalty).toMatchObject({ value: tables.loyalty.start, dangerDays: 0 });
+      else expect(m.loyalty).toBeUndefined();
+    }
+  });
+
   it('이전 버전(v1) 세이브는 불러오지 않는다(용병·세력 id 변경으로 폐기)', () => {
     const v1 = { ...createSaveFile(playedState(), 'manual'), version: 1 };
-    expect(SAVE_VERSION).toBe(2);
+    expect(SAVE_VERSION).toBe(3);
     expect(() => parseSave(v1)).toThrow(/이전 버전/);
     expect(isLoadable(v1)).toBe(false);
     expect(isLoadable(createSaveFile(playedState(), 'auto'))).toBe(true);

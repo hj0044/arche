@@ -23,6 +23,7 @@ import omensJson from './omens.json';
 import savePolicyJson from './save-policy.json';
 import autoPartyJson from './auto-party.json';
 import saveLimitsJson from './save-limits.json';
+import loyaltyJson from './loyalty.json';
 
 export type Range = [number, number];
 export type StatId = 'hp' | 'atk' | 'def' | 'spd';
@@ -227,6 +228,44 @@ export interface GameTables {
   /** 징조 표식 문구 */
   omens: OmenRow[];
   autoParty: AutoPartyTable;
+  loyalty: LoyaltyTable;
+}
+
+/** 충성도 변동 요인 키. victoryHard는 상급 이상 몬스터가 나오는 리프트의 승리(성향 가중치 전용, 기본값은 victory) */
+export type LoyaltyChangeKey = 'victory' | 'defeat' | 'injury' | 'unpaidDay' | 'restDay' | 'salaryBonus';
+export type LoyaltyWeightKey = LoyaltyChangeKey | 'victoryHard';
+
+export interface LoyaltyTierRow {
+  id: string;
+  name: string;
+  /** 이 값 이상이면 이 구간(위 행부터 판정) */
+  min: number;
+  /** 공격·방어 배율 가감(0.03 = +3%) */
+  statBonus: number;
+  /** 하루 시작 때 파견 거부 확률 */
+  refuseChance: number;
+  warn: boolean;
+}
+
+export interface TendencyRow {
+  id: string;
+  name: string;
+  description: string;
+  weights: Partial<Record<LoyaltyWeightKey, number>>;
+}
+
+export interface LoyaltyTable {
+  range: Range;
+  start: number;
+  tiers: LoyaltyTierRow[];
+  departure: { tier: string; afterConsecutiveDays: number; chance: number; toFaction: string; excludeOnExpedition: boolean };
+  changes: Record<LoyaltyChangeKey, number>;
+  hardRiftGrades: string[];
+  salaryBonus: { costPerLevel: number };
+  recentLogSize: number;
+  tendencies: TendencyRow[];
+  /** 배경 id → 성향 id */
+  backgroundTendency: Record<string, string>;
 }
 
 /** 자동 편성 규칙(제안) */
@@ -276,6 +315,7 @@ export const tables: GameTables = {
   races: racesJson,
   omens: omensJson,
   autoParty: autoPartyJson,
+  loyalty: loyaltyJson as unknown as LoyaltyTable,
 };
 
 /** 세이브 정책(명세 9절 확정 규칙의 값). 저장 코드와 화면 문구가 같은 값을 읽는다. */

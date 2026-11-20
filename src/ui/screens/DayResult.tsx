@@ -1,7 +1,7 @@
 import type { DayEvent } from '../../engine/game';
 import { AppShell } from '../AppShell';
 import { Panel } from '../components';
-import { cityName, materialName, num, omenText, outcomeName, severityName } from '../format';
+import { cityName, loyaltyTierName, materialName, num, omenText, outcomeName, severityName } from '../format';
 import type { Ctx } from '../nav';
 
 export function DayResult({ ctx, events }: { ctx: Ctx; events: DayEvent[] }) {
@@ -12,7 +12,10 @@ export function DayResult({ ctx, events }: { ctx: Ctx; events: DayEvent[] }) {
   const expired = events.flatMap((e) => (e.type === 'riftExpired' ? [e.name] : []));
   const spawned = events.flatMap((e) => (e.type === 'riftSpawned' ? [s.rifts.find((r) => r.id === e.riftId)] : [])).filter((r) => r !== undefined);
   const upkeep = events.find((e) => e.type === 'upkeep');
-  const quiet = !returned.length && !recovered.length && !expired.length && !spawned.length;
+  const departed = events.flatMap((e) => (e.type === 'departed' ? [e.mercId] : []));
+  const refused = events.flatMap((e) => (e.type === 'refused' ? [e.mercId] : []));
+  const tierChanges = events.flatMap((e) => (e.type === 'loyaltyTier' && !departed.includes(e.mercId) ? [e] : []));
+  const quiet = !departed.length && !refused.length && !tierChanges.length && !returned.length && !recovered.length && !expired.length && !spawned.length;
 
   return (
     <AppShell
@@ -32,6 +35,21 @@ export function DayResult({ ctx, events }: { ctx: Ctx; events: DayEvent[] }) {
         </p>
       )}
       {quiet && <p className="muted">조용한 하루였습니다.</p>}
+      {(departed.length > 0 || refused.length > 0 || tierChanges.length > 0) && (
+        <Panel title="충성도">
+          {departed.length > 0 && (
+            <p className="bad small">
+              ⚠ {departed.map(name).join(', ')}이(가) 길드를 떠나 무소속이 됐습니다. 영입 목록에서 다시 영입할 수 있습니다.
+            </p>
+          )}
+          {refused.length > 0 && <p className="warn small">오늘 파견 거부: {refused.map(name).join(', ')}</p>}
+          {tierChanges.length > 0 && (
+            <p className="small">
+              {tierChanges.map((c) => `${name(c.mercId)} ${loyaltyTierName(c.from)} → ${loyaltyTierName(c.to)}`).join(', ')}
+            </p>
+          )}
+        </Panel>
+      )}
       {returned.map((r) => (
         <Panel
           key={r.expeditionId}

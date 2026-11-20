@@ -1,0 +1,68 @@
+import type { GameTables, LoyaltyChangeKey, LoyaltyTierRow, LoyaltyWeightKey, TendencyRow } from '../data';
+
+/** 용병 한 명의 충성도 상태. 개방자 주인공과 길드 밖 용병에는 없다. */
+export interface LoyaltyState {
+  value: number;
+  /** 위험 구간에서 하루를 마친 연속 일수 */
+  dangerDays: number;
+  /** 파견을 거부한 날(그날만 거부) */
+  refusedOnDay: number | null;
+  /** 급료 보너스를 쓴 날(하루 1회) */
+  bonusDay: number | null;
+  /** 최근 변동 요인(최신이 뒤) */
+  recent: LoyaltyLogEntry[];
+}
+
+export interface LoyaltyLogEntry {
+  day: number;
+  reason: LoyaltyChangeKey;
+  delta: number;
+}
+
+export function newLoyalty(tables: GameTables): LoyaltyState {
+  return { value: tables.loyalty.start, dangerDays: 0, refusedOnDay: null, bonusDay: null, recent: [] };
+}
+
+/** 값이 속한 구간. tiers는 min이 큰 것부터 판정한다. */
+export function loyaltyTier(tables: GameTables, value: number): LoyaltyTierRow {
+  const tiers = [...tables.loyalty.tiers].sort((a, b) => b.min - a.min);
+  return tiers.find((t) => value >= t.min) ?? tiers[tiers.length - 1];
+}
+
+/** 배경이 정하는 계약 성향(용병마다 저장하지 않고 매핑 표에서 읽는다) */
+export function tendencyOf(tables: GameTables, backgroundId: string): TendencyRow | undefined {
+  const id = tables.loyalty.backgroundTendency[backgroundId];
+  return tables.loyalty.tendencies.find((t) => t.id === id);
+}
+
+/** 성향 가중치를 곱한 변동량. 상급 이상 리프트 승리는 victoryHard 가중치(없으면 victory)를 쓴다. */
+export function loyaltyDelta(tables: GameTables, backgroundId: string, key: LoyaltyChangeKey, hardRift = false): number {
+  const w = tendencyOf(tables, backgroundId)?.weights ?? {};
+  const weightKey: LoyaltyWeightKey = key === 'victory' && hardRift && w.victoryHard !== undefined ? 'victoryHard' : key;
+  return tables.loyalty.changes[key] * (w[weightKey] ?? 1);
+}
+
+/** 소수 첫째 자리까지 남기고 범위 안으로 자른다. */
+export function clampLoyalty(tables: GameTables, v: number): number {
+  const [lo, hi] = tables.loyalty.range;
+  return Math.min(hi, Math.max(lo, Math.round(v * 10) / 10));
+}
+
+/** 변동을 적용하고 최근 기록에 남긴다(상태를 직접 바꾼다). 실제로 바뀐 양을 돌려준다. */
+export function applyLoyalty(
+  tables: GameTables,
+  loyalty: LoyaltyState,
+  backgroundId: string,
+  key: LoyaltyChangeKey,
+  day: number,
+  hardRift = false,
+): number {
+  const before = loyalty.value;
+  loyalty.value = clampLoyalty(tables, before + loyaltyDelta(tables, backgroundId, key, hardRift));
+  const delta = Math.round((loyalty.value - before) * 10) / 10;
+  loyalty.recent = [...loyalty.recent, { day, reason: key, delta }].slice(-tables.loyalty.recentLogSize);
+  return delta;
+}
+
+/** 화면 표시용 정수(구간 경계와 어긋나지 않게 내림) */
+export const loyaltyDisplay = (v: number) => Math.floor(v);

@@ -241,3 +241,11 @@ button.rift-main:active:not(:disabled) { background: var(--surface-2); }
 /* 재생 속도 버튼 등 너비가 좁은 버튼도 44px 이상 */
 .replay-controls .btn { min-width: 44px; }
 .link { min-width: 44px; }
+
+/* 충성도 */
+.tag.loyalty { font-weight: 500; }
+.loyalty-high { color: var(--ok); }
+.loyalty-normal { color: var(--muted); }
+.loyalty-low { color: var(--warn); }
+.loyalty-danger { color: var(--bad); }
+.loyalty-log { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
