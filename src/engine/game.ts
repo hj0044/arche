@@ -441,6 +441,32 @@ export function levelUp(tables: GameTables, prev: GameState, mercId: string): Ga
   return state;
 }
 
+export interface LevelUpStep {
+  mercId: string;
+  from: number;
+  to: number;
+  cost: number;
+}
+
+/**
+ * 일괄 레벨업(지시서 012). 매번 "지금 레벨업할 수 있는 용병 중 레벨이 가장 낮은 한 명(같으면 id 순)"을
+ * 한 단계 올리고, 더 할 수 없을 때까지 반복한다. 기존 canLevelUp·levelUp을 그대로 써서 규칙이 같다.
+ */
+export function levelUpAll(tables: GameTables, prev: GameState): { state: GameState; steps: LevelUpStep[] } {
+  let state = prev;
+  const steps: LevelUpStep[] = [];
+  for (;;) {
+    const next = state.mercenaries
+      .filter((m) => canLevelUp(tables, state, m.id))
+      .sort((a, b) => a.level - b.level || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))[0];
+    if (!next) break;
+    const cost = levelUpCost(tables, next.level);
+    state = levelUp(tables, state, next.id);
+    steps.push({ mercId: next.id, from: next.level, to: next.level + 1, cost });
+  }
+  return { state, steps };
+}
+
 export const LEVEL_UP_BLOCKED_ON_EXPEDITION = '파견 중에는 레벨업할 수 없음';
 
 export function canLevelUp(tables: GameTables, state: GameState, mercId: string): boolean {

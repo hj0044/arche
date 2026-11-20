@@ -6,6 +6,7 @@ import { loyaltyTier } from '../../engine/loyalty';
 import { cityName, materialName, num, outcomeName, severityName } from '../format';
 import { MainTabs } from '../MainTabs';
 import { StatusSummary } from '../StatusSummary';
+import { BulkLevelUp } from '../BulkLevelUp';
 import type { Ctx } from '../nav';
 import { assignedFacility, getFacility } from '../../engine/facilities';
 
@@ -46,6 +47,7 @@ export function GuildHome({ ctx }: { ctx: Ctx }) {
       {unpaid > 0 && <p className="error small">유지비 미납 누적 제로 {num(unpaid)}. 지금은 기록만 남습니다.</p>}
 
       <StatusSummary ctx={ctx} />
+      <BulkLevelUp ctx={ctx} hideWhenNone title="레벨업 가능" />
 
       <Panel title={`진행 중인 파견 ${s.expeditions.length}`}>
         {s.expeditions.length === 0 ? (

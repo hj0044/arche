@@ -7,8 +7,17 @@
       "description": "새로 입은 부상의 회복 일수를 줄인다.",
       "maxLevel": 3,
       "startLevel": 0,
-      "cost": { "zero": 150, "zeroGrowth": 1.8, "days": 2, "daysStep": 1 },
-      "effect": { "type": "injuryReduction", "base": 1, "perLevel": 1 }
+      "cost": {
+        "zero": 150,
+        "zeroGrowth": 1.8,
+        "days": 2,
+        "daysStep": 1
+      },
+      "effect": {
+        "type": "injuryReduction",
+        "base": 1,
+        "perLevel": 1
+      }
     },
     {
       "id": "training",
@@ -16,8 +25,19 @@
       "description": "배치한 용병이 매일 경험치를 얻는다.",
       "maxLevel": 3,
       "startLevel": 0,
-      "cost": { "zero": 150, "zeroGrowth": 1.8, "days": 2, "daysStep": 1 },
-      "effect": { "type": "training", "slotsBase": 1, "slotsPerLevel": 1, "expBase": 10, "expPerLevel": 5 }
+      "cost": {
+        "zero": 150,
+        "zeroGrowth": 1.8,
+        "days": 2,
+        "daysStep": 1
+      },
+      "effect": {
+        "type": "training",
+        "slotsBase": 1,
+        "slotsPerLevel": 1,
+        "expBase": 10,
+        "expPerLevel": 5
+      }
     },
     {
       "id": "scout",
@@ -25,19 +45,42 @@
       "description": "리프트 정보를 더 정확하게 보여 준다.",
       "maxLevel": 3,
       "startLevel": 1,
-      "cost": { "zero": 150, "zeroGrowth": 1.8, "days": 2, "daysStep": 1 },
+      "cost": {
+        "zero": 150,
+        "zeroGrowth": 1.8,
+        "days": 2,
+        "daysStep": 1
+      },
       "effect": {
         "type": "scouting",
         "levels": [
-          { "revealElements": true, "exactDeadline": false, "exactEnemies": false, "exactReward": false, "revealOmen": false },
-          { "revealElements": true, "exactDeadline": true, "exactEnemies": true, "exactReward": false, "revealOmen": false },
-          { "revealElements": true, "exactDeadline": true, "exactEnemies": true, "exactReward": true, "revealOmen": true }
+          {
+            "revealElements": true,
+            "exactDeadline": false,
+            "exactEnemies": false,
+            "exactReward": false,
+            "revealOmen": false
+          },
+          {
+            "revealElements": true,
+            "exactDeadline": true,
+            "exactEnemies": true,
+            "exactReward": false,
+            "revealOmen": false
+          },
+          {
+            "revealElements": true,
+            "exactDeadline": true,
+            "exactEnemies": true,
+            "exactReward": true,
+            "revealOmen": true
+          }
         ]
       }
     }
   ],
   "fog": {
-    "_note": "흐린 정보의 범위 폭. 실제 값이 범위 안 어딘가에 오도록 리프트가 생길 때 오프셋을 정해 저장한다.",
+    "_note": "흐린 정보의 범위 폭. 마감·레벨·수는 실제 값이 범위 안 어딘가에 오도록 리프트가 생길 때 오프셋을 정해 저장한다. 보상 범위는 지시서 012부터 보이는 레벨 범위와 리프트 등급 보상 범위로 계산하므로 rewardSpread와 rewardU 오프셋은 쓰지 않는다(세이브 호환을 위해 남겨 둠).",
     "deadlineWidth": 2,
     "levelWidth": 4,
     "countWidth": 1,

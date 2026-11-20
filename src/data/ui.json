@@ -12,5 +12,81 @@
   "toastMs": 2500,
   "deadlineWarnDays": 1,
   "upkeepWarnDays": 7,
-  "lowAvailableWarn": 3
+  "lowAvailableWarn": 3,
+  "mercSort": {
+    "guild": [
+      {
+        "id": "levelDesc",
+        "name": "레벨 높은 순"
+      },
+      {
+        "id": "levelAsc",
+        "name": "레벨 낮은 순"
+      },
+      {
+        "id": "name",
+        "name": "이름"
+      },
+      {
+        "id": "role",
+        "name": "역할"
+      },
+      {
+        "id": "element",
+        "name": "속성"
+      },
+      {
+        "id": "loyaltyAsc",
+        "name": "충성도 낮은 순"
+      },
+      {
+        "id": "availableFirst",
+        "name": "출전 가능 먼저"
+      },
+      {
+        "id": "levelUpSoon",
+        "name": "레벨업 임박"
+      }
+    ],
+    "recruit": [
+      {
+        "id": "hometownFirst",
+        "name": "고향 먼저"
+      },
+      {
+        "id": "costAsc",
+        "name": "영입비 낮은 순"
+      },
+      {
+        "id": "levelDesc",
+        "name": "레벨 높은 순"
+      },
+      {
+        "id": "name",
+        "name": "이름"
+      }
+    ]
+  },
+  "mercStatusFilters": [
+    {
+      "id": "available",
+      "name": "출전 가능"
+    },
+    {
+      "id": "injured",
+      "name": "부상"
+    },
+    {
+      "id": "expedition",
+      "name": "파견 중"
+    },
+    {
+      "id": "training",
+      "name": "훈련 중"
+    },
+    {
+      "id": "levelup",
+      "name": "레벨업 가능"
+    }
+  ]
 }

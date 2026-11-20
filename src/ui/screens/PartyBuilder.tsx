@@ -4,7 +4,7 @@ import { autoParty } from '../../engine/autoParty';
 import { combatPower, estimateRisk } from '../../engine/combatPower';
 import { assignedFacility, getFacility, visibleRift } from '../../engine/facilities';
 import { compositionMultiplier, elementMultiplier } from '../../engine/combat';
-import { dispatch, expPerMemberAt, GameError, guildUpkeepPerDay, mercToUnit, shareOf, isAvailable, isOnExpedition, refusedToday, type PartyMember } from '../../engine/game';
+import { dispatch, unassignFromFacility, expPerMemberAt, GameError, guildUpkeepPerDay, mercToUnit, shareOf, isAvailable, isOnExpedition, refusedToday, type PartyMember } from '../../engine/game';
 import { AppShell } from '../AppShell';
 import { ElementTag, RoleTag } from '../components';
 import { elementName, num, pct, rowName } from '../format';
@@ -55,7 +55,7 @@ export function PartyBuilder({ ctx, riftId }: { ctx: Ctx; riftId: string }) {
             : '불가';
   // 이미 짜 둔 파티에 오늘 쓸 수 없게 된 용병이 있으면 빼고 알린다(거부 판정은 하루 시작 때 정해진다).
   const dropped = party.filter((p) => !isAvailable(s, p.mercId));
-  const trainingCount = candidates.filter((m) => assignedFacility(s.facilities, m.id)).length;
+  const trainees = candidates.filter((m) => assignedFacility(s.facilities, m.id));
 
   const toggle = (id: string) => {
     setError('');
@@ -166,10 +166,29 @@ export function PartyBuilder({ ctx, riftId }: { ctx: Ctx; riftId: string }) {
         )}
       </section>
 
-      {trainingCount > 0 && (
-        <button className="link" onClick={() => ctx.go({ name: 'base' })}>
-          훈련 중 {trainingCount}명은 파견할 수 없습니다 · 배치 해제하러 거점으로 ›
-        </button>
+      {trainees.length > 0 && (
+        <section className="panel" aria-label="훈련 중인 용병">
+          <p className="small muted">훈련 중 {trainees.length}명은 파견할 수 없습니다. 해제하면 오늘 편성에 넣을 수 있습니다(오늘 훈련 경험치는 받지 않음).</p>
+          {trainees.map((m) => {
+            const fid = assignedFacility(s.facilities, m.id)!;
+            return (
+              <div key={m.id} className="trainee-row">
+                <span className="small">
+                  <span className="strong">{m.name}</span> <span className="muted">Lv{m.level} · {getFacility(tables, fid).name}</span>
+                </span>
+                <button
+                  className="btn small"
+                  onClick={() => {
+                    ctx.setState(unassignFromFacility(s, fid, m.id));
+                    ctx.toast(`${m.name} 배치 해제`);
+                  }}
+                >
+                  지금 해제
+                </button>
+              </div>
+            );
+          })}
+        </section>
       )}
       {dropped.length > 0 && (
         <p className="warn small" role="status">
