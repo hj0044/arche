@@ -1,5 +1,6 @@
 import type { GameState } from '../engine/game';
 import { validate } from './saveSchema';
+import { validateSemantics, type SemanticTables } from './saveSemantics';
 
 /** 세이브 형식 식별자와 현재 버전. 형식이 바뀌면 버전을 올리고 MIGRATIONS에 변환을 추가한다. */
 export const SAVE_FORMAT = 'arche-save';
@@ -51,8 +52,11 @@ export function serializeSave(file: SaveFile): string {
   return JSON.stringify(file);
 }
 
-/** JSON 문자열이나 객체를 검사하고, 옛 버전이면 현재 버전으로 올린다. */
-export function parseSave(input: string | unknown): SaveFile {
+/**
+ * JSON 문자열이나 객체를 검사하고, 옛 버전이면 현재 버전으로 올린다.
+ * semantic을 주면 형식 검사 뒤에 값 범위·참조 검사(saveSemantics)까지 한다.
+ */
+export function parseSave(input: string | unknown, semantic?: SemanticTables): SaveFile {
   let raw: unknown = input;
   if (typeof input === 'string') {
     try {
@@ -71,7 +75,9 @@ export function parseSave(input: string | unknown): SaveFile {
     if (!migrate) throw new SaveFormatError(`이전 버전(${obj.version}) 세이브는 이 버전에서 불러올 수 없다`);
     obj = migrate(obj);
   }
-  const problems = validate(obj);
+  let problems = validate(obj);
+  // 형식이 맞을 때만 의미 검사를 한다(형식이 틀리면 의미 검사가 엉뚱한 곳에서 실패한다).
+  if (!problems.length && semantic) problems = validateSemantics((obj as unknown as SaveFile).state, semantic);
   if (problems.length) {
     const shown = problems.slice(0, MAX_SHOWN_PROBLEMS).join(', ');
     const more = problems.length > MAX_SHOWN_PROBLEMS ? ` 외 ${problems.length - MAX_SHOWN_PROBLEMS}건` : '';
@@ -81,9 +87,9 @@ export function parseSave(input: string | unknown): SaveFile {
 }
 
 /** 이 버전에서 불러올 수 있는 세이브인가 */
-export function isLoadable(file: { version?: unknown }): boolean {
+export function isLoadable(file: { version?: unknown }, semantic?: SemanticTables): boolean {
   try {
-    parseSave({ ...file, format: SAVE_FORMAT });
+    parseSave({ ...file, format: SAVE_FORMAT }, semantic);
     return true;
   } catch {
     return false;

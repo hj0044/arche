@@ -1,7 +1,8 @@
-import { savePolicy } from '../data';
+import { saveLimits, savePolicy, tables as defaultTables } from '../data';
+import type { SemanticTables } from './saveSemantics';
 import type { GameState } from '../engine/game';
 import type { SaveRecord, SaveRepository } from './repository';
-import { createSaveFile, parseSave, serializeSave, type SaveFile } from './saveFile';
+import { createSaveFile, isLoadable, parseSave, serializeSave, type SaveFile } from './saveFile';
 
 
 export interface SlotSummary {
@@ -33,7 +34,14 @@ export class SaveService {
   constructor(
     private readonly repo: SaveRepository,
     readonly policy: { autoSavesPerSlot: number } = savePolicy,
+    /** 의미 검증(값 범위·참조)에 쓰는 데이터 표 */
+    readonly semantic: SemanticTables = { ...defaultTables, limits: saveLimits },
   ) {}
+
+  /** 형식·버전·의미 검사를 모두 통과하는 세이브인가(목록 표시용) */
+  isLoadable(file: SaveFile): boolean {
+    return isLoadable(file, this.semantic);
+  }
 
   async saveManual(slotId: string, state: GameState, opts: { overwrite?: boolean; now?: Date } = {}): Promise<ManualSaveResult> {
     const existing = await this.repo.get(manualKey(slotId));
@@ -69,14 +77,14 @@ export class SaveService {
 
   async loadManual(slotId: string): Promise<GameState | undefined> {
     const r = await this.repo.get(manualKey(slotId));
-    return r && parseSave(r.file).state;
+    return r && parseSave(r.file, this.semantic).state;
   }
 
   /** index 0이 가장 최근 자동 저장 */
   async loadAuto(slotId: string, index = 0): Promise<GameState | undefined> {
     const slot = (await this.listSlots()).find((s) => s.slotId === slotId);
     const file = slot?.autos[index];
-    return file && parseSave(file).state;
+    return file && parseSave(file, this.semantic).state;
   }
 
   async deleteSlot(slotId: string): Promise<void> {
@@ -90,7 +98,8 @@ export class SaveService {
 
   /** 파일에서 불러와 새 슬롯의 수동 저장으로 넣는다. 새 슬롯 id를 돌려준다. */
   async importFile(text: string, slotId: string = newSlotId()): Promise<{ slotId: string; state: GameState }> {
-    const file = parseSave(text);
+    // 슬롯에 기록하기 전에 형식과 의미를 모두 검사한다.
+    const file = parseSave(text, this.semantic);
     await this.repo.put({ key: manualKey(slotId), slotId, kind: 'manual', seq: 0, file: { ...file, kind: 'manual' } });
     return { slotId, state: file.state };
   }

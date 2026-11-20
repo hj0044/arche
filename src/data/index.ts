@@ -22,6 +22,7 @@ import racesJson from './races.json';
 import omensJson from './omens.json';
 import savePolicyJson from './save-policy.json';
 import autoPartyJson from './auto-party.json';
+import saveLimitsJson from './save-limits.json';
 
 export type Range = [number, number];
 export type StatId = 'hp' | 'atk' | 'def' | 'spd';
@@ -279,6 +280,15 @@ export const tables: GameTables = {
 
 /** 세이브 정책(명세 9절 확정 규칙의 값). 저장 코드와 화면 문구가 같은 값을 읽는다. */
 export const savePolicy: { autoSavesPerSlot: number } = savePolicyJson;
+
+/** 세이브 의미 검증의 최소값(다른 표에 범위가 없는 것) */
+export interface SaveLimits {
+  minDay: number;
+  minMercLevel: number;
+  minEnemiesPerRift: number;
+  minPartySize: number;
+}
+export const saveLimits: SaveLimits = saveLimitsJson;
 
 export function findCity(id: string): CityRow | undefined {
   return cities.find((c) => c.id === id);

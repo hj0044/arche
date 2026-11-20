@@ -231,3 +231,13 @@ button.rift-main:active:not(:disabled) { background: var(--surface-2); }
 .row-switch button.on { background: var(--accent); color: var(--accent-ink); font-weight: 600; border-color: transparent; }
 .details-toggle { display: flex; justify-content: space-between; align-items: center; gap: 12px; text-align: left; }
 .details-toggle > span:last-child { min-width: 0; }
+
+/* 긴 문자열(공백 없는 이름 등)이 가로로 넘치지 않게 한다 */
+.shell-body, .dialog, .toast { overflow-wrap: anywhere; }
+.battle-now { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 6px; min-width: 0; }
+.now-actor { max-width: 45%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.now-rest { flex: 1 1 50%; min-width: 0; overflow-wrap: anywhere; }
+.battle-log li { overflow-wrap: anywhere; }
+/* 재생 속도 버튼 등 너비가 좁은 버튼도 44px 이상 */
+.replay-controls .btn { min-width: 44px; }
+.link { min-width: 44px; }

@@ -12,6 +12,9 @@ interface Frame {
   actor?: string;
   targets: string[];
   line: string;
+  /** 현재 행동 한 줄을 행위자 이름(말줄임)과 나머지(스킬·피해, 항상 보임)로 나눠 쓴다 */
+  actorName?: string;
+  rest?: string;
 }
 
 export function numberDuplicateNames(units: CombatantSnapshot[]): CombatantSnapshot[] {
@@ -54,12 +57,15 @@ export function buildFrames(events: CombatEvent[]): { units: CombatantSnapshot[]
         }
         return f.status === 'taunt' ? `${t} 도발` : `${t} ${f.stat === 'atk' ? '공격' : '방어'}↑`;
       });
+      const rest = `「${skillName(ev.skillId)}」 ${parts.filter(Boolean).join(', ')}`;
       frames.push({
         round,
         hp,
         actor: ev.actor,
         targets: ev.effects.map((f) => f.target),
-        line: `${nameOf(ev.actor)} 「${skillName(ev.skillId)}」 ${parts.filter(Boolean).join(', ')}`,
+        line: `${nameOf(ev.actor)} ${rest}`,
+        actorName: nameOf(ev.actor),
+        rest,
       });
     }
     if (ev.type === 'end') {
@@ -177,7 +183,13 @@ export function BattleReplay({ ctx, expeditionId, back }: { ctx: Ctx; expedition
         <span className="muted tiny">
           {index}/{last}
         </span>{' '}
-        {frame.line}
+        {frame.actorName ? (
+          <>
+            <span className="now-actor">{frame.actorName}</span> <span className="now-rest">{frame.rest}</span>
+          </>
+        ) : (
+          <span className="now-rest">{frame.line}</span>
+        )}
       </div>
       </div>
       <div className="battle-log">

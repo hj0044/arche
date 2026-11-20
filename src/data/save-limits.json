@@ -1,0 +1,7 @@
+{
+  "_note": "세이브 의미 검증의 최소값 가운데 다른 데이터 표에 범위가 없는 것. 몬스터 레벨·리프트 소요 일수 등은 각 데이터 표의 범위를 읽는다.",
+  "minDay": 1,
+  "minMercLevel": 1,
+  "minEnemiesPerRift": 1,
+  "minPartySize": 1
+}

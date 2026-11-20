@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { tables } from '../../data';
 import type { GameState } from '../../engine/game';
 import { storageUsageRatio } from '../../storage/quota';
-import { isLoadable, serializeSave, type SaveFile } from '../../storage/saveFile';
+import { parseSave, serializeSave, type SaveFile } from '../../storage/saveFile';
 import { newSlotId, type SlotSummary } from '../../storage/saveService';
 import { AppShell } from '../AppShell';
 import { ConfirmDialog, Panel } from '../components';
@@ -65,7 +65,14 @@ export function SaveSlots({ ctx, onLoad, onBack, toast }: SaveSlotsProps) {
   };
 
   const load = (slotId: string, file: SaveFile) => {
-    const run = () => onLoad(slotId, file.state);
+    // 목록의 파일도 불러오기 직전에 형식·의미 검사를 다시 거친다.
+    const run = () => {
+      try {
+        onLoad(slotId, parseSave(file, saves.semantic).state);
+      } catch (e) {
+        toast(`불러오기 실패: ${(e as Error).message}`);
+      }
+    };
     if (!game) return run();
     setPending({
       title: '불러오기',
@@ -179,7 +186,7 @@ export function SaveSlots({ ctx, onLoad, onBack, toast }: SaveSlotsProps) {
                     <button className="btn small" onClick={() => downloadText(fileName(f), serializeSave(f))} aria-label="파일로 내보내기">
                       내보내기
                     </button>
-                    {isLoadable(f) ? (
+                    {saves.isLoadable(f) ? (
                       <button className="btn small primary" onClick={() => load(slot.slotId, f)}>
                         불러오기
                       </button>

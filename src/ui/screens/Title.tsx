@@ -4,7 +4,7 @@ import type { SlotSummary } from '../../storage/saveService';
 import { AppShell } from '../AppShell';
 import { cityName, formatDateTime } from '../format';
 import { saves } from '../saves';
-import { isLoadable } from '../../storage/saveFile';
+import { parseSave } from '../../storage/saveFile';
 
 interface TitleProps {
   onNew: () => void;
@@ -22,7 +22,7 @@ export function Title({ onNew, onLoad, onOpenSaves }: TitleProps) {
 
   useEffect(() => {
     saves.listSlots().then(
-      (slots) => setRecent(slots.find((x) => { const f = latestFile(x); return f && isLoadable(f); }) ?? null),
+      (slots) => setRecent(slots.find((x) => { const f = latestFile(x); return f && saves.isLoadable(f); }) ?? null),
       () => setRecent(null),
     );
   }, []);
@@ -37,7 +37,7 @@ export function Title({ onNew, onLoad, onOpenSaves }: TitleProps) {
       </div>
       <div className="stack">
         {latest && recent && (
-          <button className="card-button" onClick={() => onLoad(recent.slotId, latest.state)}>
+          <button className="card-button" onClick={() => onLoad(recent.slotId, parseSave(latest, saves.semantic).state)}>
             <span className="card-title">이어하기</span>
             <span className="card-desc ellipsis">
               {latest.summary.guildName} · {cityName(latest.summary.baseCityId)} · {latest.summary.day}일차 ·{' '}
