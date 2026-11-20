@@ -5,7 +5,7 @@ import { validateSemantics, type SemanticTables } from './saveSemantics';
 
 /** 세이브 형식 식별자와 현재 버전. 형식이 바뀌면 버전을 올리고 MIGRATIONS에 변환을 추가한다. */
 export const SAVE_FORMAT = 'arche-save';
-export const SAVE_VERSION = 3;
+export const SAVE_VERSION = 4;
 
 export type SaveKind = 'manual' | 'auto';
 
@@ -29,7 +29,7 @@ export class SaveFormatError extends Error {
   }
 }
 
-/** v2 → v3 마이그레이션에서 채우는 충성도 시작값(데이터 표) */
+/** 마이그레이션에서 채우는 충성도 시작값(데이터 표) */
 const LOYALTY_START_V3 = loyaltyJson.start;
 
 /** 오류 문구에 보여 줄 문제 개수 */
@@ -39,6 +39,7 @@ const MAX_SHOWN_PROBLEMS = 3;
  * version n → n+1 변환. 비어 있는 버전은 지원하지 않는다.
  * v1 → v2: 용병 30명 교체와 세력 id 변경(ironhound → waypoint)으로 호환하지 않고 폐기한다(사용자 결정).
  * v2 → v3: 충성도 필드 추가. 마이그레이션으로 시작값을 채운다.
+ * v3 → v4: 주인공을 뺀 모든 용병이 충성도를 갖고(길드 밖은 시작값 보관), 연속 쉰 일수를 추가한다.
  * 예: 1: (raw) => ({ ...raw, version: 2, state: { ...raw.state, 새필드: 기본값 } }) */
 const MIGRATIONS: Record<number, (raw: Record<string, unknown>) => Record<string, unknown>> = {
   // v2 → v3: 충성도 추가. 길드 소속 용병(주인공 제외)에 시작값 충성도를 넣는다.
@@ -51,6 +52,22 @@ const MIGRATIONS: Record<number, (raw: Record<string, unknown>) => Record<string
       }
     }
     return { ...raw, version: 3, state };
+  },
+  // v3 → v4: 충성도를 모든 세력 공통 틀로. 주인공을 뺀 모든 용병에 충성도를 두고, 연속 쉰 일수를 추가한다.
+  3: (raw) => {
+    const state = structuredClone(raw.state) as { mercenaries?: Record<string, unknown>[] };
+    for (const m of state.mercenaries ?? []) {
+      if (m.isProtagonist) continue;
+      const loyalty = (m.loyalty as Record<string, unknown> | undefined) ?? {
+        value: LOYALTY_START_V3,
+        dangerDays: 0,
+        refusedOnDay: null,
+        bonusDay: null,
+        recent: [],
+      };
+      m.loyalty = { ...loyalty, restStreak: (loyalty.restStreak as number | undefined) ?? 0 };
+    }
+    return { ...raw, version: 4, state };
   },
 };
 

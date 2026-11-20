@@ -64,7 +64,7 @@ export function MercList({ ctx }: { ctx: Ctx }) {
                       한계 {m.growth.cap} · {growthSpeedName(m.growth.speed)}
                     </span>
                   </div>
-                  {m.loyalty && (
+                  {m.loyalty && m.affiliation.kind === 'guild' && (
                     <div className="tags">
                       <LoyaltyBadge value={m.loyalty.value} />
                       {m.loyalty.refusedOnDay === s.day && <span className="small warn">오늘 거부</span>}

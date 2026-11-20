@@ -50,5 +50,6 @@ export const loyaltyReasonName: Record<string, string> = {
   injury: '부상',
   unpaidDay: '유지비 미납',
   restDay: '길드에서 휴식',
+  idleDecay: '대기 하락',
   salaryBonus: '급료 보너스',
 };

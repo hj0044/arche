@@ -64,3 +64,31 @@ describe('결정성 회귀(충성도: 미납·거부·이탈이 일어나는 길
     expect(kinds.has('departed')).toBe(true);
   });
 });
+
+describe('결정성 회귀(대기 하락·무소속 이동)', () => {
+  it('대기 하락과 이동이 일어나는 길드를 15일 동안 매일 저장 왕복해도 상태·이벤트가 같다', () => {
+    const t = { ...tables, poaching: { ...tables.poaching, dailyChance: 0.2 } };
+    let origin = start([{ mercId: 'm02', row: 'back' }]);
+    origin = {
+      ...origin,
+      resources: { ...origin.resources, zero: 99999 },
+      mercenaries: origin.mercenaries.map((m) => (m.loyalty ? { ...m, loyalty: { ...m.loyalty, restStreak: 6 } } : m)),
+    };
+    let memory = structuredClone(origin);
+    let loaded = parseSave(serializeSave(createSaveFile(origin, 'manual'))).state;
+    const kinds = new Set<string>();
+    const reasons = new Set<string>();
+    for (let day = 0; day < 15; day++) {
+      const a = advanceDay(t, memory);
+      const b = advanceDay(t, loaded);
+      expect(b.events).toEqual(a.events);
+      expect(b.state).toEqual(a.state);
+      for (const e of a.events) kinds.add(e.type);
+      for (const m of a.state.mercenaries) for (const r of m.loyalty?.recent ?? []) reasons.add(r.reason);
+      memory = a.state;
+      loaded = parseSave(serializeSave(createSaveFile(b.state, 'auto'))).state;
+    }
+    expect(kinds.has('poached')).toBe(true);
+    expect(reasons.has('idleDecay')).toBe(true);
+  });
+});

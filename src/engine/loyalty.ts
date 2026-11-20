@@ -5,6 +5,8 @@ export interface LoyaltyState {
   value: number;
   /** 위험 구간에서 하루를 마친 연속 일수 */
   dangerDays: number;
+  /** 연속으로 쉰 일수(파견 중도 부상 중도 아닌 날). 파견·부상이면 0 */
+  restStreak: number;
   /** 파견을 거부한 날(그날만 거부) */
   refusedOnDay: number | null;
   /** 급료 보너스를 쓴 날(하루 1회) */
@@ -20,7 +22,7 @@ export interface LoyaltyLogEntry {
 }
 
 export function newLoyalty(tables: GameTables): LoyaltyState {
-  return { value: tables.loyalty.start, dangerDays: 0, refusedOnDay: null, bonusDay: null, recent: [] };
+  return { value: tables.loyalty.start, dangerDays: 0, restStreak: 0, refusedOnDay: null, bonusDay: null, recent: [] };
 }
 
 /** 값이 속한 구간. tiers는 min이 큰 것부터 판정한다. */
@@ -42,10 +44,10 @@ export function loyaltyDelta(tables: GameTables, backgroundId: string, key: Loya
   return tables.loyalty.changes[key] * (w[weightKey] ?? 1);
 }
 
-/** 소수 첫째 자리까지 남기고 범위 안으로 자른다. */
+/** 소수 둘째 자리까지 남기고(성향 가중치 ×0.25 같은 작은 변동도 반영) 범위 안으로 자른다. */
 export function clampLoyalty(tables: GameTables, v: number): number {
   const [lo, hi] = tables.loyalty.range;
-  return Math.min(hi, Math.max(lo, Math.round(v * 10) / 10));
+  return Math.min(hi, Math.max(lo, Math.round(v * 100) / 100));
 }
 
 /** 변동을 적용하고 최근 기록에 남긴다(상태를 직접 바꾼다). 실제로 바뀐 양을 돌려준다. */
@@ -59,9 +61,15 @@ export function applyLoyalty(
 ): number {
   const before = loyalty.value;
   loyalty.value = clampLoyalty(tables, before + loyaltyDelta(tables, backgroundId, key, hardRift));
-  const delta = Math.round((loyalty.value - before) * 10) / 10;
+  const delta = Math.round((loyalty.value - before) * 100) / 100;
   loyalty.recent = [...loyalty.recent, { day, reason: key, delta }].slice(-tables.loyalty.recentLogSize);
   return delta;
+}
+
+/** 충성도를 시뮬레이션하는 소속인가(데이터 simulatedAffiliations. 지금은 길드만) */
+export function isLoyaltySimulated(tables: GameTables, affiliation: { kind: string; factionId?: string }): boolean {
+  const key = affiliation.kind === 'guild' ? 'guild' : affiliation.factionId;
+  return key !== undefined && tables.loyalty.simulatedAffiliations.includes(key);
 }
 
 /** 화면 표시용 정수(구간 경계와 어긋나지 않게 내림) */
