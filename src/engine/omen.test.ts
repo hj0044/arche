@@ -7,8 +7,8 @@ import { advanceDay, dispatch, newGame, type GameState } from './game';
 import { generateRift, type Rift } from './rift';
 import { createRng } from './rng';
 
-const make = (tier: string, seed: string, t: GameTables = tables): Rift =>
-  generateRift(t, 'newyork', 1, 'r1', createRng(seed), { tier });
+const make = (tier: string, seed: string, t: GameTables = tables, id = 'r1'): Rift =>
+  generateRift(t, 'newyork', 1, id, createRng(seed), { tier });
 
 const withOmenChance = (chance: number): GameTables => ({
   ...tables,
@@ -123,7 +123,7 @@ describe('징조 표식과 규칙', () => {
 describe('징조 표식과 세이브', () => {
   it('저장과 불러오기 후에도 표식과 문구 id가 유지된다', async () => {
     const s = start();
-    const marked = { ...s, rifts: [...s.rifts, make('route', 'save')] };
+    const marked = { ...s, rifts: [...s.rifts, make('route', 'save', tables, 'r-omen')] };
     const back = parseSave(serializeSave(createSaveFile(marked, 'manual'))).state;
     expect(back.rifts.at(-1)!.omen).toEqual(marked.rifts.at(-1)!.omen);
 

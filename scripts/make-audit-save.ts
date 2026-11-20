@@ -2,19 +2,9 @@
 // 사용: npm run make-audit-save -- [시드] [출력 경로]
 // 기본: 시드 audit-20261120, 출력 /tmp/arche-audit-v2.json
 import { writeFileSync } from 'node:fs';
-import { tables } from '../src/data';
-import { newGame } from '../src/engine/game';
-import { createSaveFile } from '../src/storage/saveFile';
+import { AUDIT_SEED, makeAuditSaveFile } from '../src/app/auditSave';
 
-const [seed = 'audit-20261120', out = '/tmp/arche-audit-v2.json'] = process.argv.slice(2);
-
-const state = newGame(tables, {
-  seed,
-  guildName: '검수 길드',
-  baseCityId: 'seoul',
-  protagonist: { mode: 'opener', name: '검수자', element: 'fire', role: 'warrior', background: 'survivor' },
-});
-// 저장 시각을 고정해 같은 시드면 파일 내용도 같게 한다.
-const file = createSaveFile(state, 'manual', new Date('2026-11-20T00:00:00Z'));
+const [seed = AUDIT_SEED, out = '/tmp/arche-audit-v2.json'] = process.argv.slice(2);
+const file = makeAuditSaveFile(seed);
 writeFileSync(out, JSON.stringify(file, null, 2));
-console.log(`세이브(v${file.version})를 ${out}에 썼다 (시드 ${seed}, ${state.day}일차, 리프트 ${state.rifts.length}개)`);
+console.log(`세이브(v${file.version})를 ${out}에 썼다 (시드 ${seed}, ${file.state.day}일차, 리프트 ${file.state.rifts.length}개)`);
