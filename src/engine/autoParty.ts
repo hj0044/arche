@@ -1,9 +1,10 @@
 import { getRole, type GameTables } from '../data';
 import { elementMultiplier } from './combat';
 import { isAvailable, type GameState, type MercenaryState, type PartyMember } from './game';
+import { visibleRift } from './facilities';
 import type { Rift } from './rift';
 
-/** 리프트에 나오는 몬스터 속성(몬스터 데이터에서) */
+/** 리프트에 나오는 몬스터의 실제 속성(몬스터 데이터에서). 화면과 자동 편성은 visibleRift를 쓴다. */
 export function riftEnemyElements(tables: GameTables, rift: Rift): string[] {
   const out: string[] = [];
   for (const e of rift.enemies) {
@@ -34,7 +35,8 @@ export function autoPartyScore(tables: GameTables, m: MercenaryState, enemyEleme
 export function autoParty(tables: GameTables, state: GameState, rift: Rift): PartyMember[] {
   const cfg = tables.autoParty;
   const max = tables.combat.party.maxSize;
-  const enemies = riftEnemyElements(tables, rift);
+  // 탐지소로 보이는 정보만 쓴다(공개되지 않은 몬스터 속성은 점수에 넣지 않음).
+  const enemies = visibleRift(tables, state.facilities, rift).elements ?? [];
   const score = new Map<string, number>();
   const pool = state.mercenaries
     .filter((m) => isAvailable(state, m.id) && getRole(tables, m.role).enabled)

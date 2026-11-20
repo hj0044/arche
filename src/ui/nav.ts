@@ -8,6 +8,7 @@ export type Route =
   | { name: 'party'; riftId: string }
   | { name: 'mercs' }
   | { name: 'merc'; mercId: string }
+  | { name: 'base' }
   | { name: 'saves' }
   | { name: 'dayResult'; events: DayEvent[] }
   | { name: 'replay'; expeditionId: string; back: Route };

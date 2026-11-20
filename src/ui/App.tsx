@@ -6,6 +6,7 @@ import { Toast } from './components';
 import type { Ctx, Game, Route } from './nav';
 import { saves } from './saves';
 import { BattleReplay } from './screens/BattleReplay';
+import { Base } from './screens/Base';
 import { DayResult } from './screens/DayResult';
 import { GuildHome } from './screens/GuildHome';
 import { MercDetail } from './screens/MercDetail';
@@ -94,6 +95,9 @@ export function App() {
       break;
     case 'merc':
       screen = <MercDetail ctx={ctx} mercId={route.mercId} />;
+      break;
+    case 'base':
+      screen = <Base ctx={ctx} />;
       break;
     case 'saves':
       screen = <SaveSlots ctx={ctx} onLoad={startGame} toast={toast} />;

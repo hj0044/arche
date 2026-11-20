@@ -6,6 +6,7 @@ import { loyaltyTier } from '../../engine/loyalty';
 import { cityName, materialName, num, outcomeName, severityName } from '../format';
 import { MainTabs } from '../MainTabs';
 import type { Ctx } from '../nav';
+import { assignedFacility, getFacility } from '../../engine/facilities';
 
 export function GuildHome({ ctx }: { ctx: Ctx }) {
   const s = ctx.game.state;
@@ -116,6 +117,8 @@ export function GuildHome({ ctx }: { ctx: Ctx }) {
                   </span>
                 ) : isOnExpedition(s, m.id) ? (
                   <span className="pill">파견 중</span>
+                ) : assignedFacility(s.facilities, m.id) ? (
+                  <span className="pill">{getFacility(tables, assignedFacility(s.facilities, m.id)!).name} 배치</span>
                 ) : m.loyalty?.refusedOnDay === s.day ? (
                   <span className="pill bad">오늘 거부</span>
                 ) : (

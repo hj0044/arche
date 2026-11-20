@@ -4,6 +4,7 @@ const TABS: { name: Route['name']; label: string; route: Route }[] = [
   { name: 'home', label: '홈', route: { name: 'home' } },
   { name: 'rifts', label: '리프트', route: { name: 'rifts' } },
   { name: 'mercs', label: '용병', route: { name: 'mercs' } },
+  { name: 'base', label: '거점', route: { name: 'base' } },
   { name: 'saves', label: '저장', route: { name: 'saves' } },
 ];
 

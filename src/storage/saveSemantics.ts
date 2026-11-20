@@ -5,6 +5,7 @@
  * 결과는 스키마 검사와 같은 "필드 경로 + 문제" 문자열 목록이다.
  */
 import type { GameTables, Range, SaveLimits } from '../data';
+import { facilitySlots } from '../engine/facilities';
 import type { GameState } from '../engine/game';
 
 /** 의미 검증에 필요한 데이터 표 */
@@ -26,6 +27,7 @@ export type SemanticTables = Pick<
   | 'injuries'
   | 'combat'
   | 'loyalty'
+  | 'facilities'
 > & { limits: SaveLimits };
 
 export function validateSemantics(state: GameState, t: SemanticTables): string[] {
@@ -131,6 +133,11 @@ export function validateSemantics(state: GameState, t: SemanticTables): string[]
       atLeast(`${p}.reward.materials.${k}`, v, 0);
     }
     if (r.omen) ref(`${p}.omen.textId`, t.omens, r.omen.textId, '징조 문구');
+    const fog = t.facilities.fog;
+    within(`${p}.fog.deadlineOffset`, r.fog.deadlineOffset, [0, fog.deadlineWidth]);
+    within(`${p}.fog.levelOffset`, r.fog.levelOffset, [0, fog.levelWidth]);
+    within(`${p}.fog.countOffset`, r.fog.countOffset, [0, fog.countWidth]);
+    within(`${p}.fog.rewardU`, r.fog.rewardU, [0, 1]);
   };
   const checkParty = (p: string, party: { mercId: string }[], requireGuild: boolean) => {
     if (party.length < L.minPartySize) errors.push(`${p} 비어 있음`);
@@ -185,6 +192,44 @@ export function validateSemantics(state: GameState, t: SemanticTables): string[]
     atLeast(`${p}.reward.zero`, r.reward.zero, 0);
     atLeast(`${p}.reward.arche`, r.reward.arche, 0);
   });
+
+  // ── 거점 시설
+  const fs = state.facilities;
+  const facilityRows = t.facilities.facilities;
+  for (const [id, lv] of Object.entries(fs.levels)) {
+    const f = facilityRows.find((x) => x.id === id);
+    if (!f) errors.push(`state.facilities.levels.${id}: 없는 시설 id "${id}"`);
+    else within(`state.facilities.levels.${id}`, lv, [0, f.maxLevel]);
+  }
+  for (const f of facilityRows) if (!(f.id in fs.levels)) errors.push(`state.facilities.levels.${f.id} 없음`);
+  if (fs.construction) {
+    const c = fs.construction;
+    const f = facilityRows.find((x) => x.id === c.facilityId);
+    if (!f) errors.push(`state.facilities.construction.facilityId: 없는 시설 id "${c.facilityId}"`);
+    else {
+      if (c.targetLevel !== (fs.levels[c.facilityId] ?? 0) + 1) errors.push(`state.facilities.construction.targetLevel: 현재 레벨 + 1이 아님(${c.targetLevel})`);
+      within('state.facilities.construction.targetLevel', c.targetLevel, [1, f.maxLevel]);
+    }
+    atLeast('state.facilities.construction.completeDay', c.completeDay, c.startDay);
+  }
+  const placed = new Set<string>();
+  for (const [id, ids] of Object.entries(fs.assignments)) {
+    const p = `state.facilities.assignments.${id}`;
+    if (!facilityRows.some((x) => x.id === id)) errors.push(`${p}: 없는 시설 id "${id}"`);
+    else if (ids.length > facilitySlots(t as unknown as GameTables, fs, id)) errors.push(`${p}: 칸 수(${facilitySlots(t as unknown as GameTables, fs, id)})보다 많이 배치됨`);
+    ids.forEach((mercId, j) => {
+      const m = state.mercenaries.find((x) => x.id === mercId);
+      if (!m) errors.push(`${p}[${j}]: 세이브에 없는 용병 "${mercId}"`);
+      else {
+        if (m.affiliation.kind !== 'guild') errors.push(`${p}[${j}]: 길드 소속이 아닌 용병 "${mercId}"`);
+        if (m.isProtagonist) errors.push(`${p}[${j}]: 주인공은 배치할 수 없음`);
+        if (m.injury) errors.push(`${p}[${j}]: 부상 중인 용병 "${mercId}"`);
+      }
+      if (busy.has(mercId)) errors.push(`${p}[${j}]: 파견 중인 용병 "${mercId}"`);
+      if (placed.has(mercId)) errors.push(`${p}[${j}]: 두 곳에 배치된 용병 "${mercId}"`);
+      placed.add(mercId);
+    });
+  }
 
   return errors;
 }

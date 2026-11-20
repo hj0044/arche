@@ -25,6 +25,8 @@ import autoPartyJson from './auto-party.json';
 import saveLimitsJson from './save-limits.json';
 import loyaltyJson from './loyalty.json';
 import poachingJson from './poaching.json';
+import facilitiesJson from './facilities.json';
+import autoplayJson from './autoplay.json';
 
 export type Range = [number, number];
 export type StatId = 'hp' | 'atk' | 'def' | 'spd';
@@ -231,6 +233,39 @@ export interface GameTables {
   autoParty: AutoPartyTable;
   loyalty: LoyaltyTable;
   poaching: PoachingTable;
+  facilities: FacilitiesTable;
+  autoplay: AutoplayPolicy;
+}
+
+/** 시설 효과 정의. type별 처리기(engine/facilities.ts)가 나머지 값을 해석한다. */
+export interface FacilityEffect {
+  type: string;
+  [key: string]: unknown;
+}
+
+export interface FacilityRow {
+  id: string;
+  name: string;
+  description: string;
+  maxLevel: number;
+  startLevel: number;
+  cost: { zero: number; zeroGrowth: number; days: number; daysStep: number };
+  /** 특정 레벨의 비용·일수 덮어쓰기(키는 레벨) */
+  levelOverrides?: Record<string, { zero?: number; days?: number }>;
+  effect: FacilityEffect;
+}
+
+export interface FacilitiesTable {
+  facilities: FacilityRow[];
+  fog: { deadlineWidth: number; levelWidth: number; countWidth: number; rewardSpread: number };
+}
+
+export interface AutoplayPolicy {
+  facilityOrder: string[];
+  facilityReserveZero: number;
+  recruitReserveZero: number;
+  facilitiesBeforeRecruit: boolean;
+  assignIdleToTraining: boolean;
 }
 
 /** 무소속 용병의 다른 세력 영입 이동 */
@@ -334,6 +369,8 @@ export const tables: GameTables = {
   autoParty: autoPartyJson,
   loyalty: loyaltyJson as unknown as LoyaltyTable,
   poaching: poachingJson,
+  facilities: facilitiesJson as unknown as FacilitiesTable,
+  autoplay: autoplayJson,
 };
 
 /** 세이브 정책(명세 9절 확정 규칙의 값). 저장 코드와 화면 문구가 같은 값을 읽는다. */

@@ -91,7 +91,7 @@ describe('세이브 파일 형식', () => {
 
   it('이전 버전(v1) 세이브는 불러오지 않는다(용병·세력 id 변경으로 폐기)', () => {
     const v1 = { ...createSaveFile(playedState(), 'manual'), version: 1 };
-    expect(SAVE_VERSION).toBe(4);
+    expect(SAVE_VERSION).toBe(5);
     expect(() => parseSave(v1)).toThrow(/이전 버전/);
     expect(isLoadable(v1)).toBe(false);
     expect(isLoadable(createSaveFile(playedState(), 'auto'))).toBe(true);
@@ -175,5 +175,23 @@ describe.each(repos)('세이브 서비스 (%s 저장소)', (_name, makeRepo) => 
     await svc.saveManual('B', s);
     await svc.deleteSlot('A');
     expect((await svc.listSlots()).map((x) => x.slotId)).toEqual(['B']);
+  });
+});
+
+describe('세이브 v4 → v5 마이그레이션(거점 시설)', () => {
+  it('시설은 시작 레벨, 건설·배치 없음, 리프트 흐림 오프셋 0으로 채운다', () => {
+    const cur = createSaveFile(playedState(), 'manual');
+    const v4 = JSON.parse(serializeSave(cur));
+    v4.version = 4;
+    delete v4.state.facilities;
+    for (const r of v4.state.rifts) delete r.fog;
+    for (const e of v4.state.expeditions) delete e.rift.fog;
+    for (const r of v4.state.reports) delete r.rift.fog;
+    const up = parseSave(v4);
+    expect(up.version).toBe(SAVE_VERSION);
+    expect(up.state.facilities).toEqual({ levels: { infirmary: 0, training: 0, scout: 1 }, construction: null, assignments: {} });
+    for (const r of [...up.state.rifts, ...up.state.expeditions.map((e) => e.rift), ...up.state.reports.map((x) => x.rift)]) {
+      expect(r.fog).toEqual({ deadlineOffset: 0, levelOffset: 0, countOffset: 0, rewardU: 0 });
+    }
   });
 });

@@ -1,11 +1,12 @@
 import type { GameState } from '../engine/game';
+import facilitiesJson from '../data/facilities.json';
 import loyaltyJson from '../data/loyalty.json';
 import { validate } from './saveSchema';
 import { validateSemantics, type SemanticTables } from './saveSemantics';
 
 /** 세이브 형식 식별자와 현재 버전. 형식이 바뀌면 버전을 올리고 MIGRATIONS에 변환을 추가한다. */
 export const SAVE_FORMAT = 'arche-save';
-export const SAVE_VERSION = 4;
+export const SAVE_VERSION = 5;
 
 export type SaveKind = 'manual' | 'auto';
 
@@ -40,6 +41,7 @@ const MAX_SHOWN_PROBLEMS = 3;
  * v1 → v2: 용병 30명 교체와 세력 id 변경(ironhound → waypoint)으로 호환하지 않고 폐기한다(사용자 결정).
  * v2 → v3: 충성도 필드 추가. 마이그레이션으로 시작값을 채운다.
  * v3 → v4: 주인공을 뺀 모든 용병이 충성도를 갖고(길드 밖은 시작값 보관), 연속 쉰 일수를 추가한다.
+ * v4 → v5: 거점 시설 상태와 리프트 흐림 오프셋을 추가한다.
  * 예: 1: (raw) => ({ ...raw, version: 2, state: { ...raw.state, 새필드: 기본값 } }) */
 const MIGRATIONS: Record<number, (raw: Record<string, unknown>) => Record<string, unknown>> = {
   // v2 → v3: 충성도 추가. 길드 소속 용병(주인공 제외)에 시작값 충성도를 넣는다.
@@ -68,6 +70,27 @@ const MIGRATIONS: Record<number, (raw: Record<string, unknown>) => Record<string
       m.loyalty = { ...loyalty, restStreak: (loyalty.restStreak as number | undefined) ?? 0 };
     }
     return { ...raw, version: 4, state };
+  },
+  // v4 → v5: 거점 시설. 시설 레벨은 데이터의 시작 레벨(탐지소 1, 나머지 0), 건설 없음, 배치 없음.
+  // 리프트(목록·파견·보고)에 흐림 오프셋 0을 넣는다(범위의 아래 끝이 실제 값).
+  4: (raw) => {
+    const state = structuredClone(raw.state) as Record<string, unknown> & {
+      rifts?: Record<string, unknown>[];
+      expeditions?: { rift?: Record<string, unknown> }[];
+      reports?: { rift?: Record<string, unknown> }[];
+    };
+    state.facilities ??= {
+      levels: Object.fromEntries(facilitiesJson.facilities.map((f) => [f.id, f.startLevel])),
+      construction: null,
+      assignments: {},
+    };
+    const addFog = (r?: Record<string, unknown>) => {
+      if (r && r.fog === undefined) r.fog = { deadlineOffset: 0, levelOffset: 0, countOffset: 0, rewardU: 0 };
+    };
+    for (const r of state.rifts ?? []) addFog(r);
+    for (const e of state.expeditions ?? []) addFog(e.rift);
+    for (const r of state.reports ?? []) addFog(r.rift);
+    return { ...raw, version: 5, state };
   },
 };
 
