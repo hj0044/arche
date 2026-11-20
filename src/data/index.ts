@@ -27,6 +27,7 @@ import loyaltyJson from './loyalty.json';
 import poachingJson from './poaching.json';
 import facilitiesJson from './facilities.json';
 import autoplayJson from './autoplay.json';
+import combatPowerJson from './combat-power.json';
 
 export type Range = [number, number];
 export type StatId = 'hp' | 'atk' | 'def' | 'spd';
@@ -237,6 +238,15 @@ export interface GameTables {
   poaching: PoachingTable;
   facilities: FacilitiesTable;
   autoplay: AutoplayPolicy;
+  combatPower: CombatPowerTable;
+}
+
+/** 전투력과 예상 위험도 */
+export interface CombatPowerTable {
+  statWeights: Stats;
+  simulations: number;
+  /** minWinRate가 큰 것부터 판정. 단계 수는 데이터로 늘리고 줄인다. */
+  riskTiers: { id: string; name: string; minWinRate: number }[];
 }
 
 /** 시설 효과 정의. type별 처리기(engine/facilities.ts)가 나머지 값을 해석한다. */
@@ -373,6 +383,7 @@ export const tables: GameTables = {
   poaching: poachingJson,
   facilities: facilitiesJson as unknown as FacilitiesTable,
   autoplay: autoplayJson,
+  combatPower: combatPowerJson as CombatPowerTable,
 };
 
 /** 세이브 정책(명세 9절 확정 규칙의 값). 저장 코드와 화면 문구가 같은 값을 읽는다. */
