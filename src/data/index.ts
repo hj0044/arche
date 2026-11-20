@@ -354,6 +354,10 @@ export interface UiTable {
   upkeepWarnDays: number;
   /** 출전 가능 인원이 이보다 적으면 '지금 상황'에서 이유별 인원을 보인다 */
   lowAvailableWarn: number;
+  /** 용병 화면 정렬 항목(탭별). 비교 방법은 id로 화면 코드가 정한다. */
+  mercSort: { guild: { id: string; name: string }[]; recruit: { id: string; name: string }[] };
+  /** 용병 화면 상태 필터 칩 */
+  mercStatusFilters: { id: string; name: string }[];
 }
 
 export const cities: readonly CityRow[] = citiesJson as CityRow[];

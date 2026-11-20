@@ -15,7 +15,10 @@ import {
   recruitInfo,
   recruitUpkeepOutlook,
   upkeepPerDay,
+  assignToFacility,
+  unassignFromFacility,
 } from '../../engine/game';
+import { trainingAccess } from '../../engine/status';
 import { AppShell } from '../AppShell';
 import { Bar, ConfirmDialog, ElementTag, LoyaltyBadge, Panel, RoleTag } from '../components';
 import { loyaltyDisplay, loyaltyTier, tendencyOf } from '../../engine/loyalty';
@@ -146,6 +149,56 @@ export function MercDetail({ ctx, mercId }: { ctx: Ctx; mercId: string }) {
           </p>
         )}
       </Panel>
+
+      {isGuild && !m.isProtagonist && (() => {
+        const t = trainingAccess(tables, s, m.id);
+        if (!t.facilityId) return null;
+        const fname = getFacility(tables, t.facilityId).name;
+        return (
+          <Panel title={fname} action={t.built ? <span className="muted small">칸 {t.used}/{t.slots}</span> : undefined}>
+            {!t.built ? (
+              <>
+                <p className="small muted">거점에서 {fname}를 건설하면 배치할 수 있습니다.</p>
+                <button className="btn block" onClick={() => ctx.go({ name: 'base' })}>
+                  거점으로 ›
+                </button>
+              </>
+            ) : t.assigned ? (
+              <>
+                <p className="small">
+                  배치 중 · 하루 경험치 +{num(t.expPerDay)} · 배치 중에는 파견할 수 없습니다.
+                </p>
+                <button
+                  className="btn block"
+                  onClick={() =>
+                    run(() => {
+                      ctx.setState(unassignFromFacility(s, t.facilityId!, m.id));
+                      ctx.toast(`${m.name} ${fname} 배치 해제`);
+                    })
+                  }
+                >
+                  배치 해제
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  className="btn block"
+                  disabled={!!t.reason}
+                  onClick={() =>
+                    run(() => {
+                      ctx.setState(assignToFacility(tables, s, t.facilityId!, m.id));
+                      ctx.toast(`${m.name} ${fname}에 배치`);
+                    })
+                  }
+                >
+                  {t.reason ? `${fname}에 배치할 수 없음 · ${t.reason}` : `${fname}에 배치 (하루 경험치 +${num(t.expPerDay)})`}
+                </button>
+              </>
+            )}
+          </Panel>
+        );
+      })()}
 
       {isGuild && m.loyalty && (
         <Panel title="충성도" action={<LoyaltyBadge value={m.loyalty.value} />}>

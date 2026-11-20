@@ -256,3 +256,31 @@ button.rift-main:active:not(:disabled) { background: var(--surface-2); }
 .risk-fair { color: var(--text); }
 .risk-risky { color: var(--warn); }
 .risk-hopeless { color: var(--bad); }
+
+/* 일괄 레벨업 */
+.bulk-levelup { gap: 6px; }
+.bulk-result { border-top: 1px solid var(--border); padding-top: 6px; }
+.bulk-list { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0 8px; }
+.bulk-list .link { padding: 4px 2px; }
+
+/* 용병 목록 카드(3줄) */
+.merc-card { display: flex; flex-direction: column; gap: 4px; width: calc(100% + 20px); margin: 0 -10px; padding: 10px; text-align: left; background: none; border: 1px solid transparent; border-radius: 10px; min-height: 64px; min-width: 0; }
+.merc-card:active { background: var(--surface-2); }
+.merc-card.ready { border-color: rgba(95, 211, 154, 0.5); background: rgba(95, 211, 154, 0.06); }
+.merc-line { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-width: 0; }
+.merc-line > :first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.merc-exp { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 8px; }
+.merc-sub { font-size: 0.75rem; color: var(--muted); }
+.merc-summary { display: flex; flex-wrap: wrap; gap: 2px 10px; font-size: 0.875rem; }
+.list-tools { display: grid; grid-template-columns: 1fr auto; gap: 8px; }
+.list-tools input { min-width: 0; }
+.list-tools select { max-width: 150px; font-size: 0.875rem; }
+.filter-label { font-size: 0.75rem; color: var(--muted); margin: 0 0 -4px; }
+.tab { position: relative; }
+.tab-badge { position: absolute; top: 4px; right: 6px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--ok); color: #06180e; font-size: 0.75rem; font-weight: 700; line-height: 18px; }
+.trainee-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 48px; }
+.chip.small { min-width: 44px; }
+.filter-panel { display: flex; flex-direction: column; gap: 8px; }
+.filter-panel select { width: 100%; }
+.btn.on-filter { border-color: var(--accent); color: var(--accent); }
+.list-status { min-height: 44px; }

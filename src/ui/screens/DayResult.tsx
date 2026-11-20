@@ -2,6 +2,7 @@ import { tables } from '../../data';
 import type { DayEvent } from '../../engine/game';
 import { AppShell } from '../AppShell';
 import { StatusSummary } from '../StatusSummary';
+import { BulkLevelUp } from '../BulkLevelUp';
 import { levelUpCandidates } from '../../engine/status';
 import { Panel } from '../components';
 import { cityName, factionName, loyaltyTierName, materialName, num, omenText, outcomeName, severityName } from '../format';
@@ -65,6 +66,7 @@ export function DayResult({ ctx, events }: { ctx: Ctx; events: DayEvent[] }) {
               </li>
             ))}
           </ul>
+          <BulkLevelUp ctx={ctx} />
         </Panel>
       )}
       {(built.length > 0 || trained.length > 0 || unassigned.length > 0) && (

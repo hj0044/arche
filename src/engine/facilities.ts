@@ -3,7 +3,7 @@
  * 시설 상태를 바꾸는 행동(건설, 배치)은 game.ts에 있다.
  * 새 효과 종류는 EFFECT_HANDLERS에 처리기를 등록하는 한 곳만 바꾸면 된다.
  */
-import type { FacilityEffect, FacilityRow, GameTables } from '../data';
+import { getRiftTier, type FacilityEffect, type FacilityRow, type GameTables, type Outcome } from '../data';
 import { riftReward, type Rift, type RiftOmen, type RiftReward } from './rift';
 
 export interface FacilitiesState {
@@ -181,16 +181,30 @@ export interface VisibleRift {
 
 const exact = (v: number): ValueRange => [v, v];
 
-function fogReward(tables: GameTables, r: RiftReward, exactReward: boolean, u: number): VisibleReward {
-  if (exactReward) {
-    return { zero: exact(r.zero), arche: exact(r.arche), materials: Object.fromEntries(Object.entries(r.materials).map(([k, v]) => [k, exact(v)])) };
-  }
-  const s = tables.facilities.fog.rewardSpread;
-  const lo = 1 - 2 * s * u;
-  const hi = lo + 2 * s;
-  const range = (v: number): ValueRange => [Math.floor(v * lo), Math.ceil(v * hi)];
-  return { zero: range(r.zero), arche: range(r.arche), materials: Object.fromEntries(Object.entries(r.materials).map(([k, v]) => [k, range(v)])) };
+/**
+ * 탐지소가 보상을 정확히 보여 주지 않을 때의 보상 범위(지시서 012 6-1).
+ * 실제 보상이 아니라 보이는 정보만으로 만든다: 리프트 등급의 기본 보상 범위 × 결과 배율 × 안정화 배율
+ * × (1 + 레벨 배율 × 보이는 몬스터 레벨 범위의 양 끝). 그래서 숨은 레벨이 범위 위치로 새지 않고,
+ * 실제 보상은 항상 이 범위 안에 있다.
+ */
+function blurredReward(tables: GameTables, rift: Rift, outcome: Outcome, level: ValueRange): VisibleReward {
+  const tier = getRiftTier(tables, rift.tier);
+  const prog = tables.progression;
+  const ratio = (lv: number) =>
+    prog.rewardRatioByOutcome[outcome] * (rift.stable ? prog.stablePassageRewardRatio : 1) * (1 + prog.rewardLevelScale * lv);
+  const range = ([lo, hi]: [number, number]): ValueRange => [Math.floor(lo * ratio(level[0])), Math.floor(hi * ratio(level[1]))];
+  return {
+    zero: range(tier.rewards.zero),
+    arche: range(tier.rewards.arche),
+    materials: Object.fromEntries(Object.entries(tier.rewards.materials).map(([k, r]) => [k, range(r)])),
+  };
 }
+
+const exactReward = (r: RiftReward): VisibleReward => ({
+  zero: exact(r.zero),
+  arche: exact(r.arche),
+  materials: Object.fromEntries(Object.entries(r.materials).map(([k, v]) => [k, exact(v)])),
+});
 
 export function visibleRift(tables: GameTables, fs: FacilitiesState, rift: Rift): VisibleRift {
   const row = scoutingRow(tables, fs);
@@ -223,8 +237,8 @@ export function visibleRift(tables: GameTables, fs: FacilitiesState, rift: Rift)
     level,
     count,
     deadline,
-    victoryReward: fogReward(tables, riftReward(tables, rift, 'victory'), row.exactReward, rift.fog.rewardU),
-    retreatReward: fogReward(tables, riftReward(tables, rift, 'retreat'), row.exactReward, rift.fog.rewardU),
+    victoryReward: row.exactReward ? exactReward(riftReward(tables, rift, 'victory')) : blurredReward(tables, rift, 'victory', level),
+    retreatReward: row.exactReward ? exactReward(riftReward(tables, rift, 'retreat')) : blurredReward(tables, rift, 'retreat', level),
     omen: row.revealOmen ? rift.omen : undefined,
     omenHidden: !row.revealOmen,
     blurred: !row.revealElements || !row.exactEnemies || !row.exactDeadline || !row.exactReward || !row.revealOmen,

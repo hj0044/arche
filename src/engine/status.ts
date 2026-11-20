@@ -5,15 +5,18 @@
 import { getRole, type GameTables } from '../data';
 import { autoParty } from './autoParty';
 import { estimateRisk, type RiskEstimate } from './combatPower';
-import { assignedFacility, visibleRift } from './facilities';
+import { assignedFacility, facilityLevel, facilitySlots, trainingExp, visibleRift } from './facilities';
 import {
+  assignBlockReason,
   expToNextLevel,
   getMerc,
   guildUpkeepPerDay,
   isAvailable,
   isGuildMember,
   isOnExpedition,
+  levelUpAll,
   levelUpCost,
+  type LevelUpStep,
   mercToUnit,
   refusedToday,
   type GameState,
@@ -108,4 +111,56 @@ export function riftAutoRisk(tables: GameTables, state: GameState, rift: Rift): 
   if (party.length === 0) return null;
   const slots = party.map((p) => ({ unit: mercToUnit(tables, getMerc(state, p.mercId)), row: p.row ?? getRole(tables, getMerc(state, p.mercId).role).defaultRow }));
   return { partySize: party.length, estimate: estimateRisk(tables, slots, visibleRift(tables, state.facilities, rift)) };
+}
+
+export interface LevelUpOverview {
+  /** 경험치가 차서 지금 한 단계 올릴 수 있는 용병(파견 중 제외) */
+  readyCount: number;
+  /** 그중 아르케가 모자라 지금은 못 올리는 용병 */
+  archeShortCount: number;
+  /** 준비된 용병을 한 단계씩 올리는 데 드는 아르케 합계 */
+  totalCostOneEach: number;
+  arche: number;
+  /** 일괄 레벨업을 실행하면 오르는 용병 수·레벨 수·쓰는 아르케(미리보기) */
+  plan: { mercs: number; levels: number; arche: number; steps: LevelUpStep[] };
+}
+
+/** 레벨업 현황과 일괄 레벨업 미리보기(상태를 바꾸지 않음) */
+export function levelUpOverview(tables: GameTables, state: GameState): LevelUpOverview {
+  const ready = levelUpCandidates(tables, state);
+  const { steps } = levelUpAll(tables, state);
+  const plan = { mercs: new Set(steps.map((x) => x.mercId)).size, levels: steps.length, arche: steps.reduce((a, x) => a + x.cost, 0), steps };
+  return {
+    readyCount: ready.length,
+    archeShortCount: ready.filter((c) => !c.affordable).length,
+    totalCostOneEach: ready.reduce((a, c) => a + c.cost, 0),
+    arche: state.resources.arche,
+    plan,
+  };
+}
+
+export interface TrainingAccess {
+  /** 훈련형 시설(데이터에서 첫 번째). 없으면 null */
+  facilityId: string | null;
+  built: boolean;
+  slots: number;
+  used: number;
+  /** 이 용병이 이 시설에 배치되어 있는가 */
+  assigned: boolean;
+  /** 배치할 수 없는 이유(배치 가능하거나 이미 배치됐으면 null) */
+  reason: string | null;
+  /** 하루 훈련 경험치 */
+  expPerDay: number;
+}
+
+/** 용병 상세의 "훈련소에 배치 / 배치 해제" 버튼 상태(지시서 012 4). 없는 id면 칸 정보만 준다. */
+export function trainingAccess(tables: GameTables, state: GameState, mercId: string): TrainingAccess {
+  const f = tables.facilities.facilities.find((x) => x.effect.type === 'training');
+  if (!f) return { facilityId: null, built: false, slots: 0, used: 0, assigned: false, reason: null, expPerDay: 0 };
+  const built = facilityLevel(state.facilities, f.id) > 0;
+  const used = (state.facilities.assignments[f.id] ?? []).length;
+  const assigned = assignedFacility(state.facilities, mercId) === f.id;
+  const known = state.mercenaries.some((m) => m.id === mercId);
+  const reason = !built || assigned || !known ? null : assignBlockReason(tables, state, f.id, mercId);
+  return { facilityId: f.id, built, slots: facilitySlots(tables, state.facilities, f.id), used, assigned, reason, expPerDay: trainingExp(tables, state.facilities, f.id) };
 }
