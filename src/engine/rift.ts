@@ -169,3 +169,28 @@ export function riftLevel(rift: Rift): number {
   return Math.max(...rift.enemies.map((e) => e.level));
 }
 
+
+/** 파견 결과별 한 명당 기준 경험치(나누기 전) = round(결과별 경험치 × 등급 배율 × (1 + 레벨 배율 × 몬스터 레벨)) */
+export function expPerMemberAt(tables: GameTables, tier: string, outcome: Outcome, monsterLevel: number): number {
+  const prog = tables.progression;
+  const tierMult = prog.expTierMultiplier[tier] ?? 1;
+  const levelMult = 1 + prog.expLevelScale * monsterLevel;
+  return Math.round(prog.expByOutcome[outcome] * tierMult * levelMult);
+}
+
+export const expPerMember = (tables: GameTables, rift: Rift, outcome: Outcome) => expPerMemberAt(tables, rift.tier, outcome, riftLevel(rift));
+
+/** 한 명당 기준 경험치를 파티 인원으로 나눈 몫: round(min(기준 × basePartySize ÷ 인원, 기준 × soloCapMultiplier)) */
+export function shareOf(tables: GameTables, perMember: number, partySize: number): number {
+  const { basePartySize, soloCapMultiplier } = tables.progression.expShare;
+  if (partySize <= 0) return 0;
+  return Math.round(Math.min((perMember * basePartySize) / partySize, perMember * soloCapMultiplier));
+}
+
+/**
+ * 파견 경험치 나누기(지시서 009). 총량이 정해져 있고 참가자가 나눠 갖는다.
+ * 파티 인원은 파견에 나간 전원(주인공, 쓰러진 사람 포함).
+ */
+export function expShare(tables: GameTables, rift: Rift, outcome: Outcome, partySize: number): number {
+  return shareOf(tables, expPerMember(tables, rift, outcome), partySize);
+}

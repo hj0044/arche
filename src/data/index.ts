@@ -131,6 +131,8 @@ export interface ProgressionTable {
   /** 하루 유지비 = base + perLevel × 레벨 */
   upkeepZeroPerDay: { base: number; perLevel: number };
   protagonistUpkeep: boolean;
+  /** 파견 경험치 나누기: 총량 = 한 명당 경험치 × basePartySize, 한 명당 몫 = 총량 ÷ 인원(상한 한 명당 × soloCapMultiplier) */
+  expShare: { basePartySize: number; soloCapMultiplier: number };
   /** 개방자 모드에서 시작 길드에 합류하지 않는 후보가 들어갈 세력 id */
   openerLeftoverFaction: string;
   /** 전투 로그까지 보관하는 최근 복귀 보고 수 */

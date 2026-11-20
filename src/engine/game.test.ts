@@ -142,7 +142,10 @@ describe('정산', () => {
     expect(state.resources.arche).toBe(before.arche + Math.floor(20 * scale));
     for (const g of report.expGains) {
       const m = getMerc(state, g.mercId);
-      expect(g.exp).toBe(Math.round(tables.progression.expByOutcome.victory * (1 + tables.progression.expLevelScale * 1)));
+      // 경험치는 파티 인원으로 나눈다(지시서 009)
+      const per = Math.round(tables.progression.expByOutcome.victory * (1 + tables.progression.expLevelScale * 1));
+      const { basePartySize, soloCapMultiplier } = tables.progression.expShare;
+      expect(g.exp).toBe(Math.round(Math.min((per * basePartySize) / report.party.length, per * soloCapMultiplier)));
       expect(m.exp).toBe(g.exp);
     }
     expect(report.events?.at(-1)).toMatchObject({ type: 'end', outcome: 'victory' });
