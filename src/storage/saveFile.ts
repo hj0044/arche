@@ -1,4 +1,5 @@
 import type { GameState } from '../engine/game';
+import { validate } from './saveSchema';
 
 /** 세이브 형식 식별자와 현재 버전. 형식이 바뀌면 버전을 올리고 MIGRATIONS에 변환을 추가한다. */
 export const SAVE_FORMAT = 'arche-save';
@@ -16,7 +17,18 @@ export interface SaveFile {
   state: GameState;
 }
 
-export class SaveFormatError extends Error {}
+export class SaveFormatError extends Error {
+  constructor(
+    message: string,
+    /** 스키마 검사에서 나온 필드 경로별 문제 */
+    readonly problems: string[] = [],
+  ) {
+    super(message);
+  }
+}
+
+/** 오류 문구에 보여 줄 문제 개수 */
+const MAX_SHOWN_PROBLEMS = 3;
 
 /**
  * version n → n+1 변환. 비어 있는 버전은 지원하지 않는다.
@@ -59,16 +71,11 @@ export function parseSave(input: string | unknown): SaveFile {
     if (!migrate) throw new SaveFormatError(`이전 버전(${obj.version}) 세이브는 이 버전에서 불러올 수 없다`);
     obj = migrate(obj);
   }
-  const state = obj.state as Partial<GameState> | undefined;
-  if (
-    !state ||
-    typeof state.day !== 'number' ||
-    typeof state.seed !== 'string' ||
-    !Array.isArray(state.mercenaries) ||
-    !Array.isArray(state.rifts) ||
-    !Array.isArray(state.expeditions)
-  ) {
-    throw new SaveFormatError('게임 상태가 손상됐다');
+  const problems = validate(obj);
+  if (problems.length) {
+    const shown = problems.slice(0, MAX_SHOWN_PROBLEMS).join(', ');
+    const more = problems.length > MAX_SHOWN_PROBLEMS ? ` 외 ${problems.length - MAX_SHOWN_PROBLEMS}건` : '';
+    throw new SaveFormatError(`세이브가 손상됐다: ${shown}${more}`, problems);
   }
   return obj as unknown as SaveFile;
 }

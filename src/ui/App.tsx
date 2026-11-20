@@ -29,7 +29,7 @@ export function App() {
 
   const toast = useCallback((msg: string) => {
     setToastMsg(msg);
-    window.setTimeout(() => setToastMsg((m) => (m === msg ? null : m)), 2500);
+    window.setTimeout(() => setToastMsg((m) => (m === msg ? null : m)), tables.ui.toastMs);
   }, []);
 
   const startGame = useCallback(

@@ -72,7 +72,7 @@ export function NewGame({ onBack, onStart }: NewGameProps) {
 
       <section className="field">
         <label htmlFor="pname">주인공 이름</label>
-        <input id="pname" value={name} maxLength={12} onChange={(e) => setName(e.target.value)} placeholder="예: 한서준" />
+        <input id="pname" value={name} onChange={(e) => setName(e.target.value)} placeholder="예: 한서준" />
       </section>
 
       {mode === 'opener' && (
@@ -140,7 +140,7 @@ export function NewGame({ onBack, onStart }: NewGameProps) {
 
       <section className="field">
         <label htmlFor="gname">길드 이름</label>
-        <input id="gname" value={guildName} maxLength={16} onChange={(e) => setGuildName(e.target.value)} placeholder="예: 새벽 용병단" />
+        <input id="gname" value={guildName} onChange={(e) => setGuildName(e.target.value)} placeholder="예: 새벽 용병단" />
       </section>
 
       <section className="field">

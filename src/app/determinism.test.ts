@@ -1,0 +1,40 @@
+import { describe, expect, it } from 'vitest';
+import { tables } from '../data';
+import { advanceDay, dispatch, newGame, type GameState, type PartyMember } from '../engine/game';
+import { createSaveFile, parseSave, serializeSave } from '../storage/saveFile';
+
+/**
+ * 결정성 회귀: 고정 시드 새 게임에서 리프트 하나를 파견한 상태를 복제해,
+ * 한쪽은 메모리 상태 그대로, 다른 쪽은 저장 형식으로 직렬화했다가 다시 읽은 상태로 10일 진행한다.
+ * 매일 상태와 이벤트가 깊게 같아야 한다.
+ */
+function start(party: PartyMember[]): GameState {
+  const s = newGame(tables, {
+    seed: 'audit-20261120',
+    guildName: '검수 길드',
+    baseCityId: 'seoul',
+    protagonist: { mode: 'opener', name: '검수자', element: 'fire', role: 'warrior', background: 'survivor' },
+  });
+  return dispatch(tables, s, 'r1', party);
+}
+
+describe.each([
+  ['주인공 포함', [{ mercId: 'hero', row: 'front' }, { mercId: 'm02', row: 'back' }, { mercId: 'm03', row: 'back' }, { mercId: 'm04', row: 'back' }]],
+  ['주인공 제외', [{ mercId: 'm02', row: 'back' }, { mercId: 'm03', row: 'back' }, { mercId: 'm04', row: 'back' }]],
+] as [string, PartyMember[]][])('결정성 회귀(%s)', (_label, party) => {
+  it('메모리 상태와 저장 왕복 상태를 10일 진행하면 매일 상태·이벤트가 같다', () => {
+    const origin = start(party);
+    let memory = structuredClone(origin);
+    let loaded = parseSave(serializeSave(createSaveFile(origin, 'manual'))).state;
+    expect(loaded).toEqual(memory);
+    for (let day = 0; day < 10; day++) {
+      const a = advanceDay(tables, memory);
+      const b = advanceDay(tables, loaded);
+      expect(b.events).toEqual(a.events);
+      expect(b.state).toEqual(a.state);
+      memory = a.state;
+      loaded = b.state;
+    }
+    expect(memory.reports.length).toBeGreaterThan(0);
+  });
+});

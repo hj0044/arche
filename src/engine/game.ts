@@ -223,9 +223,6 @@ export function mercToUnit(tables: GameTables, m: MercenaryState): Unit {
 
 const PROTAGONIST_ID = 'hero';
 
-/** 개방자 모드에서 빠지는 시작 후보를 고르는 무소속 세력 id */
-const LEFTOVER_FACTION = 'free';
-
 /**
  * 개방자 모드에서 시작 후보 4명 중 빠질 1명.
  * 같은 역할 → 같은 분류(전위·딜러·지원) → 후보 목록의 마지막 순서로 고른다.
@@ -271,7 +268,8 @@ export function newGame(tables: GameTables, opts: NewGameOptions): GameState {
   }));
 
   const p = opts.protagonist;
-  const protagonist: Protagonist = { mode: p.mode, name: p.name, background: p.background };
+  if (!p.name.trim()) throw new GameError('주인공 이름이 비어 있다');
+  const protagonist: Protagonist = { mode: p.mode, name: p.name.trim(), background: p.background };
   if (p.mode === 'opener') {
     const role = tables.roles.find((r) => r.id === p.role);
     if (!role?.enabled) throw new GameError(`고를 수 없는 역할: ${p.role}`);
@@ -279,7 +277,7 @@ export function newGame(tables: GameTables, opts: NewGameOptions): GameState {
     const g = tables.progression.protagonistGrowth;
     mercenaries.unshift({
       id: PROTAGONIST_ID,
-      name: p.name,
+      name: p.name.trim(),
       element: p.element,
       role: p.role,
       level: g.initialLevel,
@@ -294,7 +292,7 @@ export function newGame(tables: GameTables, opts: NewGameOptions): GameState {
     // 주인공 역할과 겹치는 시작 후보 1명은 무소속으로 남는다.
     const left = pickCandidateToLeave(tables, p.role);
     const merc = mercenaries.find((m) => m.id === left);
-    if (merc) merc.affiliation = { kind: 'faction', factionId: LEFTOVER_FACTION };
+    if (merc) merc.affiliation = { kind: 'faction', factionId: tables.progression.openerLeftoverFaction };
   }
 
   const state: GameState = {
@@ -359,6 +357,8 @@ export function levelUp(tables: GameTables, prev: GameState, mercId: string): Ga
   const state = structuredClone(prev);
   const m = getMerc(state, mercId);
   if (!isGuildMember(m)) throw new GameError('길드 용병만 키울 수 있다');
+  // 부상 중에는 레벨업할 수 있고, 파견 중에는 복귀할 때까지 할 수 없다(2026-11-20 확정).
+  if (isOnExpedition(state, m.id)) throw new GameError(LEVEL_UP_BLOCKED_ON_EXPEDITION);
   if (m.level >= m.growth.cap) throw new GameError('성장 한계에 도달했다');
   const need = expToNextLevel(tables, m.level, m.growth.speed);
   if (m.exp < need) throw new GameError('경험치가 부족하다');
@@ -370,10 +370,13 @@ export function levelUp(tables: GameTables, prev: GameState, mercId: string): Ga
   return state;
 }
 
+export const LEVEL_UP_BLOCKED_ON_EXPEDITION = '파견 중에는 레벨업할 수 없음';
+
 export function canLevelUp(tables: GameTables, state: GameState, mercId: string): boolean {
   const m = getMerc(state, mercId);
   return (
     isGuildMember(m) &&
+    !isOnExpedition(state, m.id) &&
     m.level < m.growth.cap &&
     m.exp >= expToNextLevel(tables, m.level, m.growth.speed) &&
     state.resources.arche >= levelUpCost(tables, m.level)
@@ -395,6 +398,27 @@ export function recruit(tables: GameTables, prev: GameState, mercId: string): Ga
 
 // ── 하루 진행 ─────────────────────────────────────────
 
+/**
+ * 결과별 실제 보상. 정산과 화면(리프트 카드)이 같은 함수를 쓴다.
+ * = 기본 보상 × 결과 배율 × 안정화 통로 배율 × (1 + 레벨 배율 × 몬스터 레벨), 내림.
+ */
+export function riftReward(tables: GameTables, rift: Rift, outcome: Outcome): RiftReward {
+  const prog = tables.progression;
+  const ratio =
+    prog.rewardRatioByOutcome[outcome] *
+    (rift.stable ? prog.stablePassageRewardRatio : 1) *
+    (1 + prog.rewardLevelScale * riftLevel(rift));
+  return {
+    zero: Math.floor(rift.reward.zero * ratio),
+    arche: Math.floor(rift.reward.arche * ratio),
+    materials: Object.fromEntries(
+      Object.entries(rift.reward.materials)
+        .map(([k, v]) => [k, Math.floor(v * ratio)] as const)
+        .filter(([, v]) => v > 0),
+    ),
+  };
+}
+
 /** 리프트의 대표 몬스터 레벨(가장 높은 레벨) */
 export function riftLevel(rift: Rift): number {
   return Math.max(...rift.enemies.map((e) => e.level));
@@ -411,23 +435,11 @@ function settleExpedition(tables: GameTables, state: GameState, ex: Expedition):
   const prog = tables.progression;
   const outcome = result.outcome;
 
-  const ratio =
-    prog.rewardRatioByOutcome[outcome] *
-    (ex.rift.stable ? prog.stablePassageRewardRatio : 1) *
-    (1 + prog.rewardLevelScale * riftLevel(ex.rift));
   if (outcome === 'victory') {
     state.records.victories += 1;
     state.records.victoriesByTier[ex.rift.tier] = (state.records.victoriesByTier[ex.rift.tier] ?? 0) + 1;
   }
-  const reward: RiftReward = {
-    zero: Math.floor(ex.rift.reward.zero * ratio),
-    arche: Math.floor(ex.rift.reward.arche * ratio),
-    materials: Object.fromEntries(
-      Object.entries(ex.rift.reward.materials)
-        .map(([k, v]) => [k, Math.floor(v * ratio)] as const)
-        .filter(([, v]) => v > 0),
-    ),
-  };
+  const reward = riftReward(tables, ex.rift, outcome);
   state.resources.zero += reward.zero;
   state.resources.arche += reward.arche;
   for (const [k, v] of Object.entries(reward.materials)) state.resources.materials[k] = (state.resources.materials[k] ?? 0) + v;

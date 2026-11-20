@@ -4,7 +4,7 @@ import { compositionMultiplier, elementMultiplier } from '../../engine/combat';
 import { dispatch, GameError, isAvailable, type PartyMember } from '../../engine/game';
 import { AppShell } from '../AppShell';
 import { ElementTag, Panel, RoleTag } from '../components';
-import { pct, rowName } from '../format';
+import { elementName, pct, rowName } from '../format';
 import type { Ctx } from '../nav';
 import { RiftCard } from './RiftList';
 
@@ -42,6 +42,7 @@ export function PartyBuilder({ ctx, riftId }: { ctx: Ctx; riftId: string }) {
   const groups = new Set(roles.map((r) => getRole(tables, r).group));
   const missing = tables.combat.composition.groups.filter((g) => !groups.has(g));
   const travel = travelDays(tables, s.baseCityId, rift.cityId);
+  const enemyElements = [...new Set(rift.enemies.map((e) => tables.monsters.find((x) => x.id === e.monsterId)?.element).filter((x) => x !== undefined))];
   const returnDay = s.day + travel * 2 + rift.durationDays;
 
   const send = () => {
@@ -119,7 +120,8 @@ export function PartyBuilder({ ctx, riftId }: { ctx: Ctx; riftId: string }) {
           {candidates.map((m) => {
             const free = isAvailable(s, m.id);
             const selected = inParty(m.id);
-            const vsVoid = elementMultiplier(tables, m.element, 'void');
+            const strong = enemyElements.filter((el) => elementMultiplier(tables, m.element, el) > 1);
+            const weak = enemyElements.filter((el) => elementMultiplier(tables, m.element, el) < 1);
             return (
               <li key={m.id}>
                 <button
@@ -135,7 +137,8 @@ export function PartyBuilder({ ctx, riftId }: { ctx: Ctx; riftId: string }) {
                     <div className="tags">
                       <ElementTag id={m.element} />
                       <RoleTag id={m.role} />
-                      {vsVoid > 1 && <span className="small ok">어둠과 상극</span>}
+                      {strong.length > 0 && <span className="small ok">{strong.map(elementName).join('·')}에 유리</span>}
+                      {weak.length > 0 && <span className="small warn">{weak.map(elementName).join('·')}에 불리</span>}
                     </div>
                   </div>
                   <span className={`pill ${selected ? 'ok' : ''}`}>

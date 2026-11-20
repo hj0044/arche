@@ -39,7 +39,7 @@ export function Title({ onNew, onLoad, onOpenSaves }: TitleProps) {
         {latest && recent && (
           <button className="card-button" onClick={() => onLoad(recent.slotId, latest.state)}>
             <span className="card-title">이어하기</span>
-            <span className="card-desc">
+            <span className="card-desc ellipsis">
               {latest.summary.guildName} · {cityName(latest.summary.baseCityId)} · {latest.summary.day}일차 ·{' '}
               {formatDateTime(latest.savedAt)}
             </span>

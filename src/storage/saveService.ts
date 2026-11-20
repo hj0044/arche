@@ -1,9 +1,8 @@
+import { savePolicy } from '../data';
 import type { GameState } from '../engine/game';
 import type { SaveRecord, SaveRepository } from './repository';
 import { createSaveFile, parseSave, serializeSave, type SaveFile } from './saveFile';
 
-/** 슬롯별 자동 저장 보관 개수(명세 9절 확정 규칙) */
-export const AUTO_SAVES_PER_SLOT = 3;
 
 export interface SlotSummary {
   slotId: string;
@@ -26,9 +25,15 @@ export function newSlotId(now: Date = new Date()): string {
   return `slot-${now.getTime().toString(36)}-${Math.floor(Math.random() * 1e6).toString(36)}`;
 }
 
-/** 슬롯 규칙: 수동 저장은 슬롯마다 하나(덮어쓰기 확인), 자동 저장은 슬롯마다 최근 3개 순환. 슬롯 수는 제한 없다. */
+/**
+ * 슬롯 규칙: 수동 저장은 슬롯마다 하나(덮어쓰기 확인), 자동 저장은 슬롯마다 최근 N개 순환(N은 save-policy.json).
+ * 슬롯 수는 제한 없다.
+ */
 export class SaveService {
-  constructor(private readonly repo: SaveRepository) {}
+  constructor(
+    private readonly repo: SaveRepository,
+    readonly policy: { autoSavesPerSlot: number } = savePolicy,
+  ) {}
 
   async saveManual(slotId: string, state: GameState, opts: { overwrite?: boolean; now?: Date } = {}): Promise<ManualSaveResult> {
     const existing = await this.repo.get(manualKey(slotId));
@@ -42,7 +47,7 @@ export class SaveService {
     const autos = (await this.repo.list()).filter((r) => r.slotId === slotId && r.kind === 'auto');
     const seq = autos.reduce((m, r) => Math.max(m, r.seq), 0) + 1;
     let index = autos.length;
-    if (autos.length >= AUTO_SAVES_PER_SLOT) {
+    if (autos.length >= this.policy.autoSavesPerSlot) {
       const oldest = autos.reduce((a, b) => (a.seq <= b.seq ? a : b));
       index = Number(oldest.key.split('/').at(-1));
     }

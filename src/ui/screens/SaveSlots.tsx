@@ -27,6 +27,7 @@ export function SaveSlots({ ctx, onLoad, onBack, toast }: SaveSlotsProps) {
   const [slots, setSlots] = useState<SlotSummary[]>([]);
   const [pending, setPending] = useState<Pending | null>(null);
   const [usage, setUsage] = useState<number | undefined>();
+  const [importError, setImportError] = useState('');
   const fileInput = useRef<HTMLInputElement>(null);
   const game = ctx?.game;
 
@@ -75,13 +76,15 @@ export function SaveSlots({ ctx, onLoad, onBack, toast }: SaveSlotsProps) {
   };
 
   const importFile = async (file: File) => {
+    setImportError('');
     try {
       const { slotId, state } = await saves.importFile(await file.text(), newSlotId());
       toast('파일을 새 슬롯으로 불러왔습니다.');
       await refresh();
       onLoad(slotId, state);
     } catch (e) {
-      toast(`불러오기 실패: ${(e as Error).message}`);
+      // 검증에 실패하면 슬롯을 만들지 않고, 필드 경로가 든 오류를 화면에 남긴다.
+      setImportError(`파일을 불러오지 못했습니다. ${(e as Error).message}`);
     }
   };
 
@@ -121,13 +124,18 @@ export function SaveSlots({ ctx, onLoad, onBack, toast }: SaveSlotsProps) {
               파일로 내보내기
             </button>
           </div>
-          <p className="hint">하루를 넘길 때마다 이 슬롯에 자동 저장됩니다(최근 3개).</p>
+          <p className="hint">하루를 넘길 때마다 이 슬롯에 자동 저장됩니다(최근 {saves.policy.autoSavesPerSlot}개).</p>
         </Panel>
       )}
 
       <button className="btn block" onClick={() => fileInput.current?.click()}>
         파일에서 불러오기
       </button>
+      {importError && (
+        <p className="error small" role="alert">
+          {importError}
+        </p>
+      )}
       <input
         ref={fileInput}
         type="file"

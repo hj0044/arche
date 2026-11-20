@@ -20,6 +20,7 @@ import growthSpeedsJson from './growth-speeds.json';
 import worldsJson from './worlds.json';
 import racesJson from './races.json';
 import omensJson from './omens.json';
+import savePolicyJson from './save-policy.json';
 
 export type Range = [number, number];
 export type StatId = 'hp' | 'atk' | 'def' | 'spd';
@@ -124,6 +125,8 @@ export interface ProgressionTable {
   /** 하루 유지비 = base + perLevel × 레벨 */
   upkeepZeroPerDay: { base: number; perLevel: number };
   protagonistUpkeep: boolean;
+  /** 개방자 모드에서 시작 길드에 합류하지 않는 후보가 들어갈 세력 id */
+  openerLeftoverFaction: string;
   /** 전투 로그까지 보관하는 최근 복귀 보고 수 */
   reportHistoryLimit: number;
   /** 안정화된 통로를 다시 공략할 때 보상 배율 */
@@ -230,6 +233,9 @@ export interface UiTable {
   storageWarnRatio: number;
   replay: { stepMs: number; speeds: number[] };
   recentReportsOnHome: number;
+  toastMs: number;
+  /** 마감이 이 일수 이하로 남으면 경고 색 */
+  deadlineWarnDays: number;
 }
 
 export const cities: readonly CityRow[] = citiesJson as CityRow[];
@@ -257,6 +263,9 @@ export const tables: GameTables = {
   races: racesJson,
   omens: omensJson,
 };
+
+/** 세이브 정책(명세 9절 확정 규칙의 값). 저장 코드와 화면 문구가 같은 값을 읽는다. */
+export const savePolicy: { autoSavesPerSlot: number } = savePolicyJson;
 
 export function findCity(id: string): CityRow | undefined {
   return cities.find((c) => c.id === id);
