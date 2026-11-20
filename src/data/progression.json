@@ -46,5 +46,9 @@
   },
   "protagonistUpkeep": false,
   "expLevelScale": 0.05,
-  "openerLeftoverFaction": "free"
+  "openerLeftoverFaction": "free",
+  "expShare": {
+    "basePartySize": 5,
+    "soloCapMultiplier": 2
+  }
 }

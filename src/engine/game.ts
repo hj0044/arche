@@ -1,8 +1,8 @@
 import { getGrowthSpeed, getRiftTier, travelDays, type GameTables, type Outcome, type Row, type UnlockRule } from '../data';
 import { resolveCombat, validateParty, type CombatEvent, type CombatSlot } from './combat';
 import { rollInjuries, type Injury } from './injury';
-import { generateRift, riftEnemySlots, riftLevel, riftReward, type Rift, type RiftReward } from './rift';
-export { riftLevel, riftReward } from './rift';
+import { expShare, generateRift, riftEnemySlots, riftReward, type Rift, type RiftReward } from './rift';
+export { expPerMember, expPerMemberAt, expShare, riftLevel, riftReward, shareOf } from './rift';
 import { createRng } from './rng';
 import {
   assignedFacility,
@@ -550,7 +550,6 @@ function settleExpedition(tables: GameTables, state: GameState, ex: Expedition):
     enemies: riftEnemySlots(tables, ex.rift),
     seed: combatSeed,
   });
-  const prog = tables.progression;
   const outcome = result.outcome;
 
   if (outcome === 'victory') {
@@ -562,11 +561,11 @@ function settleExpedition(tables: GameTables, state: GameState, ex: Expedition):
   state.resources.arche += reward.arche;
   for (const [k, v] of Object.entries(reward.materials)) state.resources.materials[k] = (state.resources.materials[k] ?? 0) + v;
 
-  const tierMult = prog.expTierMultiplier[ex.rift.tier] ?? 1;
-  const levelMult = 1 + prog.expLevelScale * riftLevel(ex.rift);
+  // 경험치는 총량을 파티원이 나눠 갖는다(인원이 적으면 한 명당 몫이 늘고, 상한이 있다).
+  const shareExp = expShare(tables, ex.rift, outcome, ex.party.length);
   const expGains: ExpGain[] = ex.party.map((p) => {
     const m = getMerc(state, p.mercId);
-    const exp = Math.round(prog.expByOutcome[outcome] * tierMult * levelMult);
+    const exp = shareExp;
     m.exp += exp;
     return { mercId: m.id, exp };
   });

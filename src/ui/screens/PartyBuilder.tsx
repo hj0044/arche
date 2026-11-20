@@ -3,7 +3,7 @@ import { getRole, tables, travelDays, type Row } from '../../data';
 import { autoParty } from '../../engine/autoParty';
 import { assignedFacility, getFacility, visibleRift } from '../../engine/facilities';
 import { compositionMultiplier, elementMultiplier } from '../../engine/combat';
-import { dispatch, GameError, guildUpkeepPerDay, isAvailable, isOnExpedition, refusedToday, type PartyMember } from '../../engine/game';
+import { dispatch, expPerMemberAt, GameError, guildUpkeepPerDay, shareOf, isAvailable, isOnExpedition, refusedToday, type PartyMember } from '../../engine/game';
 import { AppShell } from '../AppShell';
 import { ElementTag, RoleTag } from '../components';
 import { elementName, num, pct, rowName } from '../format';
@@ -59,6 +59,15 @@ export function PartyBuilder({ ctx, riftId }: { ctx: Ctx; riftId: string }) {
   const returnDay = s.day + travel * 2 + rift.durationDays;
   // 상성 안내도 탐지소로 보이는 속성만 쓴다.
   const enemyElements = visibleRift(tables, s.facilities, rift).elements ?? [];
+  // 예상 경험치(한 명당, 승리 기준). 탐지소로 보이는 몬스터 레벨 범위로 계산해 숨은 레벨이 새지 않게 한다.
+  const vis = visibleRift(tables, s.facilities, rift);
+  const expPreview = (() => {
+    const n = Math.max(1, party.length);
+    const lo = shareOf(tables, expPerMemberAt(tables, rift.tier, 'victory', vis.level[0]), n);
+    const hi = shareOf(tables, expPerMemberAt(tables, rift.tier, 'victory', vis.level[1]), n);
+    const v = lo === hi ? `${lo}` : `${lo}~${hi}`;
+    return `한 명당 ${v}${party.length ? ` (${party.length}명, 승리 시)` : ' (1명 기준, 승리 시)'}`;
+  })();
   const front = party.filter((p) => p.row === 'front').map((p) => merc(p.mercId).name);
   const back = party.filter((p) => p.row === 'back').map((p) => merc(p.mercId).name);
 
@@ -105,6 +114,8 @@ export function PartyBuilder({ ctx, riftId }: { ctx: Ctx; riftId: string }) {
               </>
             )}
           </span>
+          <span className="muted small">예상 경험치</span>
+          <span>{expPreview}</span>
           <span className="muted small">구성</span>
           <span className={comp >= 1 ? 'ok' : 'warn'}>
             {party.length ? pct(comp - 1) : '-'}
