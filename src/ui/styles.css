@@ -185,3 +185,15 @@ input, select { min-height: var(--touch); padding: 0 12px; border-radius: 10px; 
 /* 흑막 징조 표식 */
 .tag.omen { color: var(--el-void); background: rgba(178, 140, 255, 0.14); border: 1px solid rgba(178, 140, 255, 0.45); }
 .omen-text { color: #cdb8ff; margin: 0; font-style: italic; }
+
+/* 긴 이름은 말줄임으로 표시한다(이름 길이 제한 없음, 2026-11-20 확정) */
+.ellipsis, .shell-subtitle, .row-item .strong, .member-info .strong, .panel-head h2, .rift-head .card-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.row-item > div:first-child, .row-button > div:first-child { flex: 1; min-width: 0; }
+.panel-head h2 { display: block; min-width: 0; flex: 1; }
+.card-button { min-width: 0; }
+.shell-body > * { flex-shrink: 0; }
+.formation-row, .formation-slots, .member { min-width: 0; }

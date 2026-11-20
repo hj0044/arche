@@ -7,7 +7,8 @@ import { advanceDay, dispatch, newGame, type GameState } from '../engine/game';
 import { IndexedDbSaveRepository } from './indexedDb';
 import { MemorySaveRepository, type SaveRepository } from './repository';
 import { createSaveFile, isLoadable, parseSave, SAVE_FORMAT, SAVE_VERSION, SaveFormatError, serializeSave } from './saveFile';
-import { AUTO_SAVES_PER_SLOT, SaveService } from './saveService';
+import { SaveService } from './saveService';
+import { savePolicy } from '../data';
 
 /** 며칠 진행하고 파견 중인 상태까지 들어간 게임 */
 function playedState(): GameState {
@@ -108,7 +109,7 @@ describe.each(repos)('세이브 서비스 (%s 저장소)', (_name, makeRepo) => 
     await svc.saveAuto('B', s, at(10));
     const slots = await svc.listSlots();
     const a = slots.find((x) => x.slotId === 'A')!;
-    expect(a.autos).toHaveLength(AUTO_SAVES_PER_SLOT);
+    expect(a.autos).toHaveLength(savePolicy.autoSavesPerSlot);
     expect(a.autos.map((f) => f.summary.day)).toEqual(days.slice(-3).reverse());
     expect(slots.find((x) => x.slotId === 'B')!.autos).toHaveLength(1);
     expect((await svc.loadAuto('A', 0))?.day).toBe(days[4]);

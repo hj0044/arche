@@ -45,5 +45,6 @@
     "perLevel": 1
   },
   "protagonistUpkeep": false,
-  "expLevelScale": 0.05
+  "expLevelScale": 0.05,
+  "openerLeftoverFaction": "free"
 }

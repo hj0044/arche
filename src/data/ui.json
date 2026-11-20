@@ -1,5 +1,14 @@
 {
   "storageWarnRatio": 0.8,
-  "replay": { "stepMs": 700, "speeds": [1, 2, 4] },
-  "recentReportsOnHome": 3
+  "replay": {
+    "stepMs": 700,
+    "speeds": [
+      1,
+      2,
+      4
+    ]
+  },
+  "recentReportsOnHome": 3,
+  "toastMs": 2500,
+  "deadlineWarnDays": 1
 }

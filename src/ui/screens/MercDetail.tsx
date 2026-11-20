@@ -7,6 +7,7 @@ import {
   isOnExpedition,
   levelUp,
   levelUpCost,
+  LEVEL_UP_BLOCKED_ON_EXPEDITION,
   mercToUnit,
   recruit,
   recruitInfo,
@@ -36,6 +37,7 @@ export function MercDetail({ ctx, mercId }: { ctx: Ctx; mercId: string }) {
   const cost = levelUpCost(tables, m.level);
   const capped = m.level >= m.growth.cap;
   const isGuild = m.affiliation.kind === 'guild';
+  const onExpedition = isOnExpedition(s, m.id);
   const info = recruitInfo(tables, s, m.id);
   const speed = tables.growthSpeeds.find((g) => g.id === m.growth.speed);
 
@@ -76,7 +78,9 @@ export function MercDetail({ ctx, mercId }: { ctx: Ctx; mercId: string }) {
           })
         }
       >
-        {capped
+        {onExpedition
+          ? LEVEL_UP_BLOCKED_ON_EXPEDITION
+          : capped
           ? '성장 한계에 도달'
           : m.exp < need
             ? `레벨업: 경험치 ${m.exp}/${need}`
