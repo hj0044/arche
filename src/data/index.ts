@@ -19,6 +19,7 @@ import uiJson from './ui.json';
 import growthSpeedsJson from './growth-speeds.json';
 import worldsJson from './worlds.json';
 import racesJson from './races.json';
+import omensJson from './omens.json';
 
 export type Range = [number, number];
 export type StatId = 'hp' | 'atk' | 'def' | 'spd';
@@ -98,6 +99,8 @@ export interface RiftTierRow {
   /** 승리하면 항로 안정화 기록을 남긴다(1단계는 기록만). */
   stabilizes: boolean;
   names: string[];
+  /** 흑막 징조 표식이 붙을 확률(연출 전용, 규칙에 영향 없음) */
+  omenChance: number;
 }
 
 export interface MaterialRow { id: string; name: string; world: string; note: string }
@@ -216,7 +219,11 @@ export interface GameTables {
   growthSpeeds: GrowthSpeedRow[];
   worlds: { id: string; name: string }[];
   races: { id: string; name: string; world: string }[];
+  /** 징조 표식 문구 */
+  omens: OmenRow[];
 }
+
+export interface OmenRow { id: string; text: string }
 
 /** 화면 쪽 수치(재생 속도, 경고 기준 등) */
 export interface UiTable {
@@ -248,6 +255,7 @@ export const tables: GameTables = {
   growthSpeeds: growthSpeedsJson,
   worlds: worldsJson,
   races: racesJson,
+  omens: omensJson,
 };
 
 export function findCity(id: string): CityRow | undefined {

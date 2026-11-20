@@ -39,3 +39,6 @@ export function formatDateTime(iso: string): string {
   const p = (n: number) => String(n).padStart(2, '0');
   return `${d.getMonth() + 1}/${d.getDate()} ${p(d.getHours())}:${p(d.getMinutes())}`;
 }
+
+/** 징조 표식 문구. 데이터에 없는 id면 빈 문자열 */
+export const omenText = (id: string) => tables.omens.find((o) => o.id === id)?.text ?? '';

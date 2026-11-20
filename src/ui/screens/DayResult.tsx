@@ -1,7 +1,7 @@
 import type { DayEvent } from '../../engine/game';
 import { AppShell } from '../AppShell';
 import { Panel } from '../components';
-import { cityName, materialName, num, outcomeName, severityName } from '../format';
+import { cityName, materialName, num, omenText, outcomeName, severityName } from '../format';
 import type { Ctx } from '../nav';
 
 export function DayResult({ ctx, events }: { ctx: Ctx; events: DayEvent[] }) {
@@ -26,8 +26,9 @@ export function DayResult({ ctx, events }: { ctx: Ctx; events: DayEvent[] }) {
     >
       {upkeep?.type === 'upkeep' && (
         <p className={`small ${upkeep.unpaid ? 'warn' : 'muted'}`}>
-          유지비 제로 −{num(upkeep.paid)}
-          {upkeep.unpaid > 0 && ` · 미납 ${num(upkeep.unpaid)} (${upkeep.unpaidMercIds.map(name).join(', ')})`}
+          {upkeep.paid > 0 && `유지비 제로 −${num(upkeep.paid)}`}
+          {upkeep.paid > 0 && upkeep.unpaid > 0 && ' · '}
+          {upkeep.unpaid > 0 && `유지비 미납 ${num(upkeep.unpaid)} (${upkeep.unpaidMercIds.map(name).join(', ')})`}
         </p>
       )}
       {quiet && <p className="muted">조용한 하루였습니다.</p>}
@@ -44,6 +45,7 @@ export function DayResult({ ctx, events }: { ctx: Ctx; events: DayEvent[] }) {
             {r.rounds}라운드 · 제로 +{num(r.reward.zero)} · 아르케 +{num(r.reward.arche)}
             {Object.entries(r.reward.materials).map(([id, n]) => ` · ${materialName(id)} +${n}`)}
           </p>
+          {r.rift.omen && <p className="omen-text small">◈ 징조 표식이 있던 리프트였다. {omenText(r.rift.omen.textId)}</p>}
           {r.stabilized && <p className="small ok">항로를 안정화했습니다. 이제 마감 없이 다시 공략할 수 있습니다.</p>}
           <p className="small muted">경험치: {r.expGains.map((g) => `${name(g.mercId)} +${g.exp}`).join(', ')}</p>
           {r.injuries.length > 0 && (

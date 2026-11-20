@@ -1,7 +1,7 @@
 import { tables } from '../../data';
 import { guildUpkeepPerDay, isOnExpedition } from '../../engine/game';
 import { AppShell } from '../AppShell';
-import { ElementTag, Panel, RoleTag } from '../components';
+import { ElementTag, OmenBadge, Panel, RoleTag } from '../components';
 import { cityName, materialName, num, outcomeName, severityName } from '../format';
 import { MainTabs } from '../MainTabs';
 import type { Ctx } from '../nav';
@@ -55,7 +55,9 @@ export function GuildHome({ ctx }: { ctx: Ctx }) {
             {s.expeditions.map((e) => (
               <li key={e.id} className="row-item">
                 <div>
-                  <div className="strong">{e.rift.name}</div>
+                  <div className="strong">
+                    {e.rift.name} {e.rift.omen && <OmenBadge />}
+                  </div>
                   <div className="muted small">
                     {e.party.map((p) => s.mercenaries.find((m) => m.id === p.mercId)?.name).join(', ')}
                   </div>
@@ -78,7 +80,9 @@ export function GuildHome({ ctx }: { ctx: Ctx }) {
                   onClick={() => ctx.go({ name: 'replay', expeditionId: r.expeditionId, back: { name: 'home' } })}
                 >
                   <div>
-                    <div className="strong">{r.rift.name}</div>
+                    <div className="strong">
+                      {r.rift.name} {r.rift.omen && <OmenBadge />}
+                    </div>
                     <div className="muted small">{r.day}일차 복귀 · 제로 +{num(r.reward.zero)} · 아르케 +{num(r.reward.arche)}</div>
                   </div>
                   <span className={`pill outcome-${r.outcome}`}>{outcomeName[r.outcome]}</span>
