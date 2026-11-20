@@ -42,3 +42,13 @@ export function formatDateTime(iso: string): string {
 
 /** 징조 표식 문구. 데이터에 없는 id면 빈 문자열 */
 export const omenText = (id: string) => tables.omens.find((o) => o.id === id)?.text ?? '';
+
+export const loyaltyTierName = (id: string) => tables.loyalty.tiers.find((t) => t.id === id)?.name ?? id;
+export const loyaltyReasonName: Record<string, string> = {
+  victory: '파견 승리',
+  defeat: '파견 패배',
+  injury: '부상',
+  unpaidDay: '유지비 미납',
+  restDay: '길드에서 휴식',
+  salaryBonus: '급료 보너스',
+};

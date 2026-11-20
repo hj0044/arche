@@ -7,6 +7,8 @@ import {
   isOnExpedition,
   levelUp,
   levelUpCost,
+  paySalaryBonus,
+  salaryBonusCost,
   LEVEL_UP_BLOCKED_ON_EXPEDITION,
   mercToUnit,
   recruit,
@@ -15,8 +17,9 @@ import {
   upkeepPerDay,
 } from '../../engine/game';
 import { AppShell } from '../AppShell';
-import { Bar, ConfirmDialog, ElementTag, Panel, RoleTag } from '../components';
-import { backgroundShort, cityName, factionName, growthSpeedName, num, severityName, tierName, worldName } from '../format';
+import { Bar, ConfirmDialog, ElementTag, LoyaltyBadge, Panel, RoleTag } from '../components';
+import { loyaltyDisplay, loyaltyTier, tendencyOf } from '../../engine/loyalty';
+import { loyaltyReasonName, backgroundShort, cityName, factionName, growthSpeedName, num, severityName, tierName, worldName } from '../format';
 import type { Ctx } from '../nav';
 
 const SKILL_DESC: Record<string, string> = {
@@ -41,6 +44,7 @@ export function MercDetail({ ctx, mercId }: { ctx: Ctx; mercId: string }) {
   const onExpedition = isOnExpedition(s, m.id);
   const info = recruitInfo(tables, s, m.id);
   const outlook = recruitUpkeepOutlook(tables, s, m.id);
+  const tendency = tendencyOf(tables, m.profile.background);
   const speed = tables.growthSpeeds.find((g) => g.id === m.growth.speed);
 
   const run = (fn: () => void) => {
@@ -140,6 +144,61 @@ export function MercDetail({ ctx, mercId }: { ctx: Ctx; mercId: string }) {
         )}
       </Panel>
 
+      {isGuild && m.loyalty && (
+        <Panel title="충성도" action={<LoyaltyBadge value={m.loyalty.value} />}>
+          <div className="small">
+            <span className="strong">{loyaltyDisplay(m.loyalty.value)}</span>
+            <span className="muted"> / {tables.loyalty.range[1]}</span>
+            {(() => {
+              const tier = loyaltyTier(tables, m.loyalty!.value);
+              return tier.statBonus !== 0 ? (
+                <span className={tier.statBonus > 0 ? 'ok' : 'warn'}>
+                  {' '}
+                  · 공격·방어 {tier.statBonus > 0 ? '+' : ''}
+                  {Math.round(tier.statBonus * 100)}%
+                </span>
+              ) : null;
+            })()}
+          </div>
+          <Bar value={m.loyalty.value} max={tables.loyalty.range[1]} />
+          {loyaltyTier(tables, m.loyalty.value).warn && (
+            <p className="warn small" role="status">
+              {loyaltyTier(tables, m.loyalty.value).refuseChance > 0
+                ? `충성도가 위험합니다. 파견을 거부할 수 있고, ${tables.loyalty.departure.afterConsecutiveDays}일 넘게 이어지면 길드를 떠날 수 있습니다.`
+                : '충성도가 낮아 전투 능력이 줄었습니다.'}
+            </p>
+          )}
+          {m.loyalty.refusedOnDay === s.day && <p className="bad small">오늘은 파견을 거부했습니다.</p>}
+          {m.loyalty.recent.length > 0 && (
+            <ul className="loyalty-log">
+              {[...m.loyalty.recent].reverse().map((r, i) => (
+                <li key={i} className="small">
+                  <span className="muted">{r.day}일차</span> {loyaltyReasonName[r.reason] ?? r.reason}{' '}
+                  <span className={r.delta >= 0 ? 'ok' : 'warn'}>
+                    {r.delta >= 0 ? '+' : ''}
+                    {r.delta}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+          <button
+            className="btn block"
+            disabled={m.loyalty.bonusDay === s.day || s.resources.zero < salaryBonusCost(tables, m)}
+            onClick={() =>
+              run(() => {
+                ctx.setState(paySalaryBonus(tables, s, m.id));
+                ctx.toast(`${m.name}에게 급료 보너스를 줬습니다.`);
+              })
+            }
+          >
+            {m.loyalty.bonusDay === s.day
+              ? '오늘 급료 보너스를 줬습니다'
+              : `급료 보너스 (제로 ${num(salaryBonusCost(tables, m))}${s.resources.zero < salaryBonusCost(tables, m) ? ' 부족' : ''})`}
+          </button>
+        </Panel>
+      )}
+
       <Panel title="프로필">
         <div className="kv">
           {m.profile.age !== undefined && (
@@ -162,6 +221,14 @@ export function MercDetail({ ctx, mercId }: { ctx: Ctx; mercId: string }) {
           )}
           <span>배경</span>
           <span>{backgroundShort(m.profile.background)}</span>
+          {!m.isProtagonist && tendency && (
+            <>
+              <span>계약 성향</span>
+              <span>
+                {tendency.name}형 <span className="muted small">· {tendency.description}</span>
+              </span>
+            </>
+          )}
           <span>세계</span>
           <span>{worldName(m.profile.world)}</span>
           {!isGuild && m.affiliation.kind === 'faction' && (

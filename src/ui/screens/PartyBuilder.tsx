@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { getRole, tables, travelDays, type Row } from '../../data';
 import { autoParty, riftEnemyElements } from '../../engine/autoParty';
 import { compositionMultiplier, elementMultiplier } from '../../engine/combat';
-import { dispatch, GameError, guildUpkeepPerDay, isAvailable, type PartyMember } from '../../engine/game';
+import { dispatch, GameError, guildUpkeepPerDay, isAvailable, isOnExpedition, refusedToday, type PartyMember } from '../../engine/game';
 import { AppShell } from '../AppShell';
 import { ElementTag, RoleTag } from '../components';
 import { elementName, num, pct, rowName } from '../format';
@@ -29,6 +29,10 @@ export function PartyBuilder({ ctx, riftId }: { ctx: Ctx; riftId: string }) {
   const merc = (id: string) => s.mercenaries.find((m) => m.id === id)!;
   const candidates = s.mercenaries.filter((m) => m.affiliation.kind === 'guild');
   const slot = (id: string) => party.find((p) => p.mercId === id);
+  const unavailableReason = (m: (typeof candidates)[number]) =>
+    refusedToday(s, m) ? '오늘 거부' : m.injury ? '부상' : isOnExpedition(s, m.id) ? '파견 중' : '불가';
+  // 이미 짜 둔 파티에 오늘 쓸 수 없게 된 용병이 있으면 빼고 알린다(거부 판정은 하루 시작 때 정해진다).
+  const dropped = party.filter((p) => !isAvailable(s, p.mercId));
 
   const toggle = (id: string) => {
     setError('');
@@ -50,7 +54,7 @@ export function PartyBuilder({ ctx, riftId }: { ctx: Ctx; riftId: string }) {
 
   const send = () => {
     try {
-      ctx.setState(dispatch(tables, s, rift.id, party));
+      ctx.setState(dispatch(tables, s, rift.id, party.filter((p) => isAvailable(s, p.mercId))));
       ctx.toast(`${rift.name}에 파견했습니다. ${returnDay}일차에 복귀합니다.`);
       ctx.go({ name: 'home' });
     } catch (e) {
@@ -107,6 +111,11 @@ export function PartyBuilder({ ctx, riftId }: { ctx: Ctx; riftId: string }) {
         </div>
       </section>
 
+      {dropped.length > 0 && (
+        <p className="warn small" role="status">
+          {dropped.map((p) => merc(p.mercId).name).join(', ')}은(는) 오늘 파견할 수 없어 파티에서 빠집니다.
+        </p>
+      )}
       <p className="hint">탭해서 넣고 빼며, 넣은 용병은 오른쪽에서 열을 고릅니다. 기본 위치가 아닌 열은 주는 피해가 줄고 받는 피해가 늡니다.</p>
 
       <ul className="rows candidate-list">
@@ -133,7 +142,7 @@ export function PartyBuilder({ ctx, riftId }: { ctx: Ctx; riftId: string }) {
                   {strong.length > 0 && <span className="small ok">{strong.map(elementName).join('·')}에 유리</span>}
                   {weak.length > 0 && <span className="small warn">{weak.map(elementName).join('·')}에 불리</span>}
                   {off && <span className="small warn">기본 위치 아님</span>}
-                  {!free && <span className="small muted">{m.injury ? '부상' : '파견 중'}</span>}
+                  {!free && <span className="small muted">{unavailableReason(m)}</span>}
                 </span>
               </button>
               <div className="candidate-side">
@@ -146,7 +155,7 @@ export function PartyBuilder({ ctx, riftId }: { ctx: Ctx; riftId: string }) {
                     ))}
                   </div>
                 ) : (
-                  <span className="pill">{free ? '추가' : m.injury ? '부상' : '파견 중'}</span>
+                  <span className={`pill ${refusedToday(s, m) ? 'bad' : ''}`}>{free ? '추가' : unavailableReason(m)}</span>
                 )}
               </div>
             </li>

@@ -38,3 +38,29 @@ describe.each([
     expect(memory.reports.length).toBeGreaterThan(0);
   });
 });
+
+describe('결정성 회귀(충성도: 미납·거부·이탈이 일어나는 길드)', () => {
+  it('저장 왕복 상태와 메모리 상태를 15일 진행하면 충성도·거부·이탈까지 매일 같다', () => {
+    let origin = start([{ mercId: 'm02', row: 'back' }, { mercId: 'm03', row: 'back' }]);
+    origin = {
+      ...origin,
+      resources: { zero: 0, arche: 0, materials: {} },
+      mercenaries: origin.mercenaries.map((m) => (m.loyalty ? { ...m, loyalty: { ...m.loyalty, value: 12 } } : m)),
+    };
+    let memory = structuredClone(origin);
+    let loaded = parseSave(serializeSave(createSaveFile(origin, 'manual'))).state;
+    const kinds = new Set<string>();
+    for (let day = 0; day < 15; day++) {
+      const a = advanceDay(tables, memory);
+      const b = advanceDay(tables, loaded);
+      expect(b.events).toEqual(a.events);
+      expect(b.state).toEqual(a.state);
+      for (const e of a.events) kinds.add(e.type);
+      memory = a.state;
+      // 하루마다 저장 형식으로 다시 왕복한다
+      loaded = parseSave(serializeSave(createSaveFile(b.state, 'auto'))).state;
+    }
+    expect(kinds.has('refused')).toBe(true);
+    expect(kinds.has('departed')).toBe(true);
+  });
+});

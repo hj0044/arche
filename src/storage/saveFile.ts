@@ -1,10 +1,11 @@
 import type { GameState } from '../engine/game';
+import loyaltyJson from '../data/loyalty.json';
 import { validate } from './saveSchema';
 import { validateSemantics, type SemanticTables } from './saveSemantics';
 
 /** 세이브 형식 식별자와 현재 버전. 형식이 바뀌면 버전을 올리고 MIGRATIONS에 변환을 추가한다. */
 export const SAVE_FORMAT = 'arche-save';
-export const SAVE_VERSION = 2;
+export const SAVE_VERSION = 3;
 
 export type SaveKind = 'manual' | 'auto';
 
@@ -28,14 +29,30 @@ export class SaveFormatError extends Error {
   }
 }
 
+/** v2 → v3 마이그레이션에서 채우는 충성도 시작값(데이터 표) */
+const LOYALTY_START_V3 = loyaltyJson.start;
+
 /** 오류 문구에 보여 줄 문제 개수 */
 const MAX_SHOWN_PROBLEMS = 3;
 
 /**
  * version n → n+1 변환. 비어 있는 버전은 지원하지 않는다.
  * v1 → v2: 용병 30명 교체와 세력 id 변경(ironhound → waypoint)으로 호환하지 않고 폐기한다(사용자 결정).
+ * v2 → v3: 충성도 필드 추가. 마이그레이션으로 시작값을 채운다.
  * 예: 1: (raw) => ({ ...raw, version: 2, state: { ...raw.state, 새필드: 기본값 } }) */
-const MIGRATIONS: Record<number, (raw: Record<string, unknown>) => Record<string, unknown>> = {};
+const MIGRATIONS: Record<number, (raw: Record<string, unknown>) => Record<string, unknown>> = {
+  // v2 → v3: 충성도 추가. 길드 소속 용병(주인공 제외)에 시작값 충성도를 넣는다.
+  2: (raw) => {
+    const state = structuredClone(raw.state) as { mercenaries?: Record<string, unknown>[] };
+    for (const m of state.mercenaries ?? []) {
+      const aff = m.affiliation as { kind?: string } | undefined;
+      if (aff?.kind === 'guild' && !m.isProtagonist && m.loyalty === undefined) {
+        m.loyalty = { value: LOYALTY_START_V3, dangerDays: 0, refusedOnDay: null, bonusDay: null, recent: [] };
+      }
+    }
+    return { ...raw, version: 3, state };
+  },
+};
 
 export function createSaveFile(state: GameState, kind: SaveKind, now: Date = new Date()): SaveFile {
   return {

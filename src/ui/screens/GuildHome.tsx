@@ -1,7 +1,8 @@
 import { tables } from '../../data';
 import { guildUpkeepPerDay, isOnExpedition } from '../../engine/game';
 import { AppShell } from '../AppShell';
-import { ElementTag, OmenBadge, Panel, RoleTag } from '../components';
+import { ElementTag, LoyaltyBadge, OmenBadge, Panel, RoleTag } from '../components';
+import { loyaltyTier } from '../../engine/loyalty';
 import { cityName, materialName, num, outcomeName, severityName } from '../format';
 import { MainTabs } from '../MainTabs';
 import type { Ctx } from '../nav';
@@ -106,6 +107,7 @@ export function GuildHome({ ctx }: { ctx: Ctx }) {
                     <ElementTag id={m.element} />
                     <RoleTag id={m.role} />
                     <span className="muted small">Lv{m.level}</span>
+                    {m.loyalty && loyaltyTier(tables, m.loyalty.value).warn && <LoyaltyBadge value={m.loyalty.value} />}
                   </div>
                 </div>
                 {m.injury ? (
@@ -114,6 +116,8 @@ export function GuildHome({ ctx }: { ctx: Ctx }) {
                   </span>
                 ) : isOnExpedition(s, m.id) ? (
                   <span className="pill">파견 중</span>
+                ) : m.loyalty?.refusedOnDay === s.day ? (
+                  <span className="pill bad">오늘 거부</span>
                 ) : (
                   <span className="pill ok">대기</span>
                 )}

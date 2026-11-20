@@ -1,4 +1,6 @@
 import type { ReactNode } from 'react';
+import { tables } from '../data';
+import { loyaltyDisplay, loyaltyTier } from '../engine/loyalty';
 import { elementName, roleName } from './format';
 
 export function ElementTag({ id }: { id: string }) {
@@ -94,6 +96,17 @@ export function OmenBadge() {
   return (
     <span className="tag omen" aria-label="징조 표식">
       <span aria-hidden="true">◈</span> 징조
+    </span>
+  );
+}
+
+/** 충성도 구간 배지. 글자로 구간을 쓰고, 경고 구간은 ⚠를 붙인다. */
+export function LoyaltyBadge({ value, showValue = false }: { value: number; showValue?: boolean }) {
+  const tier = loyaltyTier(tables, value);
+  return (
+    <span className={`tag loyalty loyalty-${tier.id}`} aria-label={`충성도 ${tier.name} ${loyaltyDisplay(value)}`}>
+      {tier.warn && <span aria-hidden="true">⚠ </span>}충성 {tier.name}
+      {showValue && ` ${loyaltyDisplay(value)}`}
     </span>
   );
 }

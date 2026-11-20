@@ -1,0 +1,47 @@
+{
+  "_note": "충성도 규칙의 수치(임시값, 지시서 006 [제안]). 구간·성향·변동 요인은 행 추가로 늘린다.",
+  "range": [0, 100],
+  "start": 60,
+  "tiers": [
+    { "id": "high",   "name": "높음", "min": 70, "statBonus": 0.03,  "refuseChance": 0,    "warn": false },
+    { "id": "normal", "name": "보통", "min": 40, "statBonus": 0,     "refuseChance": 0,    "warn": false },
+    { "id": "low",    "name": "낮음", "min": 20, "statBonus": -0.05, "refuseChance": 0,    "warn": true },
+    { "id": "danger", "name": "위험", "min": 0,  "statBonus": -0.10, "refuseChance": 0.25, "warn": true }
+  ],
+  "departure": { "tier": "danger", "afterConsecutiveDays": 3, "chance": 0.2, "toFaction": "free", "excludeOnExpedition": true },
+  "changes": {
+    "victory": 3,
+    "defeat": -4,
+    "injury": -3,
+    "unpaidDay": -5,
+    "restDay": 1,
+    "salaryBonus": 10
+  },
+  "hardRiftGrades": ["high", "extreme"],
+  "salaryBonus": { "costPerLevel": 8 },
+  "recentLogSize": 5,
+  "tendencies": [
+    { "id": "pay",       "name": "보수", "description": "미납과 급료에 민감함",
+      "weights": { "unpaidDay": 2, "salaryBonus": 1.5 } },
+    { "id": "loyal",     "name": "의리", "description": "패배에 너그럽고 함께 쉬는 날에 정이 쌓임",
+      "weights": { "defeat": 0.5, "restDay": 1.5 } },
+    { "id": "honor",     "name": "명예", "description": "어려운 리프트의 승패에 크게 반응함",
+      "weights": { "victoryHard": 2, "defeat": 1.5 } },
+    { "id": "ambition",  "name": "야망", "description": "승리에 크게 반응하고 쉬는 날은 덜 반김",
+      "weights": { "victory": 1.5, "restDay": 0.5, "defeat": 1.2 } },
+    { "id": "stability", "name": "안정", "description": "부상을 싫어하고 쉬는 날을 좋아함",
+      "weights": { "injury": 2, "restDay": 2, "victory": 0.7 } }
+  ],
+  "backgroundTendency": {
+    "soldier": "honor",
+    "agent": "honor",
+    "corporate": "pay",
+    "freelancer": "pay",
+    "mercenary_company": "loyal",
+    "survivor": "loyal",
+    "wanderer": "ambition",
+    "heir": "ambition",
+    "citizen": "stability",
+    "researcher": "stability"
+  }
+}

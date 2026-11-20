@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { tables } from '../../data';
 import { canLevelUp, isOnExpedition, recruitInfo, type MercenaryState } from '../../engine/game';
 import { AppShell } from '../AppShell';
-import { ElementTag, RoleTag, Segmented } from '../components';
+import { ElementTag, LoyaltyBadge, RoleTag, Segmented } from '../components';
 import { cityName, factionName, growthSpeedName, num, severityName } from '../format';
 import { MainTabs } from '../MainTabs';
 import type { Ctx } from '../nav';
@@ -64,6 +64,12 @@ export function MercList({ ctx }: { ctx: Ctx }) {
                       한계 {m.growth.cap} · {growthSpeedName(m.growth.speed)}
                     </span>
                   </div>
+                  {m.loyalty && (
+                    <div className="tags">
+                      <LoyaltyBadge value={m.loyalty.value} />
+                      {m.loyalty.refusedOnDay === s.day && <span className="small warn">오늘 거부</span>}
+                    </div>
+                  )}
                   {info && (
                     <div className="muted tiny">
                       {factionName(factionOf(m))} · {m.profile.hometown ? cityName(m.profile.hometown) : ''}
