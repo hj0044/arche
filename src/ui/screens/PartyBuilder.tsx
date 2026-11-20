@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { getRole, tables, travelDays, type Row } from '../../data';
+import { autoParty, riftEnemyElements } from '../../engine/autoParty';
 import { compositionMultiplier, elementMultiplier } from '../../engine/combat';
-import { dispatch, GameError, isAvailable, type PartyMember } from '../../engine/game';
+import { dispatch, GameError, guildUpkeepPerDay, isAvailable, type PartyMember } from '../../engine/game';
 import { AppShell } from '../AppShell';
-import { ElementTag, Panel, RoleTag } from '../components';
-import { elementName, pct, rowName } from '../format';
+import { ElementTag, RoleTag } from '../components';
+import { elementName, num, pct, rowName } from '../format';
 import type { Ctx } from '../nav';
 import { RiftCard } from './RiftList';
 
@@ -27,23 +28,25 @@ export function PartyBuilder({ ctx, riftId }: { ctx: Ctx; riftId: string }) {
 
   const merc = (id: string) => s.mercenaries.find((m) => m.id === id)!;
   const candidates = s.mercenaries.filter((m) => m.affiliation.kind === 'guild');
-  const inParty = (id: string) => party.some((p) => p.mercId === id);
+  const slot = (id: string) => party.find((p) => p.mercId === id);
 
   const toggle = (id: string) => {
     setError('');
-    if (inParty(id)) setParty(party.filter((p) => p.mercId !== id));
+    if (slot(id)) setParty(party.filter((p) => p.mercId !== id));
     else if (party.length < maxSize) setParty([...party, { mercId: id, row: getRole(tables, merc(id).role).defaultRow }]);
   };
-  const flip = (id: string) =>
-    setParty(party.map((p) => (p.mercId === id ? { ...p, row: p.row === 'front' ? 'back' : 'front' } : p)));
+  const setRow = (id: string, row: Row) => setParty(party.map((p) => (p.mercId === id ? { ...p, row } : p)));
 
   const roles = party.map((p) => merc(p.mercId).role);
   const comp = compositionMultiplier(tables, roles);
   const groups = new Set(roles.map((r) => getRole(tables, r).group));
   const missing = tables.combat.composition.groups.filter((g) => !groups.has(g));
   const travel = travelDays(tables, s.baseCityId, rift.cityId);
-  const enemyElements = [...new Set(rift.enemies.map((e) => tables.monsters.find((x) => x.id === e.monsterId)?.element).filter((x) => x !== undefined))];
+  // 소요 일수는 리프트마다 확정값이라 복귀일도 확정값이다.
   const returnDay = s.day + travel * 2 + rift.durationDays;
+  const enemyElements = riftEnemyElements(tables, rift);
+  const front = party.filter((p) => p.row === 'front').map((p) => merc(p.mercId).name);
+  const back = party.filter((p) => p.row === 'back').map((p) => merc(p.mercId).name);
 
   const send = () => {
     try {
@@ -55,101 +58,101 @@ export function PartyBuilder({ ctx, riftId }: { ctx: Ctx; riftId: string }) {
     }
   };
 
-  const RowBox = ({ row }: { row: Row }) => {
-    const members = party.filter((p) => p.row === row);
-    return (
-      <div className="formation-row">
-        <div className="formation-label">{rowName[row]}</div>
-        <div className="formation-slots">
-          {members.length === 0 && <span className="muted small">비어 있음</span>}
-          {members.map((p) => {
-            const m = merc(p.mercId);
-            const off = getRole(tables, m.role).defaultRow !== row;
-            return (
-              <div key={p.mercId} className={`member ${off ? 'off' : ''}`}>
-                <div className="member-info">
-                  <div className="strong small">
-                    {m.name} {off && <span className="warn tiny">기본 위치 아님</span>}
-                  </div>
-                  <div className="tags">
-                    <ElementTag id={m.element} />
-                    <RoleTag id={m.role} />
-                  </div>
-                </div>
-                <button className="btn small" onClick={() => flip(p.mercId)} aria-label={`${m.name} ${row === 'front' ? '후열' : '전열'}로`}>
-                  {row === 'front' ? '후열로' : '전열로'}
-                </button>
-                <button className="btn small" onClick={() => toggle(p.mercId)} aria-label={`${m.name} 빼기`}>
-                  빼기
-                </button>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    );
-  };
-
   return (
     <AppShell
       title="파티 편성"
-      subtitle={`${party.length}/${maxSize}명 · ${returnDay}일차 복귀 예정`}
+      subtitle={rift.name}
       onBack={() => ctx.go({ name: 'rifts', cityId: rift.cityId })}
       footer={
         <button className="btn primary block" disabled={party.length === 0} onClick={send}>
-          {party.length ? `파견 (${party.length}명)` : '용병을 고르세요'}
+          {party.length ? `파견 (${party.length}명 · ${returnDay}일차 복귀)` : '용병을 고르세요'}
         </button>
       }
     >
-      <RiftCard rift={rift} day={s.day} baseCityId={s.baseCityId} />
+      <RiftCard rift={rift} day={s.day} baseCityId={s.baseCityId} compact />
 
-      <Panel title="배치">
-        <RowBox row="front" />
-        <RowBox row="back" />
-        {party.length > 0 && (
-          <p className={`small ${comp >= 1 ? 'ok' : 'warn'}`}>
-            구성 {pct(comp - 1)}
-            {missing.length ? ` · 없음: ${missing.map((g) => GROUP_NAME[g] ?? g).join(', ')}` : ' · 전위·딜러·지원 모두 있음'}
-          </p>
-        )}
-        <p className="hint">적은 전열부터 노립니다. 기본 위치가 아닌 열에 두면 주는 피해가 줄고 받는 피해가 늡니다.</p>
-      </Panel>
+      <section className="panel party-summary" aria-live="polite">
+        <div className="summary-grid">
+          <span className="muted small">복귀 예정</span>
+          <span className="strong">
+            {returnDay}일차 <span className="muted small">({returnDay - s.day}일 뒤{travel ? `, 이동 왕복 ${travel * 2}일 포함` : ''})</span>
+          </span>
+          <span className="muted small">길드 하루 유지비</span>
+          <span>제로 {num(guildUpkeepPerDay(tables, s))}</span>
+          <span className="muted small">
+            배치 {party.length}/{maxSize}
+          </span>
+          <span className="ellipsis">
+            {party.length === 0 ? (
+              <span className="muted">비어 있음</span>
+            ) : (
+              <>
+                {rowName.front} {front.length ? front.join(', ') : '-'} / {rowName.back} {back.length ? back.join(', ') : '-'}
+              </>
+            )}
+          </span>
+          <span className="muted small">구성</span>
+          <span className={comp >= 1 ? 'ok' : 'warn'}>
+            {party.length ? pct(comp - 1) : '-'}
+            {party.length > 0 && (missing.length ? ` · 없음: ${missing.map((g) => GROUP_NAME[g] ?? g).join(', ')}` : ' · 전위·딜러·지원')}
+          </span>
+        </div>
+        <div className="btn-row">
+          <button className="btn" onClick={() => (setError(''), setParty(autoParty(tables, s, rift)))}>
+            자동 편성
+          </button>
+          <button className="btn" disabled={party.length === 0} onClick={() => setParty([])}>
+            비우기
+          </button>
+        </div>
+      </section>
 
-      <Panel title="용병">
-        <ul className="rows">
-          {candidates.map((m) => {
-            const free = isAvailable(s, m.id);
-            const selected = inParty(m.id);
-            const strong = enemyElements.filter((el) => elementMultiplier(tables, m.element, el) > 1);
-            const weak = enemyElements.filter((el) => elementMultiplier(tables, m.element, el) < 1);
-            return (
-              <li key={m.id}>
-                <button
-                  className={`row-item row-button ${selected ? 'selected' : ''}`}
-                  disabled={!free || (!selected && party.length >= maxSize)}
-                  onClick={() => toggle(m.id)}
-                  aria-pressed={selected}
-                >
-                  <div>
-                    <div className="strong">
-                      {m.name} <span className="muted small">Lv{m.level}</span>
-                    </div>
-                    <div className="tags">
-                      <ElementTag id={m.element} />
-                      <RoleTag id={m.role} />
-                      {strong.length > 0 && <span className="small ok">{strong.map(elementName).join('·')}에 유리</span>}
-                      {weak.length > 0 && <span className="small warn">{weak.map(elementName).join('·')}에 불리</span>}
-                    </div>
+      <p className="hint">탭해서 넣고 빼며, 넣은 용병은 오른쪽에서 열을 고릅니다. 기본 위치가 아닌 열은 주는 피해가 줄고 받는 피해가 늡니다.</p>
+
+      <ul className="rows candidate-list">
+        {candidates.map((m) => {
+          const free = isAvailable(s, m.id);
+          const sel = slot(m.id);
+          const strong = enemyElements.filter((el) => elementMultiplier(tables, m.element, el) > 1);
+          const weak = enemyElements.filter((el) => elementMultiplier(tables, m.element, el) < 1);
+          const off = sel && getRole(tables, m.role).defaultRow !== sel.row;
+          return (
+            <li key={m.id} className={`candidate ${sel ? 'selected' : ''}`}>
+              <button
+                className="candidate-main"
+                disabled={!free || (!sel && party.length >= maxSize)}
+                onClick={() => toggle(m.id)}
+                aria-pressed={!!sel}
+              >
+                <span className="strong">
+                  {m.name} <span className="muted small">Lv{m.level}</span>
+                </span>
+                <span className="tags">
+                  <ElementTag id={m.element} />
+                  <RoleTag id={m.role} />
+                  {strong.length > 0 && <span className="small ok">{strong.map(elementName).join('·')}에 유리</span>}
+                  {weak.length > 0 && <span className="small warn">{weak.map(elementName).join('·')}에 불리</span>}
+                  {off && <span className="small warn">기본 위치 아님</span>}
+                  {!free && <span className="small muted">{m.injury ? '부상' : '파견 중'}</span>}
+                </span>
+              </button>
+              <div className="candidate-side">
+                {sel ? (
+                  <div className="row-switch" role="group" aria-label={`${m.name} 열`}>
+                    {(['front', 'back'] as Row[]).map((row) => (
+                      <button key={row} className={sel.row === row ? 'on' : ''} aria-pressed={sel.row === row} onClick={() => setRow(m.id, row)}>
+                        {rowName[row]}
+                      </button>
+                    ))}
                   </div>
-                  <span className={`pill ${selected ? 'ok' : ''}`}>
-                    {selected ? '편성됨' : m.injury ? '부상' : free ? '추가' : '파견 중'}
-                  </span>
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-      </Panel>
+                ) : (
+                  <span className="pill">{free ? '추가' : m.injury ? '부상' : '파견 중'}</span>
+                )}
+              </div>
+            </li>
+          );
+        })}
+      </ul>
       {error && <p className="error">{error}</p>}
     </AppShell>
   );

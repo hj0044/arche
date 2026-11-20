@@ -10,5 +10,6 @@
   },
   "recentReportsOnHome": 3,
   "toastMs": 2500,
-  "deadlineWarnDays": 1
+  "deadlineWarnDays": 1,
+  "upkeepWarnDays": 7
 }

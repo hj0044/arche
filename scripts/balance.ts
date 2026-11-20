@@ -42,3 +42,25 @@ for (const [pl, el] of [[1, 70], [70, 1], [5, 15], [5, 10], [30, 40], [40, 30]])
 console.log(`최상급×4 레벨 +5: ${winRate(65, 60, 'extreme', 4)}%`);
 console.log('\n시작 규모(3인 Lv5) vs 하급×2~3');
 for (const el of [1, 3, 5, 8, 12]) console.log(`몬스터 Lv${el}: ×2 ${winRate(5, el, 'low', 2, 3)}%  ×3 ${winRate(5, el, 'low', 3, 3)}%`);
+
+// 시작 조합 4인 표본: 시작 용병 후보 4명(방패·사수·치유사·술사)의 속성·역할을 Lv5로 맞춤. 합법 등급 범위의 조건만 쓴다.
+const starters = tables.roster.filter((r) => r.startingCandidate);
+const startParty = (level: number): CombatSlot[] =>
+  starters.map((r) => ({
+    unit: createMercenary(tables, { id: r.id, name: r.name, element: r.element, role: r.role, level }),
+    row: tables.roles.find((x) => x.id === r.role)!.defaultRow,
+  }));
+function startWinRate(level: number, grade: string, el: number, count: number) {
+  const range = tables.monsterGrades.find((g) => g.id === grade)!.level;
+  if (el < range[0] || el > range[1]) throw new Error(`${grade} 범위 밖 레벨: ${el}`);
+  let win = 0;
+  for (let s = 0; s < seeds; s++) {
+    if (resolveCombat(tables, { allies: startParty(level), enemies: enemies(el, grade, count), seed: `b${s}` }).outcome === 'victory') win++;
+  }
+  return Math.round((win / seeds) * 100);
+}
+console.log(`\n시작 조합 4인(${starters.map((r) => r.name).join('·')}) Lv5`);
+for (const [grade, el, count] of [['low', 12, 3], ['mid', 15, 3], ['mid', 20, 3]] as [string, number, number][]) {
+  const gname = tables.monsterGrades.find((g) => g.id === grade)!.name;
+  console.log(`vs ${gname} Lv${el}×${count}: ${startWinRate(5, grade, el, count)}%`);
+}

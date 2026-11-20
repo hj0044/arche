@@ -11,6 +11,7 @@ import {
   mercToUnit,
   recruit,
   recruitInfo,
+  recruitUpkeepOutlook,
   upkeepPerDay,
 } from '../../engine/game';
 import { AppShell } from '../AppShell';
@@ -39,6 +40,7 @@ export function MercDetail({ ctx, mercId }: { ctx: Ctx; mercId: string }) {
   const isGuild = m.affiliation.kind === 'guild';
   const onExpedition = isOnExpedition(s, m.id);
   const info = recruitInfo(tables, s, m.id);
+  const outlook = recruitUpkeepOutlook(tables, s, m.id);
   const speed = tables.growthSpeeds.find((g) => g.id === m.growth.speed);
 
   const run = (fn: () => void) => {
@@ -213,13 +215,22 @@ export function MercDetail({ ctx, mercId }: { ctx: Ctx; mercId: string }) {
 
       {confirm && (
         <ConfirmDialog
-          title="영입"
+          title={`${m.name} 영입`}
           message={
-            <p>
-              {m.name}(Lv{m.level}, 한계 {m.growth.cap})을(를) 제로 {num(info.cost)}에 영입합니다.
-              <br />
-              보유 제로 {num(s.resources.zero)} · 영입 후 하루 유지비 {num(upkeepPerDay(tables, m))}
-            </p>
+            <div className="kv">
+              <span>영입비</span>
+              <span className="strong">제로 {num(outlook.cost)}</span>
+              <span>남는 제로</span>
+              <span>{num(outlook.zeroAfter)}</span>
+              <span>길드 하루 유지비</span>
+              <span>
+                {num(outlook.dailyUpkeepBefore)} → <span className="strong">{num(outlook.dailyUpkeepAfter)}</span>
+              </span>
+              <span>수입 없이 버틸 일수</span>
+              <span className={outlook.daysAffordable < tables.ui.upkeepWarnDays ? 'warn strong' : 'strong'}>
+                {Number.isFinite(outlook.daysAffordable) ? `${outlook.daysAffordable}일` : '제한 없음'}
+              </span>
+            </div>
           }
           confirmLabel="영입"
           onCancel={() => setConfirm(false)}
