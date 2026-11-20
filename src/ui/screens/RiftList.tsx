@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { tables, travelDays } from '../../data';
 import { scoutingRow, visibleRift, type FacilitiesState, type ValueRange, type VisibleReward } from '../../engine/facilities';
 import type { Rift } from '../../engine/rift';
+import { riftAutoRisk, type RiftAutoRisk } from '../../engine/status';
 import { AppShell } from '../AppShell';
 import { ElementTag, OmenBadge, Segmented } from '../components';
 import { gradeName, materialName, monsterName, num, omenText, tierName } from '../format';
@@ -18,6 +19,7 @@ export function RiftCard({
   facilities,
   onClick,
   compact = false,
+  autoRisk,
 }: {
   rift: Rift;
   day: number;
@@ -26,6 +28,8 @@ export function RiftCard({
   onClick?: () => void;
   /** 편성 화면 상단용: 탭 동작 없이 요약만 */
   compact?: boolean;
+  /** 리프트 목록: 지금 가용 인원으로 자동 편성했을 때의 위험도(null이면 출전 가능 인원 없음, undefined면 표시 안 함) */
+  autoRisk?: RiftAutoRisk | null;
 }) {
   const [open, setOpen] = useState(false);
   // 화면은 탐지소로 "보이는 정보"만 쓴다(실제 값은 숨김).
@@ -58,6 +62,26 @@ export function RiftCard({
           소요 {total}일{travel ? `(이동 ${travel * 2})` : ''}
         </span>
       </span>
+      {autoRisk !== undefined && (
+        <span className="small">
+          {autoRisk === null ? (
+            <span className="muted">출전 가능 인원 없음</span>
+          ) : (
+            <>
+              <span className="muted">자동 편성 위험도 </span>
+              <span className={`risk risk-${autoRisk.estimate.worst.id}`}>
+                {autoRisk.estimate.best.id === autoRisk.estimate.worst.id
+                  ? autoRisk.estimate.best.name
+                  : `${autoRisk.estimate.best.name} ~ ${autoRisk.estimate.worst.name}`}
+              </span>
+              <span className="muted">
+                {' '}
+                ({autoRisk.partySize}명{autoRisk.estimate.estimated ? ', 추정' : ''})
+              </span>
+            </>
+          )}
+        </span>
+      )}
       {v.omen && <span className="omen-text small">{omenText(v.omen.textId)}</span>}
       {tooLate && <span className="error small">이동하는 동안 마감이 지나 보낼 수 없습니다.</span>}
     </>
@@ -105,6 +129,8 @@ export function RiftList({ ctx, cityId }: { ctx: Ctx; cityId?: string }) {
   const rifts = s.rifts
     .filter((r) => r.cityId === city)
     .sort((a, b) => (visibleRift(tables, s.facilities, a).deadline?.[0] ?? Infinity) - (visibleRift(tables, s.facilities, b).deadline?.[0] ?? Infinity));
+  // 카드마다 자동 편성 위험도(같은 파티·리프트·탐지소면 엔진이 메모이제이션). 보이는 도시의 리프트만 계산한다.
+  const risks = useMemo(() => new Map(rifts.map((r) => [r.id, riftAutoRisk(tables, s, r)])), [city, s]); // rifts는 city·s에서만 나온다
   const blurred = scoutingRow(tables, s.facilities);
   const showHint = !(blurred.revealElements && blurred.exactEnemies && blurred.exactDeadline && blurred.exactReward && blurred.revealOmen);
 
@@ -127,7 +153,7 @@ export function RiftList({ ctx, cityId }: { ctx: Ctx; cityId?: string }) {
       <ul className="list">
         {rifts.map((r) => (
           <li key={r.id}>
-            <RiftCard rift={r} day={s.day} baseCityId={s.baseCityId} facilities={s.facilities} onClick={() => ctx.go({ name: 'party', riftId: r.id })} />
+            <RiftCard rift={r} day={s.day} baseCityId={s.baseCityId} facilities={s.facilities} autoRisk={risks.get(r.id)} onClick={() => ctx.go({ name: 'party', riftId: r.id })} />
           </li>
         ))}
       </ul>

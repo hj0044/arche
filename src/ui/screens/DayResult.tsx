@@ -1,6 +1,8 @@
 import { tables } from '../../data';
 import type { DayEvent } from '../../engine/game';
 import { AppShell } from '../AppShell';
+import { StatusSummary } from '../StatusSummary';
+import { levelUpCandidates } from '../../engine/status';
 import { Panel } from '../components';
 import { cityName, factionName, loyaltyTierName, materialName, num, omenText, outcomeName, severityName } from '../format';
 import type { Ctx } from '../nav';
@@ -21,6 +23,9 @@ export function DayResult({ ctx, events }: { ctx: Ctx; events: DayEvent[] }) {
   const facName = (id: string) => tables.facilities.facilities.find((f) => f.id === id)?.name ?? id;
   const poached = events.flatMap((e) => (e.type === 'poached' ? [e] : []));
   const tierChanges = events.flatMap((e) => (e.type === 'loyaltyTier' && !departed.includes(e.mercId) ? [e] : []));
+  // 오늘 경험치를 받은 용병(복귀·훈련) 가운데 레벨업할 수 있게 된 용병. 파견 중이면 제외.
+  const gainedIds = [...returned.flatMap((r) => r.expGains.map((g) => g.mercId)), ...events.flatMap((e) => (e.type === 'trained' ? [e.mercId] : []))];
+  const levelUps = levelUpCandidates(tables, s, gainedIds);
   const quiet = !built.length && !trained.length && !unassigned.length && !poached.length && !departed.length && !refused.length && !tierChanges.length && !returned.length && !recovered.length && !expired.length && !spawned.length;
 
   return (
@@ -41,6 +46,27 @@ export function DayResult({ ctx, events }: { ctx: Ctx; events: DayEvent[] }) {
         </p>
       )}
       {quiet && <p className="muted">조용한 하루였습니다.</p>}
+      <StatusSummary ctx={ctx} />
+      {levelUps.length > 0 && (
+        <Panel title="레벨업 가능">
+          <ul className="rows">
+            {levelUps.map((c) => (
+              <li key={c.mercId}>
+                <button className="row-item row-button" onClick={() => ctx.go({ name: 'merc', mercId: c.mercId })}>
+                  <span className="strong">{name(c.mercId)}</span>
+                  {c.affordable ? (
+                    <span className="pill ok">레벨업 (아르케 {num(c.cost)}) ›</span>
+                  ) : (
+                    <span className="pill bad">
+                      필요 아르케 {num(c.cost)}, 부족 {num(c.shortfall)}
+                    </span>
+                  )}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </Panel>
+      )}
       {(built.length > 0 || trained.length > 0 || unassigned.length > 0) && (
         <Panel title="거점">
           {built.map((b) => (

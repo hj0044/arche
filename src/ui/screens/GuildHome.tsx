@@ -5,6 +5,7 @@ import { ElementTag, LoyaltyBadge, OmenBadge, Panel, RoleTag } from '../componen
 import { loyaltyTier } from '../../engine/loyalty';
 import { cityName, materialName, num, outcomeName, severityName } from '../format';
 import { MainTabs } from '../MainTabs';
+import { StatusSummary } from '../StatusSummary';
 import type { Ctx } from '../nav';
 import { assignedFacility, getFacility } from '../../engine/facilities';
 
@@ -43,6 +44,8 @@ export function GuildHome({ ctx }: { ctx: Ctx }) {
       </div>
 
       {unpaid > 0 && <p className="error small">유지비 미납 누적 제로 {num(unpaid)}. 지금은 기록만 남습니다.</p>}
+
+      <StatusSummary ctx={ctx} />
 
       <Panel title={`진행 중인 파견 ${s.expeditions.length}`}>
         {s.expeditions.length === 0 ? (
