@@ -1,3 +1,4 @@
+import { tables } from '../../data';
 import type { DayEvent } from '../../engine/game';
 import { AppShell } from '../AppShell';
 import { Panel } from '../components';
@@ -14,9 +15,13 @@ export function DayResult({ ctx, events }: { ctx: Ctx; events: DayEvent[] }) {
   const upkeep = events.find((e) => e.type === 'upkeep');
   const departed = events.flatMap((e) => (e.type === 'departed' ? [e.mercId] : []));
   const refused = events.flatMap((e) => (e.type === 'refused' ? [e.mercId] : []));
+  const built = events.flatMap((e) => (e.type === 'facilityBuilt' ? [e] : []));
+  const trained = events.flatMap((e) => (e.type === 'trained' ? [e] : []));
+  const unassigned = events.flatMap((e) => (e.type === 'unassigned' ? [e] : []));
+  const facName = (id: string) => tables.facilities.facilities.find((f) => f.id === id)?.name ?? id;
   const poached = events.flatMap((e) => (e.type === 'poached' ? [e] : []));
   const tierChanges = events.flatMap((e) => (e.type === 'loyaltyTier' && !departed.includes(e.mercId) ? [e] : []));
-  const quiet = !poached.length && !departed.length && !refused.length && !tierChanges.length && !returned.length && !recovered.length && !expired.length && !spawned.length;
+  const quiet = !built.length && !trained.length && !unassigned.length && !poached.length && !departed.length && !refused.length && !tierChanges.length && !returned.length && !recovered.length && !expired.length && !spawned.length;
 
   return (
     <AppShell
@@ -36,6 +41,23 @@ export function DayResult({ ctx, events }: { ctx: Ctx; events: DayEvent[] }) {
         </p>
       )}
       {quiet && <p className="muted">조용한 하루였습니다.</p>}
+      {(built.length > 0 || trained.length > 0 || unassigned.length > 0) && (
+        <Panel title="거점">
+          {built.map((b) => (
+            <p key={b.facilityId} className="ok small">
+              🔨 {facName(b.facilityId)} Lv{b.level} 완공
+            </p>
+          ))}
+          {trained.length > 0 && (
+            <p className="small">
+              훈련 경험치: {trained.map((t) => `${name(t.mercId)} +${t.exp}`).join(', ')}
+            </p>
+          )}
+          {unassigned.length > 0 && (
+            <p className="warn small">배치 해제: {unassigned.map((u) => `${name(u.mercId)}(${u.reason})`).join(', ')}</p>
+          )}
+        </Panel>
+      )}
       {poached.length > 0 && (
         <p className="small poach-news" role="status">
           <span aria-hidden="true">⇄ </span>

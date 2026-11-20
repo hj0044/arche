@@ -1,6 +1,6 @@
-import { getMonsterGrade, getRiftTier, type GameTables, type Row } from '../data';
+import { getMonsterGrade, getRiftTier, type GameTables, type Outcome, type Row } from '../data';
 import type { CombatSlot } from './combat';
-import type { Rng } from './rng';
+import { createRng, type Rng } from './rng';
 import { createMonster } from './unit';
 
 export interface RiftEnemy {
@@ -34,6 +34,17 @@ export interface Rift {
    * 없으면 표식 없음. 징조 단계(공허 농도, 간부급·본체)는 확장에서 이 객체에 필드를 얹는다.
    */
   omen?: RiftOmen;
+  /** 탐지소 흐림 오프셋(생길 때 시드로 정해 저장. 볼 때마다 범위가 흔들리지 않게 한다) */
+  fog: RiftFog;
+}
+
+export interface RiftFog {
+  /** 마감 범위 = [실제 − deadlineOffset, 그 + 폭] */
+  deadlineOffset: number;
+  levelOffset: number;
+  countOffset: number;
+  /** 0~1. 보상 범위의 아래쪽 배율 = 1 − 2 × spread × rewardU */
+  rewardU: number;
 }
 
 export interface RiftOmen {
@@ -87,9 +98,18 @@ export function generateRift(
   const deadlineDay = day + rollRange(rng, tier.deadlineDays);
   const durationDays = rollRange(rng, tier.durationDays);
   const reward = { zero: rollRange(rng, tier.rewards.zero), arche: rollRange(rng, tier.rewards.arche), materials };
+  // 흐림 오프셋은 별도 난수 흐름으로 굴린다(징조 표식 확률을 바꿔도 흐림이 흔들리지 않게).
+  const fogRng = createRng(`fog:${rng.getState()}`);
   // 징조 표식은 다른 값을 모두 정한 뒤에 굴려서, 표식 확률이나 문구를 바꿔도 리프트의 나머지 내용은 그대로다.
   const omen: RiftOmen | undefined =
     tables.omens.length > 0 && rng.chance(tier.omenChance) ? { textId: rng.pick(tables.omens).id } : undefined;
+  const f = tables.facilities.fog;
+  const fog: RiftFog = {
+    deadlineOffset: fogRng.int(0, f.deadlineWidth),
+    levelOffset: fogRng.int(0, f.levelWidth),
+    countOffset: fogRng.int(0, f.countWidth),
+    rewardU: Math.round(fogRng.next() * 1000) / 1000,
+  };
   return {
     id,
     cityId,
@@ -101,6 +121,7 @@ export function generateRift(
     enemies,
     reward,
     ...(omen ? { omen } : {}),
+    fog,
   };
 }
 
@@ -121,3 +142,30 @@ export function riftEnemySlots(tables: GameTables, rift: Rift): CombatSlot[] {
     };
   });
 }
+
+/**
+ * 결과별 실제 보상. 정산과 화면(리프트 카드)이 같은 함수를 쓴다.
+ * = 기본 보상 × 결과 배율 × 안정화 통로 배율 × (1 + 레벨 배율 × 몬스터 레벨), 내림.
+ */
+export function riftReward(tables: GameTables, rift: Rift, outcome: Outcome): RiftReward {
+  const prog = tables.progression;
+  const ratio =
+    prog.rewardRatioByOutcome[outcome] *
+    (rift.stable ? prog.stablePassageRewardRatio : 1) *
+    (1 + prog.rewardLevelScale * riftLevel(rift));
+  return {
+    zero: Math.floor(rift.reward.zero * ratio),
+    arche: Math.floor(rift.reward.arche * ratio),
+    materials: Object.fromEntries(
+      Object.entries(rift.reward.materials)
+        .map(([k, v]) => [k, Math.floor(v * ratio)] as const)
+        .filter(([, v]) => v > 0),
+    ),
+  };
+}
+
+/** 리프트의 대표 몬스터 레벨(가장 높은 레벨) */
+export function riftLevel(rift: Rift): number {
+  return Math.max(...rift.enemies.map((e) => e.level));
+}
+

@@ -6,6 +6,7 @@ import { ElementTag, LoyaltyBadge, RoleTag, Segmented } from '../components';
 import { cityName, factionName, growthSpeedName, num, severityName } from '../format';
 import { MainTabs } from '../MainTabs';
 import type { Ctx } from '../nav';
+import { assignedFacility, getFacility } from '../../engine/facilities';
 
 type Tab = 'guild' | 'recruit';
 
@@ -88,6 +89,8 @@ export function MercList({ ctx }: { ctx: Ctx }) {
                   <span className="pill bad">{severityName(m.injury.severity)}</span>
                 ) : isOnExpedition(s, m.id) ? (
                   <span className="pill">파견 중</span>
+                ) : assignedFacility(s.facilities, m.id) ? (
+                  <span className="pill">{getFacility(tables, assignedFacility(s.facilities, m.id)!).name} 배치</span>
                 ) : canLevelUp(tables, s, m.id) ? (
                   <span className="pill ok">레벨업 가능</span>
                 ) : (

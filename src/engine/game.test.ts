@@ -34,6 +34,7 @@ function withRift(state: GameState, patch: Partial<Rift> & { id: string }): Game
     tier: 'crack',
     name: '시험 균열',
     appearedDay: state.day,
+    fog: { deadlineOffset: 0, levelOffset: 0, countOffset: 0, rewardU: 0 },
     deadlineDay: state.day + 3,
     durationDays: 1,
     enemies: [{ monsterId: 'void_hound', grade: 'low', level: 1, row: 'front' }],

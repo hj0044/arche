@@ -1,7 +1,8 @@
 // 화면 없이 며칠을 자동으로 진행해 결과를 요약한다. 사용: npm run days -- [일수] [시드]
-import { getRiftTier, tables } from '../src/data';
+import { tables } from '../src/data';
 import { loyaltyTier } from '../src/engine/loyalty';
-import { advanceDay, canLevelUp, dispatch, isAvailable, levelUp, newGame, recruit, recruitInfo, riftLevel, type GameState } from '../src/engine/game';
+import { newGame, type GameState } from '../src/engine/game';
+import { autoplayDay } from './autoplay';
 
 const [daysArg = '20', seed = 'days'] = process.argv.slice(2);
 let s: GameState = newGame(tables, {
@@ -10,7 +11,6 @@ let s: GameState = newGame(tables, {
   baseCityId: 'seoul',
   protagonist: { mode: 'opener', name: '주인공', element: 'fire', role: 'warrior', background: 'survivor' },
 });
-const rowOf = (role: string) => tables.roles.find((r) => r.id === role)!.defaultRow;
 
 // 용병별 출전 횟수와 승리(영입 후 특정 용병 쏠림 확인용)
 const sorties = new Map<string, { n: number; win: number }>();
@@ -20,20 +20,10 @@ let idleDecays = 0;
 const departures: string[] = [];
 const poaches: string[] = [];
 
+let trainingExpTotal = 0;
+let unpaidDays = 0;
 for (let d = 0; d < Number(daysArg); d++) {
-  // 단순한 자동 플레이: 3명 이상 모이면 거점 도시에서 몬스터 레벨이 가장 낮은 리프트로 보낸다.
-  for (const m of s.mercenaries) {
-    const info = recruitInfo(tables, s, m.id);
-    if (info.eligible && info.unlocked && s.resources.zero >= info.cost + 300) s = recruit(tables, s, m.id);
-  }
-  const free = s.mercenaries.filter((m) => isAvailable(s, m.id));
-  const target = s.rifts.filter((r) => r.cityId === s.baseCityId).sort((a, b) => riftLevel(a) - riftLevel(b))[0];
-  if (free.length >= Math.min(3, s.mercenaries.filter((m) => m.affiliation.kind === 'guild').length) && target) {
-    s = dispatch(tables, s, target.id, free.slice(0, 5).map((m) => ({ mercId: m.id, row: rowOf(m.role) })));
-    console.log(`${s.day}일 출발: ${target.name}(${getRiftTier(tables, target.tier).name}, Lv${riftLevel(target)}) ← ${free.slice(0, 5).map((m) => m.name).join(' ')}`);
-  }
-  for (const m of s.mercenaries) while (canLevelUp(tables, s, m.id)) s = levelUp(tables, s, m.id);
-  const { state, events } = advanceDay(tables, s);
+  const { state, events } = autoplayDay(tables, s, (line) => console.log(line));
   s = state;
   for (const m of s.mercenaries) idleDecays += (m.loyalty?.recent ?? []).filter((r) => r.day === s.day && r.reason === 'idleDecay').length;
   for (const e of events) {
@@ -47,6 +37,9 @@ for (let d = 0; d < Number(daysArg); d++) {
     }
     if (e.type === 'upkeep' && e.unpaid) console.log(`${s.day}일 유지비 미납 ${e.unpaid}`);
     if (e.type === 'refused') refusals++;
+    if (e.type === 'trained') trainingExpTotal += e.exp;
+    if (e.type === 'upkeep' && e.unpaid > 0) unpaidDays++;
+    if (e.type === 'facilityBuilt') console.log(`${s.day}일 완공: ${tables.facilities.facilities.find((f) => f.id === e.facilityId)!.name} Lv${e.level}`);
     if (e.type === 'poached') {
       const m = s.mercenaries.find((x) => x.id === e.mercId)!;
       poaches.push(`${s.day}일 ${m.name}→${tables.factions.find((f) => f.id === e.toFactionId)?.name}`);
@@ -74,3 +67,7 @@ for (const m of s.mercenaries) if (m.loyalty && m.affiliation.kind === 'guild') 
 console.log(`구간 분포: ${[...dist].map(([k, v]) => `${k} ${v}`).join(', ')}`);
 console.log(`거부 ${refusals}회, 이탈 ${departures.length}회${departures.length ? ` (${departures.join(', ')})` : ''}`);
 console.log(`대기 하락 ${idleDecays}회, 무소속 이동 ${poaches.length}회${poaches.length ? ` (${poaches.join(', ')})` : ''}`);
+
+console.log('\n거점 시설');
+console.log(`레벨: ${tables.facilities.facilities.map((f) => `${f.name} Lv${s.facilities.levels[f.id] ?? 0}`).join(', ')}${s.facilities.construction ? ` (진행 중: ${tables.facilities.facilities.find((f) => f.id === s.facilities.construction!.facilityId)!.name})` : ''}`);
+console.log(`훈련 경험치 합계 ${trainingExpTotal}, 미납 ${unpaidDays}일, 이탈 ${departures.length}회`);

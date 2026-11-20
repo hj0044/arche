@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { getRole, tables, travelDays, type Row } from '../../data';
-import { autoParty, riftEnemyElements } from '../../engine/autoParty';
+import { autoParty } from '../../engine/autoParty';
+import { assignedFacility, getFacility, visibleRift } from '../../engine/facilities';
 import { compositionMultiplier, elementMultiplier } from '../../engine/combat';
 import { dispatch, GameError, guildUpkeepPerDay, isAvailable, isOnExpedition, refusedToday, type PartyMember } from '../../engine/game';
 import { AppShell } from '../AppShell';
@@ -30,7 +31,15 @@ export function PartyBuilder({ ctx, riftId }: { ctx: Ctx; riftId: string }) {
   const candidates = s.mercenaries.filter((m) => m.affiliation.kind === 'guild');
   const slot = (id: string) => party.find((p) => p.mercId === id);
   const unavailableReason = (m: (typeof candidates)[number]) =>
-    refusedToday(s, m) ? '오늘 거부' : m.injury ? '부상' : isOnExpedition(s, m.id) ? '파견 중' : '불가';
+    refusedToday(s, m)
+      ? '오늘 거부'
+      : m.injury
+        ? '부상'
+        : isOnExpedition(s, m.id)
+          ? '파견 중'
+          : assignedFacility(s.facilities, m.id)
+            ? `${getFacility(tables, assignedFacility(s.facilities, m.id)!).name} 배치`
+            : '불가';
   // 이미 짜 둔 파티에 오늘 쓸 수 없게 된 용병이 있으면 빼고 알린다(거부 판정은 하루 시작 때 정해진다).
   const dropped = party.filter((p) => !isAvailable(s, p.mercId));
 
@@ -48,7 +57,8 @@ export function PartyBuilder({ ctx, riftId }: { ctx: Ctx; riftId: string }) {
   const travel = travelDays(tables, s.baseCityId, rift.cityId);
   // 소요 일수는 리프트마다 확정값이라 복귀일도 확정값이다.
   const returnDay = s.day + travel * 2 + rift.durationDays;
-  const enemyElements = riftEnemyElements(tables, rift);
+  // 상성 안내도 탐지소로 보이는 속성만 쓴다.
+  const enemyElements = visibleRift(tables, s.facilities, rift).elements ?? [];
   const front = party.filter((p) => p.row === 'front').map((p) => merc(p.mercId).name);
   const back = party.filter((p) => p.row === 'back').map((p) => merc(p.mercId).name);
 
@@ -73,7 +83,7 @@ export function PartyBuilder({ ctx, riftId }: { ctx: Ctx; riftId: string }) {
         </button>
       }
     >
-      <RiftCard rift={rift} day={s.day} baseCityId={s.baseCityId} compact />
+      <RiftCard rift={rift} day={s.day} baseCityId={s.baseCityId} facilities={s.facilities} compact />
 
       <section className="panel party-summary" aria-live="polite">
         <div className="summary-grid">

@@ -82,6 +82,7 @@ describe('징조 표식과 규칙', () => {
     tier: 'route',
     name: '시험 항로',
     appearedDay: 1,
+    fog: { deadlineOffset: 0, levelOffset: 0, countOffset: 0, rewardU: 0 },
     deadlineDay: 20,
     durationDays: 1,
     enemies: [

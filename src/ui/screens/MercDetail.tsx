@@ -19,6 +19,7 @@ import {
 import { AppShell } from '../AppShell';
 import { Bar, ConfirmDialog, ElementTag, LoyaltyBadge, Panel, RoleTag } from '../components';
 import { loyaltyDisplay, loyaltyTier, tendencyOf } from '../../engine/loyalty';
+import { assignedFacility, getFacility } from '../../engine/facilities';
 import { loyaltyReasonName, backgroundShort, cityName, factionName, growthSpeedName, num, severityName, tierName, worldName } from '../format';
 import type { Ctx } from '../nav';
 
@@ -59,7 +60,9 @@ export function MercDetail({ ctx, mercId }: { ctx: Ctx; mercId: string }) {
     ? `${severityName(m.injury.severity)} · ${m.injury.recoverDay}일차 회복`
     : isOnExpedition(s, m.id)
       ? '파견 중'
-      : isGuild
+      : assignedFacility(s.facilities, m.id)
+        ? `${getFacility(tables, assignedFacility(s.facilities, m.id)!).name} 배치 중`
+        : isGuild
         ? '길드 · 대기'
         : m.affiliation.kind === 'faction'
           ? factionName(m.affiliation.factionId)

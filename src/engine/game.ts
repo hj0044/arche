@@ -1,8 +1,20 @@
 import { getGrowthSpeed, getRiftTier, travelDays, type GameTables, type Outcome, type Row, type UnlockRule } from '../data';
 import { resolveCombat, validateParty, type CombatEvent, type CombatSlot } from './combat';
 import { rollInjuries, type Injury } from './injury';
-import { generateRift, riftEnemySlots, type Rift, type RiftReward } from './rift';
+import { generateRift, riftEnemySlots, riftLevel, riftReward, type Rift, type RiftReward } from './rift';
+export { riftLevel, riftReward } from './rift';
 import { createRng } from './rng';
+import {
+  assignedFacility,
+  facilityLevel,
+  facilitySlots,
+  getFacility,
+  initialFacilities,
+  injuryReductionDays,
+  levelCost,
+  trainingExp,
+  type FacilitiesState,
+} from './facilities';
 import { applyLoyalty, isLoyaltySimulated, loyaltyTier, newLoyalty, type LoyaltyState } from './loyalty';
 import { statsForLevel, type Affiliation, type Unit } from './unit';
 
@@ -110,6 +122,8 @@ export interface GameState {
   counters: { rift: number; expedition: number };
   /** 영입 해금 조건 판정용 누적 기록 */
   records: { victories: number; victoriesByTier: Record<string, number> };
+  /** 거점(시작 도시 한 곳)의 시설 */
+  facilities: FacilitiesState;
 }
 
 export type DayEvent =
@@ -120,6 +134,9 @@ export type DayEvent =
   | { type: 'upkeep'; paid: number; unpaid: number; unpaidMercIds: string[] }
   | { type: 'loyaltyTier'; mercId: string; from: string; to: string }
   | { type: 'departed'; mercId: string; factionId: string }
+  | { type: 'facilityBuilt'; facilityId: string; level: number }
+  | { type: 'trained'; facilityId: string; mercId: string; exp: number }
+  | { type: 'unassigned'; facilityId: string; mercId: string; reason: string }
   | { type: 'poached'; mercId: string; fromFactionId: string; toFactionId: string; wasDeparted: boolean }
   | { type: 'refused'; mercId: string };
 
@@ -147,7 +164,7 @@ export function isOnExpedition(state: GameState, mercId: string): boolean {
 /** 파견 가능: 길드 소속이고 부상이 없고 다른 파견 중이 아님 */
 export function isAvailable(state: GameState, mercId: string): boolean {
   const m = getMerc(state, mercId);
-  return isGuildMember(m) && !m.injury && !isOnExpedition(state, mercId) && !refusedToday(state, m);
+  return isGuildMember(m) && !m.injury && !isOnExpedition(state, mercId) && !refusedToday(state, m) && !assignedFacility(state.facilities, mercId);
 }
 
 /** 오늘 파견을 거부했는가(하루 시작 때 정해진 채 그날 유지) */
@@ -359,6 +376,7 @@ export function newGame(tables: GameTables, opts: NewGameOptions): GameState {
     stabilizedRoutes: [],
     counters: { rift: 0, expedition: 0 },
     records: { victories: 0, victoriesByTier: {} },
+    facilities: initialFacilities(tables),
   };
   for (const city of tables.cities) {
     for (let i = 0; i < city.riftSpawn.initialCount; i++) {
@@ -385,6 +403,8 @@ export function dispatch(tables: GameTables, prev: GameState, riftId: string, pa
     if (m.injury) throw new GameError(`${m.name}은(는) 부상 중이다`);
     if (isOnExpedition(state, m.id)) throw new GameError(`${m.name}은(는) 이미 파견 중이다`);
     if (refusedToday(state, m)) throw new GameError(`${m.name}은(는) 오늘 파견을 거부했다`);
+    const placed = assignedFacility(state.facilities, m.id);
+    if (placed) throw new GameError(`${m.name}은(는) ${getFacility(tables, placed).name}에 배치되어 있다`);
   }
   const slots: CombatSlot[] = party.map((p) => ({ unit: mercToUnit(tables, getMerc(state, p.mercId)), row: p.row }));
   const errors = validateParty(tables, slots);
@@ -434,6 +454,59 @@ export function canLevelUp(tables: GameTables, state: GameState, mercId: string)
   );
 }
 
+// ── 거점 시설 ────────────────────────────────────────
+
+/** 다음 레벨 건설·강화를 시작할 수 없는 이유(가능하면 null) */
+export function constructionBlockReason(tables: GameTables, state: GameState, facilityId: string): string | null {
+  const f = getFacility(tables, facilityId);
+  const next = facilityLevel(state.facilities, facilityId) + 1;
+  if (next > f.maxLevel) return '최대 레벨';
+  if (state.facilities.construction) return '다른 시설을 건설·강화 중';
+  if (state.resources.zero < levelCost(tables, facilityId, next).zero) return '제로 부족';
+  return null;
+}
+
+/** 건설·강화 시작: 제로를 즉시 내고, 완료일이 되면 하루 정산에서 레벨이 오른다. 한 번에 한 시설만, 취소 없음. */
+export function startConstruction(tables: GameTables, prev: GameState, facilityId: string): GameState {
+  const reason = constructionBlockReason(tables, prev, facilityId);
+  if (reason) throw new GameError(reason);
+  const state = structuredClone(prev);
+  const target = facilityLevel(state.facilities, facilityId) + 1;
+  const cost = levelCost(tables, facilityId, target);
+  state.resources.zero -= cost.zero;
+  state.facilities.construction = { facilityId, targetLevel: target, startDay: state.day, completeDay: state.day + cost.days };
+  return state;
+}
+
+/** 시설에 배치할 수 없는 이유(가능하면 null). 배치는 시설 종류에 묶이지 않고 칸 수로만 제한한다. */
+export function assignBlockReason(tables: GameTables, state: GameState, facilityId: string, mercId: string): string | null {
+  const m = getMerc(state, mercId);
+  if (!isGuildMember(m)) return '길드 소속이 아님';
+  if (m.isProtagonist) return '주인공';
+  if (m.injury) return '부상 중';
+  if (isOnExpedition(state, mercId)) return '파견 중';
+  const other = assignedFacility(state.facilities, mercId);
+  if (other) return other === facilityId ? '이미 배치됨' : '다른 시설에 배치됨';
+  const slots = facilitySlots(tables, state.facilities, facilityId);
+  if ((state.facilities.assignments[facilityId] ?? []).length >= slots) return slots === 0 ? '배치할 수 없는 시설' : '칸이 가득 참';
+  return null;
+}
+
+export function assignToFacility(tables: GameTables, prev: GameState, facilityId: string, mercId: string): GameState {
+  const reason = assignBlockReason(tables, prev, facilityId, mercId);
+  if (reason) throw new GameError(reason);
+  const state = structuredClone(prev);
+  state.facilities.assignments[facilityId] = [...(state.facilities.assignments[facilityId] ?? []), mercId];
+  return state;
+}
+
+/** 배치 해제는 즉시. 그날 하루 끝에 배치되어 있지 않으면 훈련 경험치를 받지 않고 쉰 날로 센다. */
+export function unassignFromFacility(prev: GameState, facilityId: string, mercId: string): GameState {
+  const state = structuredClone(prev);
+  state.facilities.assignments[facilityId] = (state.facilities.assignments[facilityId] ?? []).filter((id) => id !== mercId);
+  return state;
+}
+
 export function salaryBonusCost(tables: GameTables, m: MercenaryState): number {
   return tables.loyalty.salaryBonus.costPerLevel * m.level;
 }
@@ -469,32 +542,6 @@ export function recruit(tables: GameTables, prev: GameState, mercId: string): Ga
 
 // ── 하루 진행 ─────────────────────────────────────────
 
-/**
- * 결과별 실제 보상. 정산과 화면(리프트 카드)이 같은 함수를 쓴다.
- * = 기본 보상 × 결과 배율 × 안정화 통로 배율 × (1 + 레벨 배율 × 몬스터 레벨), 내림.
- */
-export function riftReward(tables: GameTables, rift: Rift, outcome: Outcome): RiftReward {
-  const prog = tables.progression;
-  const ratio =
-    prog.rewardRatioByOutcome[outcome] *
-    (rift.stable ? prog.stablePassageRewardRatio : 1) *
-    (1 + prog.rewardLevelScale * riftLevel(rift));
-  return {
-    zero: Math.floor(rift.reward.zero * ratio),
-    arche: Math.floor(rift.reward.arche * ratio),
-    materials: Object.fromEntries(
-      Object.entries(rift.reward.materials)
-        .map(([k, v]) => [k, Math.floor(v * ratio)] as const)
-        .filter(([, v]) => v > 0),
-    ),
-  };
-}
-
-/** 리프트의 대표 몬스터 레벨(가장 높은 레벨) */
-export function riftLevel(rift: Rift): number {
-  return Math.max(...rift.enemies.map((e) => e.level));
-}
-
 function settleExpedition(tables: GameTables, state: GameState, ex: Expedition): ExpeditionReport {
   const combatSeed = `${state.seed}:${ex.id}`;
   const units = ex.party.map((p) => mercToUnit(tables, getMerc(state, p.mercId)));
@@ -524,7 +571,15 @@ function settleExpedition(tables: GameTables, state: GameState, ex: Expedition):
     return { mercId: m.id, exp };
   });
 
-  const injuries = rollInjuries(tables, units, result.downedUnitIds, outcome, createRng(`${combatSeed}:injury`));
+  // 의무실 효과는 새로 입은 부상에만 적용한다(이미 부상 중인 용병에게 소급하지 않음).
+  const injuries = rollInjuries(
+    tables,
+    units,
+    result.downedUnitIds,
+    outcome,
+    createRng(`${combatSeed}:injury`),
+    injuryReductionDays(tables, state.facilities),
+  );
   for (const inj of injuries) {
     getMerc(state, inj.unitId).injury = { severity: inj.severity, recoverDay: state.day + inj.days + 1 };
   }
@@ -568,7 +623,23 @@ export function advanceDay(tables: GameTables, prev: GameState): { state: GameSt
   const simulated = (m: MercenaryState) => !!m.loyalty && isLoyaltySimulated(tables, m.affiliation);
   // 오늘(넘기기 전 날짜) 쉰 용병 = 파견 중도 부상 중도 아닌 용병(거부한 날도 쉰 날)
   const simulatedIds = state.mercenaries.filter(simulated).map((m) => m.id);
-  const restedIds = new Set(state.mercenaries.filter((m) => simulated(m) && !m.injury && !isOnExpedition(state, m.id)).map((m) => m.id));
+  // 훈련소 등 시설에 배치된 날은 쉰 날이 아니다(충성도 변동 없음, 연속 쉰 일수 0).
+  const restedIds = new Set(
+    state.mercenaries
+      .filter((m) => simulated(m) && !m.injury && !isOnExpedition(state, m.id) && !assignedFacility(state.facilities, m.id))
+      .map((m) => m.id),
+  );
+  // 훈련 경험치: 오늘(넘기기 전 날짜) 배치된 용병이 하루 정산에서 받는다. 성장 한계면 받지 않는다.
+  for (const [facilityId, ids] of Object.entries(state.facilities.assignments)) {
+    const exp = trainingExp(tables, state.facilities, facilityId);
+    if (exp <= 0) continue;
+    for (const id of ids) {
+      const m = getMerc(state, id);
+      if (m.level >= m.growth.cap) continue;
+      m.exp += exp;
+      events.push({ type: 'trained', facilityId, mercId: id, exp });
+    }
+  }
   const tierBefore = new Map(state.mercenaries.filter(simulated).map((m) => [m.id, loyaltyTier(tables, m.loyalty!.value).id]));
 
   // 하루가 끝날 때 유지비를 낸다. 모자라면 그 용병 몫은 미납으로 기록만 한다.
@@ -590,6 +661,14 @@ export function advanceDay(tables: GameTables, prev: GameState): { state: GameSt
   if (paid || unpaid) events.push({ type: 'upkeep', paid, unpaid, unpaidMercIds });
 
   state.day += 1;
+
+  // 건설·강화 완료(완료일이 된 날 시작에 레벨이 오른다)
+  const job = state.facilities.construction;
+  if (job && state.day >= job.completeDay) {
+    state.facilities.levels[job.facilityId] = job.targetLevel;
+    state.facilities.construction = null;
+    events.push({ type: 'facilityBuilt', facilityId: job.facilityId, level: job.targetLevel });
+  }
 
   for (const m of state.mercenaries) {
     if (!m.injury) continue;
@@ -652,6 +731,18 @@ export function advanceDay(tables: GameTables, prev: GameState): { state: GameSt
     m.loyalty = newLoyalty(tables);
     m.departedDay = state.day;
     events.push({ type: 'departed', mercId: m.id, factionId: cfg.departure.toFaction });
+  }
+
+  // 배치 정리: 길드를 떠났거나 부상·파견 중이거나 칸이 줄어든 배치는 자동으로 해제한다.
+  for (const [facilityId, ids] of Object.entries(state.facilities.assignments)) {
+    const keep: string[] = [];
+    for (const id of ids) {
+      const m = getMerc(state, id);
+      const reason = !isGuildMember(m) ? '이탈' : m.injury ? '부상' : isOnExpedition(state, id) ? '파견' : keep.length >= facilitySlots(tables, state.facilities, facilityId) ? '칸 부족' : '';
+      if (reason) events.push({ type: 'unassigned', facilityId, mercId: id, reason });
+      else keep.push(id);
+    }
+    state.facilities.assignments[facilityId] = keep;
   }
 
   // ── 무소속 용병의 다른 세력 영입 이동(하루가 끝날 때, 이탈 판정 뒤). 영구 소멸 없음.

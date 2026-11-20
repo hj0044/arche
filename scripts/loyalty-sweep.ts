@@ -1,9 +1,9 @@
 // 충성도·무소속 이동 값 조합별 시뮬레이션 비교표(마크다운). 데이터 파일은 바꾸지 않고 메모리에서만 값을 바꾼다.
 // 사용: npm run loyalty-sweep -- [일수] [시드 수]
-// 자동 플레이 정책은 npm run days와 같다(서울 개방자 시작, 3명 이상 모이면 최저 레벨 리프트, 제로 ≥ 영입비+300이면 영입,
-// 가능하면 레벨업, 급료 보너스는 쓰지 않음).
+// 자동 플레이 정책은 npm run days와 같은 scripts/autoplay.ts(시설 건설, 영입, 파견, 훈련 배치, 레벨업. 급료 보너스는 쓰지 않음).
 import { tables as base, type GameTables } from '../src/data';
-import { advanceDay, canLevelUp, dispatch, isAvailable, levelUp, newGame, recruit, recruitInfo, riftLevel, type GameState } from '../src/engine/game';
+import { newGame, type GameState } from '../src/engine/game';
+import { autoplayDay } from './autoplay';
 import { loyaltyTier } from '../src/engine/loyalty';
 
 const [daysArg = '40', seedCountArg = '6'] = process.argv.slice(2);
@@ -56,26 +56,17 @@ function play(t: GameTables, seed: string) {
     baseCityId: 'seoul',
     protagonist: { mode: 'opener', name: '주인공', element: 'fire', role: 'warrior', background: 'survivor' },
   });
-  const rowOf = (role: string) => t.roles.find((r) => r.id === role)!.defaultRow;
-  const out = { refusals: 0, departures: 0, idleDecays: 0, poaches: 0, wins: 0 };
+  const out = { refusals: 0, departures: 0, idleDecays: 0, poaches: 0, wins: 0, unpaidDays: 0, trainingExp: 0 };
   for (let d = 0; d < days; d++) {
-    for (const m of s.mercenaries) {
-      const info = recruitInfo(t, s, m.id);
-      if (info.eligible && info.unlocked && s.resources.zero >= info.cost + 300) s = recruit(t, s, m.id);
-    }
-    const free = s.mercenaries.filter((m) => isAvailable(s, m.id));
-    const target = s.rifts.filter((r) => r.cityId === s.baseCityId).sort((a, b) => riftLevel(a) - riftLevel(b))[0];
-    if (free.length >= Math.min(3, s.mercenaries.filter((m) => m.affiliation.kind === 'guild').length) && target) {
-      s = dispatch(t, s, target.id, free.slice(0, 5).map((m) => ({ mercId: m.id, row: rowOf(m.role) })));
-    }
-    for (const m of s.mercenaries) while (canLevelUp(t, s, m.id)) s = levelUp(t, s, m.id);
-    const { state, events } = advanceDay(t, s);
+    const { state, events } = autoplayDay(t, s);
     s = state;
     for (const e of events) {
       if (e.type === 'refused') out.refusals++;
       if (e.type === 'departed') out.departures++;
       if (e.type === 'poached') out.poaches++;
       if (e.type === 'returned' && e.outcome === 'victory') out.wins++;
+      if (e.type === 'upkeep' && e.unpaid > 0) out.unpaidDays++;
+      if (e.type === 'trained') out.trainingExp += e.exp;
     }
     for (const m of s.mercenaries) out.idleDecays += (m.loyalty?.recent ?? []).filter((r) => r.day === s.day && r.reason === 'idleDecay').length;
   }
@@ -86,24 +77,26 @@ function play(t: GameTables, seed: string) {
     dist[loyaltyTier(t, m.loyalty.value).id]++;
     size++;
   }
-  return { ...out, dist, size, departSeed: out.departures > 0 };
+  const facilityLevels = Object.fromEntries(t.facilities.facilities.map((f) => [f.id, s.facilities.levels[f.id] ?? 0]));
+  return { ...out, dist, size, departSeed: out.departures > 0, facilityLevels };
 }
 
 const tierIds = base.loyalty.tiers.map((t) => t.id);
 const tierNames = base.loyalty.tiers.map((t) => t.name).join('/');
+const facilityNames = base.facilities.facilities.map((f) => f.name).join('/');
 console.log(`### ${days}일, 시드 ${seeds.length}개 (${seeds.join(', ')})`);
 console.log('');
-console.log('횟수는 시드 합계, 길드 인원과 구간 분포는 마지막 날 평균(주인공 제외).');
+console.log('횟수는 시드 합계, 길드 인원·구간 분포·시설 레벨은 마지막 날 평균(주인공 제외).');
 console.log('');
-console.log(`| 조합 | 미납 | 위험 거부 | 이탈 | 대기 하락 | 무소속 이동 | 이탈 수 | 이탈 발생 시드 | 거부 수 | 대기 하락 횟수 | 무소속 이동 수 | 승리 | 길드 인원 | ${tierNames} |`);
-console.log('|---|---|---|---|---|---|---|---|---|---|---|---|---|---|');
+console.log(`| 조합 | 미납 | 위험 거부 | 이탈 | 대기 하락 | 무소속 이동 | 이탈 수 | 이탈 발생 시드 | 거부 수 | 대기 하락 횟수 | 무소속 이동 수 | 미납 일수 | 훈련 경험치 | 승리 | 길드 인원 | ${tierNames} | 시설 레벨(${facilityNames}) |`);
+console.log('|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|');
 for (const c of combos) {
   const t = tablesFor(c);
   const rs = seeds.map((sd) => play(t, sd));
-  const sum = (k: 'refusals' | 'departures' | 'idleDecays' | 'poaches' | 'wins') => rs.reduce((a, r) => a + r[k], 0);
+  const sum = (k: 'refusals' | 'departures' | 'idleDecays' | 'poaches' | 'wins' | 'unpaidDays' | 'trainingExp') => rs.reduce((a, r) => a + r[k], 0);
   const avg = (f: (r: (typeof rs)[number]) => number) => (rs.reduce((a, r) => a + f(r), 0) / rs.length).toFixed(1);
   const pct = (x: number) => `${Math.round(x * 100)}%`;
   console.log(
-    `| ${c.name} | ${c.unpaid} | ${pct(c.refuse)} | ${pct(c.depart)} | ${c.idle} | ${pct(c.poach)} | ${sum('departures')} | ${rs.filter((r) => r.departSeed).length}/${seeds.length} | ${sum('refusals')} | ${sum('idleDecays')} | ${sum('poaches')} | ${sum('wins')} | ${avg((r) => r.size)} | ${tierIds.map((id) => avg((r) => r.dist[id])).join('/')} |`,
+    `| ${c.name} | ${c.unpaid} | ${pct(c.refuse)} | ${pct(c.depart)} | ${c.idle} | ${pct(c.poach)} | ${sum('departures')} | ${rs.filter((r) => r.departSeed).length}/${seeds.length} | ${sum('refusals')} | ${sum('idleDecays')} | ${sum('poaches')} | ${sum('unpaidDays')} | ${sum('trainingExp')} | ${sum('wins')} | ${avg((r) => r.size)} | ${tierIds.map((id) => avg((r) => r.dist[id])).join('/')} | ${base.facilities.facilities.map((f) => avg((r) => r.facilityLevels[f.id])).join('/')} |`,
   );
 }

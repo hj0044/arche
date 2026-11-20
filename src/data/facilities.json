@@ -1,0 +1,46 @@
+{
+  "_note": "거점 시설(지시서 008, 임시값). 레벨 L 건설·강화 비용 = round(cost.zero × cost.zeroGrowth^(L-1)), 일수 = cost.days + cost.daysStep × (L-1). levelOverrides로 특정 레벨의 비용·일수를 덮어쓸 수 있다. 효과는 effect.type의 처리기가 레벨로 계산한다(선형: base + perLevel × (L-1), 표: levels[L-1], 표보다 높은 레벨은 마지막 행).",
+  "facilities": [
+    {
+      "id": "infirmary",
+      "name": "의무실",
+      "description": "새로 입은 부상의 회복 일수를 줄인다.",
+      "maxLevel": 3,
+      "startLevel": 0,
+      "cost": { "zero": 150, "zeroGrowth": 1.8, "days": 2, "daysStep": 1 },
+      "effect": { "type": "injuryReduction", "base": 1, "perLevel": 1 }
+    },
+    {
+      "id": "training",
+      "name": "훈련소",
+      "description": "배치한 용병이 매일 경험치를 얻는다.",
+      "maxLevel": 3,
+      "startLevel": 0,
+      "cost": { "zero": 150, "zeroGrowth": 1.8, "days": 2, "daysStep": 1 },
+      "effect": { "type": "training", "slotsBase": 1, "slotsPerLevel": 1, "expBase": 10, "expPerLevel": 5 }
+    },
+    {
+      "id": "scout",
+      "name": "탐지소",
+      "description": "리프트 정보를 더 정확하게 보여 준다.",
+      "maxLevel": 3,
+      "startLevel": 1,
+      "cost": { "zero": 150, "zeroGrowth": 1.8, "days": 2, "daysStep": 1 },
+      "effect": {
+        "type": "scouting",
+        "levels": [
+          { "revealElements": true, "exactDeadline": false, "exactEnemies": false, "exactReward": false, "revealOmen": false },
+          { "revealElements": true, "exactDeadline": true, "exactEnemies": true, "exactReward": false, "revealOmen": false },
+          { "revealElements": true, "exactDeadline": true, "exactEnemies": true, "exactReward": true, "revealOmen": true }
+        ]
+      }
+    }
+  ],
+  "fog": {
+    "_note": "흐린 정보의 범위 폭. 실제 값이 범위 안 어딘가에 오도록 리프트가 생길 때 오프셋을 정해 저장한다.",
+    "deadlineWidth": 2,
+    "levelWidth": 4,
+    "countWidth": 1,
+    "rewardSpread": 0.2
+  }
+}

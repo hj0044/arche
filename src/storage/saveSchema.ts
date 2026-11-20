@@ -31,6 +31,9 @@ const rift: Schema = {
   },
   optional: { stable: 'boolean', omen: { fields: { textId: 'string' } } },
 };
+(rift as { fields: Record<string, Schema> }).fields.fog = {
+  fields: { deadlineOffset: 'number', levelOffset: 'number', countOffset: 'number', rewardU: 'number' },
+};
 
 const partyMember: Schema = { fields: { mercId: 'string', row: { oneOf: ['front', 'back'] } } };
 
@@ -99,6 +102,13 @@ const state: Schema = {
     stabilizedRoutes: { arrayOf: { fields: { riftId: 'string', name: 'string', day: 'number' } } },
     counters: { fields: { rift: 'number', expedition: 'number' } },
     records: { fields: { victories: 'number', victoriesByTier: { record: 'number' } } },
+    facilities: {
+      fields: {
+        levels: { record: 'number' },
+        construction: { nullable: { fields: { facilityId: 'string', targetLevel: 'number', startDay: 'number', completeDay: 'number' } } },
+        assignments: { record: { arrayOf: 'string' } },
+      },
+    },
   },
 };
 

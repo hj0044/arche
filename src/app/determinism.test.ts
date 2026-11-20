@@ -92,3 +92,27 @@ describe('결정성 회귀(대기 하락·무소속 이동)', () => {
     expect(reasons.has('idleDecay')).toBe(true);
   });
 });
+
+describe('결정성 회귀(거점 시설: 건설 진행과 훈련 배치)', () => {
+  it('건설 진행과 훈련 배치가 있는 길드를 15일 동안 매일 저장 왕복해도 상태·이벤트가 같다', async () => {
+    const { startConstruction, assignToFacility } = await import('../engine/game');
+    let origin = start([{ mercId: 'hero', row: 'front' }]);
+    origin = { ...origin, resources: { ...origin.resources, zero: 5000 }, facilities: { ...origin.facilities, levels: { ...origin.facilities.levels, training: 2 } } };
+    origin = startConstruction(tables, origin, 'infirmary');
+    origin = assignToFacility(tables, assignToFacility(tables, origin, 'training', 'm02'), 'training', 'm03');
+    let memory = structuredClone(origin);
+    let loaded = parseSave(serializeSave(createSaveFile(origin, 'manual'))).state;
+    const kinds = new Set<string>();
+    for (let day = 0; day < 15; day++) {
+      const a = advanceDay(tables, memory);
+      const b = advanceDay(tables, loaded);
+      expect(b.events).toEqual(a.events);
+      expect(b.state).toEqual(a.state);
+      for (const e of a.events) kinds.add(e.type);
+      memory = a.state;
+      loaded = parseSave(serializeSave(createSaveFile(b.state, 'auto'))).state;
+    }
+    expect(kinds.has('facilityBuilt')).toBe(true);
+    expect(kinds.has('trained')).toBe(true);
+  });
+});
