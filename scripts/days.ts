@@ -16,7 +16,9 @@ const rowOf = (role: string) => tables.roles.find((r) => r.id === role)!.default
 const sorties = new Map<string, { n: number; win: number }>();
 // 충성도 요약용
 let refusals = 0;
+let idleDecays = 0;
 const departures: string[] = [];
+const poaches: string[] = [];
 
 for (let d = 0; d < Number(daysArg); d++) {
   // 단순한 자동 플레이: 3명 이상 모이면 거점 도시에서 몬스터 레벨이 가장 낮은 리프트로 보낸다.
@@ -33,6 +35,7 @@ for (let d = 0; d < Number(daysArg); d++) {
   for (const m of s.mercenaries) while (canLevelUp(tables, s, m.id)) s = levelUp(tables, s, m.id);
   const { state, events } = advanceDay(tables, s);
   s = state;
+  for (const m of s.mercenaries) idleDecays += (m.loyalty?.recent ?? []).filter((r) => r.day === s.day && r.reason === 'idleDecay').length;
   for (const e of events) {
     if (e.type === 'returned') {
       const r = s.reports.find((x) => x.expeditionId === e.expeditionId)!;
@@ -44,6 +47,10 @@ for (let d = 0; d < Number(daysArg); d++) {
     }
     if (e.type === 'upkeep' && e.unpaid) console.log(`${s.day}일 유지비 미납 ${e.unpaid}`);
     if (e.type === 'refused') refusals++;
+    if (e.type === 'poached') {
+      const m = s.mercenaries.find((x) => x.id === e.mercId)!;
+      poaches.push(`${s.day}일 ${m.name}→${tables.factions.find((f) => f.id === e.toFactionId)?.name}`);
+    }
     if (e.type === 'departed') {
       const m = s.mercenaries.find((x) => x.id === e.mercId)!;
       departures.push(`${s.day}일 ${m.name}`);
@@ -66,3 +73,4 @@ const dist = new Map<string, number>(tables.loyalty.tiers.map((t) => [t.name, 0]
 for (const m of s.mercenaries) if (m.loyalty && m.affiliation.kind === 'guild') dist.set(loyaltyTier(tables, m.loyalty.value).name, (dist.get(loyaltyTier(tables, m.loyalty.value).name) ?? 0) + 1);
 console.log(`구간 분포: ${[...dist].map(([k, v]) => `${k} ${v}`).join(', ')}`);
 console.log(`거부 ${refusals}회, 이탈 ${departures.length}회${departures.length ? ` (${departures.join(', ')})` : ''}`);
+console.log(`대기 하락 ${idleDecays}회, 무소속 이동 ${poaches.length}회${poaches.length ? ` (${poaches.join(', ')})` : ''}`);

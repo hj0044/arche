@@ -24,6 +24,7 @@ import savePolicyJson from './save-policy.json';
 import autoPartyJson from './auto-party.json';
 import saveLimitsJson from './save-limits.json';
 import loyaltyJson from './loyalty.json';
+import poachingJson from './poaching.json';
 
 export type Range = [number, number];
 export type StatId = 'hp' | 'atk' | 'def' | 'spd';
@@ -229,10 +230,22 @@ export interface GameTables {
   omens: OmenRow[];
   autoParty: AutoPartyTable;
   loyalty: LoyaltyTable;
+  poaching: PoachingTable;
+}
+
+/** 무소속 용병의 다른 세력 영입 이동 */
+export interface PoachingTable {
+  dailyChance: number;
+  /** 충성도 이탈 직후 이동 판정에서 빼는 일수 */
+  protectionDaysAfterDeparture: number;
+  /** 이동 판정 대상 소속 세력 */
+  fromFactions: string[];
+  /** 이동할 수 없는 세력 */
+  excludeTargets: string[];
 }
 
 /** 충성도 변동 요인 키. victoryHard는 상급 이상 몬스터가 나오는 리프트의 승리(성향 가중치 전용, 기본값은 victory) */
-export type LoyaltyChangeKey = 'victory' | 'defeat' | 'injury' | 'unpaidDay' | 'restDay' | 'salaryBonus';
+export type LoyaltyChangeKey = 'victory' | 'defeat' | 'injury' | 'unpaidDay' | 'restDay' | 'idleDecay' | 'salaryBonus';
 export type LoyaltyWeightKey = LoyaltyChangeKey | 'victoryHard';
 
 export interface LoyaltyTierRow {
@@ -257,6 +270,10 @@ export interface TendencyRow {
 export interface LoyaltyTable {
   range: Range;
   start: number;
+  /** 충성도 변동·거부·이탈을 시뮬레이션할 소속('guild' 또는 세력 id). 그 밖의 용병은 시작값을 보관만 한다. */
+  simulatedAffiliations: string[];
+  /** 출전 없이 쉬는 날 상승을 주는 최대 연속 일수. 넘기면 대기 하락 */
+  restMaxDays: number;
   tiers: LoyaltyTierRow[];
   departure: { tier: string; afterConsecutiveDays: number; chance: number; toFaction: string; excludeOnExpedition: boolean };
   changes: Record<LoyaltyChangeKey, number>;
@@ -316,6 +333,7 @@ export const tables: GameTables = {
   omens: omensJson,
   autoParty: autoPartyJson,
   loyalty: loyaltyJson as unknown as LoyaltyTable,
+  poaching: poachingJson,
 };
 
 /** 세이브 정책(명세 9절 확정 규칙의 값). 저장 코드와 화면 문구가 같은 값을 읽는다. */

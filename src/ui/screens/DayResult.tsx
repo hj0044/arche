@@ -1,7 +1,7 @@
 import type { DayEvent } from '../../engine/game';
 import { AppShell } from '../AppShell';
 import { Panel } from '../components';
-import { cityName, loyaltyTierName, materialName, num, omenText, outcomeName, severityName } from '../format';
+import { cityName, factionName, loyaltyTierName, materialName, num, omenText, outcomeName, severityName } from '../format';
 import type { Ctx } from '../nav';
 
 export function DayResult({ ctx, events }: { ctx: Ctx; events: DayEvent[] }) {
@@ -14,8 +14,9 @@ export function DayResult({ ctx, events }: { ctx: Ctx; events: DayEvent[] }) {
   const upkeep = events.find((e) => e.type === 'upkeep');
   const departed = events.flatMap((e) => (e.type === 'departed' ? [e.mercId] : []));
   const refused = events.flatMap((e) => (e.type === 'refused' ? [e.mercId] : []));
+  const poached = events.flatMap((e) => (e.type === 'poached' ? [e] : []));
   const tierChanges = events.flatMap((e) => (e.type === 'loyaltyTier' && !departed.includes(e.mercId) ? [e] : []));
-  const quiet = !departed.length && !refused.length && !tierChanges.length && !returned.length && !recovered.length && !expired.length && !spawned.length;
+  const quiet = !poached.length && !departed.length && !refused.length && !tierChanges.length && !returned.length && !recovered.length && !expired.length && !spawned.length;
 
   return (
     <AppShell
@@ -35,6 +36,12 @@ export function DayResult({ ctx, events }: { ctx: Ctx; events: DayEvent[] }) {
         </p>
       )}
       {quiet && <p className="muted">조용한 하루였습니다.</p>}
+      {poached.length > 0 && (
+        <p className="small poach-news" role="status">
+          <span aria-hidden="true">⇄ </span>
+          {poached.map((e) => `${e.wasDeparted ? '이탈했던 ' : ''}${name(e.mercId)}이(가) ${factionName(e.toFactionId)}에 합류`).join(' · ')}
+        </p>
+      )}
       {(departed.length > 0 || refused.length > 0 || tierChanges.length > 0) && (
         <Panel title="충성도">
           {departed.length > 0 && (

@@ -57,22 +57,41 @@ describe('세이브 파일 형식', () => {
     expect(() => parseSave({ format: SAVE_FORMAT, version: SAVE_VERSION, state: { day: 1 } })).toThrow(/손상/);
   });
 
-  it('v2 세이브는 충성도 시작값을 채워 v3로 올린다(주인공·길드 밖 용병은 없음)', () => {
-    const v3 = createSaveFile(playedState(), 'manual');
-    const v2 = JSON.parse(serializeSave(v3));
+  it('v2 세이브는 v3, v4를 거쳐 주인공을 뺀 모든 용병에 충성도 시작값을 채운다', () => {
+    const cur = createSaveFile(playedState(), 'manual');
+    const v2 = JSON.parse(serializeSave(cur));
     v2.version = 2;
     for (const m of v2.state.mercenaries) delete m.loyalty;
     const up = parseSave(v2);
     expect(up.version).toBe(SAVE_VERSION);
     for (const m of up.state.mercenaries) {
-      if (m.affiliation.kind === 'guild' && !m.isProtagonist) expect(m.loyalty).toMatchObject({ value: tables.loyalty.start, dangerDays: 0 });
-      else expect(m.loyalty).toBeUndefined();
+      if (m.isProtagonist) expect(m.loyalty).toBeUndefined();
+      else expect(m.loyalty).toMatchObject({ value: tables.loyalty.start, dangerDays: 0, restStreak: 0 });
+    }
+  });
+
+  it('v3 세이브(길드 용병만 충성도, 연속 쉰 일수 없음)는 v4로 올리며 기존 충성도 값은 지킨다', () => {
+    const cur = createSaveFile(playedState(), 'manual');
+    const v3 = JSON.parse(serializeSave(cur));
+    v3.version = 3;
+    for (const m of v3.state.mercenaries) {
+      if (m.affiliation.kind !== 'guild') delete m.loyalty;
+      else if (m.loyalty) {
+        delete m.loyalty.restStreak;
+        m.loyalty.value = 33;
+      }
+    }
+    const up = parseSave(v3);
+    for (const m of up.state.mercenaries) {
+      if (m.isProtagonist) continue;
+      expect(m.loyalty!.restStreak).toBe(0);
+      expect(m.loyalty!.value).toBe(m.affiliation.kind === 'guild' ? 33 : tables.loyalty.start);
     }
   });
 
   it('이전 버전(v1) 세이브는 불러오지 않는다(용병·세력 id 변경으로 폐기)', () => {
     const v1 = { ...createSaveFile(playedState(), 'manual'), version: 1 };
-    expect(SAVE_VERSION).toBe(3);
+    expect(SAVE_VERSION).toBe(4);
     expect(() => parseSave(v1)).toThrow(/이전 버전/);
     expect(isLoadable(v1)).toBe(false);
     expect(isLoadable(createSaveFile(playedState(), 'auto'))).toBe(true);

@@ -51,10 +51,12 @@ const mercenary: Schema = {
     injury: { fields: { severity: 'string', recoverDay: 'number' } },
     unpaidUpkeep: { fields: { days: 'number', zero: 'number' } },
     isProtagonist: 'boolean',
+    departedDay: 'number',
     loyalty: {
       fields: {
         value: 'number',
         dangerDays: 'number',
+        restStreak: 'number',
         refusedOnDay: { nullable: 'number' },
         bonusDay: { nullable: 'number' },
         recent: { arrayOf: { fields: { day: 'number', reason: 'string', delta: 'number' } } },

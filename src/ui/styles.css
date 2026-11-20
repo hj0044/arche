@@ -249,3 +249,4 @@ button.rift-main:active:not(:disabled) { background: var(--surface-2); }
 .loyalty-low { color: var(--warn); }
 .loyalty-danger { color: var(--bad); }
 .loyalty-log { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.poach-news { margin: 0; padding: 8px 12px; border-radius: 10px; background: var(--surface-2); border-left: 3px solid var(--accent); }

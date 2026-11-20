@@ -17,7 +17,8 @@
     "days": "tsx scripts/days.ts",
     "import-roster": "tsx scripts/import-roster.ts",
     "balance": "tsx scripts/balance.ts",
-    "make-audit-save": "tsx scripts/make-audit-save.ts"
+    "make-audit-save": "tsx scripts/make-audit-save.ts",
+    "loyalty-sweep": "tsx scripts/loyalty-sweep.ts"
   },
   "dependencies": {
     "react": "^19.3.1",

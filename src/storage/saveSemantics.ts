@@ -85,17 +85,18 @@ export function validateSemantics(state: GameState, t: SemanticTables): string[]
       if (!t.injuries.severities.some((s) => s.id === m.injury!.severity)) errors.push(`${p}.injury.severity: 없는 부상 등급 id "${m.injury.severity}"`);
       atLeast(`${p}.injury.recoverDay`, m.injury.recoverDay, L.minDay);
     }
-    // 충성도: 길드 소속 용병(주인공 제외)에만 있고, 값은 범위 안
-    const needsLoyalty = m.affiliation.kind === 'guild' && !m.isProtagonist;
-    if (needsLoyalty && !m.loyalty) errors.push(`${p}.loyalty 없음`);
-    if (!needsLoyalty && m.loyalty) errors.push(`${p}.loyalty: 길드 용병(주인공 제외)이 아닌데 충성도가 있음`);
+    // 충성도: 주인공을 뺀 모든 용병이 같은 틀로 갖는다(길드 밖은 시작값 보관). 주인공은 없다.
+    if (!m.isProtagonist && !m.loyalty) errors.push(`${p}.loyalty 없음`);
+    if (m.isProtagonist && m.loyalty) errors.push(`${p}.loyalty: 주인공에게 충성도가 있음`);
     if (m.loyalty) {
       within(`${p}.loyalty.value`, m.loyalty.value, t.loyalty.range);
       atLeast(`${p}.loyalty.dangerDays`, m.loyalty.dangerDays, 0);
+      atLeast(`${p}.loyalty.restStreak`, m.loyalty.restStreak, 0);
       m.loyalty.recent.forEach((r, j) => {
         if (!(r.reason in t.loyalty.changes)) errors.push(`${p}.loyalty.recent[${j}].reason: 없는 변동 요인 "${r.reason}"`);
       });
     }
+    if (m.departedDay !== undefined) atLeast(`${p}.departedDay`, m.departedDay, L.minDay);
     if (m.unpaidUpkeep) {
       atLeast(`${p}.unpaidUpkeep.days`, m.unpaidUpkeep.days, 0);
       atLeast(`${p}.unpaidUpkeep.zero`, m.unpaidUpkeep.zero, 0);

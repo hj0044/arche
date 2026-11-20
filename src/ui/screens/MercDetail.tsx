@@ -169,6 +169,14 @@ export function MercDetail({ ctx, mercId }: { ctx: Ctx; mercId: string }) {
             </p>
           )}
           {m.loyalty.refusedOnDay === s.day && <p className="bad small">오늘은 파견을 거부했습니다.</p>}
+          {m.loyalty.restStreak > 0 && (
+            <p className={`small ${m.loyalty.restStreak > tables.loyalty.restMaxDays ? 'warn' : 'muted'}`}>
+              대기 {m.loyalty.restStreak}일
+              {m.loyalty.restStreak > tables.loyalty.restMaxDays
+                ? ` · ⚠ 대기 하락 중(출전 없이 ${tables.loyalty.restMaxDays}일을 넘김)`
+                : ` · 쉬는 날 상승(${tables.loyalty.restMaxDays}일까지)`}
+            </p>
+          )}
           {m.loyalty.recent.length > 0 && (
             <ul className="loyalty-log">
               {[...m.loyalty.recent].reverse().map((r, i) => (

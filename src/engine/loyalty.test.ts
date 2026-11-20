@@ -73,10 +73,13 @@ describe('충성도 구간', () => {
     for (let i = 0; i < 3; i++) expect(advanceDay(tables, s).state.mercenaries.find((m) => m.id === 'hero')!.loyalty).toBeUndefined();
   });
 
-  it('시작 길드 용병은 시작값, NPC 세력 용병은 충성도 없음', () => {
-    const s = gm();
+  it('주인공을 뺀 모든 용병이 같은 틀로 충성도를 갖고, 길드 밖 용병은 시작값을 보관만 한다', () => {
+    let s = gm();
     expect(value(s, 'm01')).toBe(L.start);
-    expect(getMerc(s, 'm05').loyalty).toBeUndefined();
+    expect(value(s, 'm05')).toBe(L.start);
+    for (let i = 0; i < 10; i++) s = advanceDay(tables, s).state;
+    expect(getMerc(s, 'm05').loyalty).toEqual(gm().mercenaries.find((m) => m.id === 'm05')!.loyalty);
+    expect(value(s, 'm01')).not.toBe(L.start); // 길드 용병은 시뮬레이션
   });
 });
 
@@ -241,7 +244,8 @@ describe('거부와 이탈', () => {
     expect(gone).toBeDefined();
     const m = getMerc(s, gone!);
     expect(m.affiliation).toEqual({ kind: 'faction', factionId: L.departure.toFaction });
-    expect(m.loyalty).toBeUndefined();
+    expect(m.loyalty).toMatchObject({ value: L.start, dangerDays: 0, restStreak: 0 }); // 시작값으로 되돌려 보관
+    expect(m.departedDay).toBe(s.day);
     expect(isAvailable(s, gone!)).toBe(false);
     expect(recruitInfo(tables, s, gone!).eligible).toBe(true);
     const back = recruit(tables, { ...s, resources: { ...s.resources, zero: 99999 } }, gone!);

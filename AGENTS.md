@@ -60,6 +60,7 @@
   - 며칠 자동 진행 요약: `npm run days -- [일수] [시드]`
   - 레벨·등급별 승률 표: `npm run balance -- [시드 수]`
   - 용병 표 다시 만들기(CSV → `src/data/roster.json`): `npm run import-roster`
+  - 충성도 값 조합 비교표: `npm run loyalty-sweep -- [일수] [시드 수]`
   - 검수용 고정 세이브 만들기: `npm run make-audit-save -- [시드] [출력 경로]` (기본 `audit-20261120`, `/tmp/arche-audit-v2.json`)
   - 타입 검사: `npm run typecheck`
   - 빌드: `npm run build` → `dist/`
