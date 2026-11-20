@@ -1,0 +1,10 @@
+{
+  "_note": "자동 편성 점수 가중치(제안 규칙). 점수 = 레벨 × level + 리프트 몬스터 속성에 대한 평균 상성 점수. 동점은 용병 id 순.",
+  "includeProtagonist": true,
+  "fillGroupsFirst": true,
+  "weights": {
+    "level": 1.0,
+    "elementAdvantage": 4.0,
+    "elementDisadvantage": -4.0
+  }
+}

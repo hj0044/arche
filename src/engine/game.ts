@@ -163,6 +163,29 @@ export function guildUpkeepPerDay(tables: GameTables, state: GameState): number 
   return state.mercenaries.filter(isGuildMember).reduce((sum, m) => sum + upkeepPerDay(tables, m), 0);
 }
 
+/**
+ * 영입했을 때의 길드 유지비 전망. 영입 확인 화면이 값만 보여 준다.
+ * daysAffordable: 영입비를 낸 뒤 남은 제로로, 수입 없이 하루 유지비를 전액 낼 수 있는 일수.
+ */
+export function recruitUpkeepOutlook(
+  tables: GameTables,
+  state: GameState,
+  mercId: string,
+): { cost: number; zeroAfter: number; dailyUpkeepBefore: number; dailyUpkeepAfter: number; daysAffordable: number } {
+  const m = getMerc(state, mercId);
+  const { cost } = recruitInfo(tables, state, mercId);
+  const before = guildUpkeepPerDay(tables, state);
+  const after = before + upkeepPerDay(tables, { ...m, affiliation: { kind: 'guild' } });
+  const zeroAfter = state.resources.zero - cost;
+  return {
+    cost,
+    zeroAfter,
+    dailyUpkeepBefore: before,
+    dailyUpkeepAfter: after,
+    daysAffordable: after > 0 ? Math.max(0, Math.floor(zeroAfter / after)) : Infinity,
+  };
+}
+
 export interface RecruitInfo {
   /** 영입 대상(NPC 세력 소속)인가 */
   eligible: boolean;

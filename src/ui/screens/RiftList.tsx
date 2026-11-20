@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { tables, travelDays } from '../../data';
+import { riftEnemyElements } from '../../engine/autoParty';
 import { riftReward } from '../../engine/game';
 import type { Rift, RiftReward } from '../../engine/rift';
 import { AppShell } from '../AppShell';
@@ -8,7 +9,21 @@ import { gradeName, materialName, monsterName, num, omenText, tierName } from '.
 import { MainTabs } from '../MainTabs';
 import type { Ctx } from '../nav';
 
-export function RiftCard({ rift, day, baseCityId, onClick }: { rift: Rift; day: number; baseCityId: string; onClick?: () => void }) {
+export function RiftCard({
+  rift,
+  day,
+  baseCityId,
+  onClick,
+  compact = false,
+}: {
+  rift: Rift;
+  day: number;
+  baseCityId: string;
+  onClick?: () => void;
+  /** 편성 화면 상단용: 탭 동작 없이 요약만 */
+  compact?: boolean;
+}) {
+  const [open, setOpen] = useState(false);
   const travel = travelDays(tables, baseCityId, rift.cityId);
   const left = rift.deadlineDay === null ? null : rift.deadlineDay - day;
   const tooLate = left !== null && travel > left;
@@ -17,49 +32,68 @@ export function RiftCard({ rift, day, baseCityId, onClick }: { rift: Rift; day: 
   for (const e of rift.enemies) counts.set(e.monsterId, (counts.get(e.monsterId) ?? 0) + 1);
   const total = rift.durationDays + travel * 2;
   // 리프트에 나오는 몬스터들의 속성(몬스터 데이터에서 가져온다)
-  const enemyElements = [...new Set(rift.enemies.map((e) => tables.monsters.find((m) => m.id === e.monsterId)?.element).filter((x) => x !== undefined))];
+  const enemyElements = riftEnemyElements(tables, rift);
   const win = riftReward(tables, rift, 'victory');
   const retreat = riftReward(tables, rift, 'retreat');
   const fmt = (r: RiftReward) =>
     [`제로 ${num(r.zero)}`, `아르케 ${num(r.arche)}`, ...Object.entries(r.materials).map(([id, n]) => `${materialName(id)} ${n}`)].join(' · ');
-  return (
-    <button className={`card-button rift tier-${rift.tier}`} onClick={onClick} disabled={!onClick || tooLate}>
-      <div className="rift-head">
+  const lv = `Lv${Math.min(...levels)}${Math.max(...levels) !== Math.min(...levels) ? `~${Math.max(...levels)}` : ''}`;
+  const deadline = rift.stable ? '마감 없음' : left === 0 ? '오늘 마감' : `마감 D-${left}`;
+  const urgent = !rift.stable && left !== null && left <= tables.ui.deadlineWarnDays;
+
+  const head = (
+    <>
+      <span className="rift-head">
         <span className="tag tier">{tierName(rift.tier)}</span>
         <span className="card-title">{rift.name}</span>
         {rift.omen && <OmenBadge />}
-        {rift.stable ? (
-          <span className="pill ok">안정화</span>
-        ) : (
-          <span className={`pill ${left !== null && left <= tables.ui.deadlineWarnDays ? 'bad' : ''}`}>{left === 0 ? '오늘 마감' : `마감 D-${left}`}</span>
-        )}
-      </div>
-      <div className="rift-meta">
-        <span>
-          {gradeName(rift.enemies[0].grade)} · Lv{Math.min(...levels)}
-          {Math.max(...levels) !== Math.min(...levels) ? `~${Math.max(...levels)}` : ''}
+        {rift.stable && <span className="pill ok">안정화</span>}
+      </span>
+      <span className="rift-key">
+        <span className="strong">{lv}</span>
+        <span className={urgent ? 'bad strong' : ''}>
+          {urgent ? '⚠ ' : ''}
+          {deadline}
         </span>
-        {enemyElements.map((el) => (
-          <ElementTag key={el} id={el} />
-        ))}
         <span>
-          소요 {total}일{travel ? ` (이동 왕복 ${travel * 2}일)` : ''}
+          소요 {total}일{travel ? `(이동 ${travel * 2})` : ''}
         </span>
-      </div>
-      {rift.omen && <div className="omen-text small">{omenText(rift.omen.textId)}</div>}
-      <div className="rift-enemies muted small">
-        {[...counts].map(([id, n]) => `${monsterName(id)}×${n}`).join(' · ')}
-      </div>
-      <div className="rift-reward small">
-        승리 시 {fmt(win)}
-        {tables.riftTiers.find((t) => t.id === rift.tier)?.stabilizes && !rift.stable && ' · 항로 안정화'}
-      </div>
-      {(retreat.zero > 0 || retreat.arche > 0) && <div className="muted tiny">철수 시 {fmt(retreat)}</div>}
-      {rift.stable && (
-        <div className="muted tiny">안정화 통로: 보상 ×{tables.progression.stablePassageRewardRatio} 반영</div>
+      </span>
+      {rift.omen && <span className="omen-text small">{omenText(rift.omen.textId)}</span>}
+      {tooLate && <span className="error small">이동하는 동안 마감이 지나 보낼 수 없습니다.</span>}
+    </>
+  );
+
+  return (
+    <div className={`card rift tier-${rift.tier} ${compact ? 'compact' : ''}`}>
+      {onClick ? (
+        <button className="rift-main" onClick={onClick} disabled={tooLate}>
+          {head}
+        </button>
+      ) : (
+        <div className="rift-main">{head}</div>
       )}
-      {tooLate && <div className="error small">이동하는 동안 마감이 지나 보낼 수 없습니다.</div>}
-    </button>
+      <button className="rift-more" aria-expanded={open} onClick={() => setOpen(!open)}>
+        {open ? '세부 접기 ▴' : `세부 · 승리 시 제로 ${num(win.zero)} ▾`}
+      </button>
+      {open && (
+        <div className="rift-details">
+          <div className="rift-meta">
+            <span>{gradeName(rift.enemies[0].grade)}</span>
+            {enemyElements.map((el) => (
+              <ElementTag key={el} id={el} />
+            ))}
+          </div>
+          <div className="muted small">{[...counts].map(([id, n]) => `${monsterName(id)}×${n}`).join(' · ')}</div>
+          <div className="small">
+            승리 시 {fmt(win)}
+            {tables.riftTiers.find((t) => t.id === rift.tier)?.stabilizes && !rift.stable && ' · 항로 안정화'}
+          </div>
+          {(retreat.zero > 0 || retreat.arche > 0) && <div className="muted tiny">철수 시 {fmt(retreat)}</div>}
+          {rift.stable && <div className="muted tiny">안정화 통로: 보상 ×{tables.progression.stablePassageRewardRatio} 반영</div>}
+        </div>
+      )}
+    </div>
   );
 }
 

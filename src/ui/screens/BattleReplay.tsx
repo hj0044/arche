@@ -14,11 +14,25 @@ interface Frame {
   line: string;
 }
 
+export function numberDuplicateNames(units: CombatantSnapshot[]): CombatantSnapshot[] {
+  const total = new Map<string, number>();
+  for (const u of units) total.set(`${u.side}:${u.name}`, (total.get(`${u.side}:${u.name}`) ?? 0) + 1);
+  const seen = new Map<string, number>();
+  return units.map((u) => {
+    const k = `${u.side}:${u.name}`;
+    if ((total.get(k) ?? 0) < 2) return u;
+    const n = (seen.get(k) ?? 0) + 1;
+    seen.set(k, n);
+    return { ...u, name: `${u.name} ${n}` };
+  });
+}
+
 /** 전투 로그를 재생용 프레임 목록으로 바꾼다. 프레임 하나가 행동 하나다. */
 export function buildFrames(events: CombatEvent[]): { units: CombatantSnapshot[]; frames: Frame[]; comp: number } {
   const start = events.find((e) => e.type === 'start');
   if (start?.type !== 'start') return { units: [], frames: [], comp: 1 };
-  const units = start.combatants;
+  // 같은 진영에 같은 이름이 둘 이상이면 번호를 붙여 구분한다(예: 껍데기 수호자 1, 2).
+  const units = numberDuplicateNames(start.combatants);
   const nameOf = (k: string) => units.find((u) => u.key === k)?.name ?? k;
   let hp = Object.fromEntries(units.map((u) => [u.key, u.hp]));
   let round = 0;
@@ -112,7 +126,7 @@ export function BattleReplay({ ctx, expeditionId, back }: { ctx: Ctx; expedition
     return (
       <div className="battle-row">
         <span className="battle-row-label">{rowName[row]}</span>
-        <div className="battle-row-units">
+        <div className="battle-row-units" style={{ gridTemplateColumns: `repeat(${list.length}, minmax(0, 1fr))` }}>
           {list.map((u) => (
             <UnitCard key={u.key} u={u} />
           ))}
@@ -121,7 +135,10 @@ export function BattleReplay({ ctx, expeditionId, back }: { ctx: Ctx; expedition
     );
   };
 
-  const log = frames.slice(1, index + 1).reverse();
+  // 누적 로그는 라운드별로 묶어 최근 라운드부터 보여 준다(라운드 안은 일어난 순서).
+  const byRound = new Map<number, Frame[]>();
+  for (const f of frames.slice(1, index + 1)) byRound.set(f.round, [...(byRound.get(f.round) ?? []), f]);
+  const rounds = [...byRound.entries()].reverse();
 
   return (
     <AppShell
@@ -130,8 +147,14 @@ export function BattleReplay({ ctx, expeditionId, back }: { ctx: Ctx; expedition
       onBack={() => ctx.go(back)}
       footer={
         <div className="replay-controls">
+          <button className="btn" aria-label="이전 행동" disabled={index === 0} onClick={() => (setPlaying(false), setIndex(Math.max(0, index - 1)))}>
+            ◀
+          </button>
           <button className="btn" onClick={() => (done ? (setIndex(0), setPlaying(true)) : setPlaying(!playing))}>
-            {done ? '다시' : playing ? '일시정지' : '재생'}
+            {done ? '다시' : playing ? '정지' : '재생'}
+          </button>
+          <button className="btn" aria-label="다음 행동" disabled={done} onClick={() => (setPlaying(false), setIndex(Math.min(last, index + 1)))}>
+            ▶
           </button>
           <button className="btn" onClick={() => setSpeed(speeds[(speeds.indexOf(speed) + 1) % speeds.length])}>
             ×{speed}
@@ -142,6 +165,7 @@ export function BattleReplay({ ctx, expeditionId, back }: { ctx: Ctx; expedition
         </div>
       }
     >
+      <div className="battle-stage">
       <div className="battlefield">
         <Line s="enemy" row="back" />
         <Line s="enemy" row="front" />
@@ -150,15 +174,24 @@ export function BattleReplay({ ctx, expeditionId, back }: { ctx: Ctx; expedition
         <Line s="ally" row="back" />
       </div>
       <div className={`battle-now ${done ? `outcome-${report.outcome}` : ''}`} aria-live="polite">
+        <span className="muted tiny">
+          {index}/{last}
+        </span>{' '}
         {frame.line}
       </div>
-      <ol className="battle-log">
-        {log.map((f, i) => (
-          <li key={index - i}>
-            <span className="muted tiny">R{f.round}</span> {f.line}
-          </li>
+      </div>
+      <div className="battle-log">
+        {rounds.map(([round, list]) => (
+          <section key={round} className="log-round">
+            <h3>{round ? `${round}라운드` : '결과'}</h3>
+            <ol>
+              {list.map((f, i) => (
+                <li key={i}>{f.line}</li>
+              ))}
+            </ol>
+          </section>
         ))}
-      </ol>
+      </div>
     </AppShell>
   );
 }

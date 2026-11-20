@@ -21,6 +21,7 @@ import worldsJson from './worlds.json';
 import racesJson from './races.json';
 import omensJson from './omens.json';
 import savePolicyJson from './save-policy.json';
+import autoPartyJson from './auto-party.json';
 
 export type Range = [number, number];
 export type StatId = 'hp' | 'atk' | 'def' | 'spd';
@@ -224,6 +225,15 @@ export interface GameTables {
   races: { id: string; name: string; world: string }[];
   /** 징조 표식 문구 */
   omens: OmenRow[];
+  autoParty: AutoPartyTable;
+}
+
+/** 자동 편성 규칙(제안) */
+export interface AutoPartyTable {
+  includeProtagonist: boolean;
+  /** 전위·딜러·지원을 먼저 하나씩 채운다 */
+  fillGroupsFirst: boolean;
+  weights: { level: number; elementAdvantage: number; elementDisadvantage: number };
 }
 
 export interface OmenRow { id: string; text: string }
@@ -236,6 +246,8 @@ export interface UiTable {
   toastMs: number;
   /** 마감이 이 일수 이하로 남으면 경고 색 */
   deadlineWarnDays: number;
+  /** 영입 확인에서 버틸 일수가 이보다 적으면 경고 색 */
+  upkeepWarnDays: number;
 }
 
 export const cities: readonly CityRow[] = citiesJson as CityRow[];
@@ -262,6 +274,7 @@ export const tables: GameTables = {
   worlds: worldsJson,
   races: racesJson,
   omens: omensJson,
+  autoParty: autoPartyJson,
 };
 
 /** 세이브 정책(명세 9절 확정 규칙의 값). 저장 코드와 화면 문구가 같은 값을 읽는다. */

@@ -11,6 +11,9 @@ let s: GameState = newGame(tables, {
 });
 const rowOf = (role: string) => tables.roles.find((r) => r.id === role)!.defaultRow;
 
+// 용병별 출전 횟수와 승리(영입 후 특정 용병 쏠림 확인용)
+const sorties = new Map<string, { n: number; win: number }>();
+
 for (let d = 0; d < Number(daysArg); d++) {
   // 단순한 자동 플레이: 3명 이상 모이면 거점 도시에서 몬스터 레벨이 가장 낮은 리프트로 보낸다.
   for (const m of s.mercenaries) {
@@ -29,6 +32,10 @@ for (let d = 0; d < Number(daysArg); d++) {
   for (const e of events) {
     if (e.type === 'returned') {
       const r = s.reports.find((x) => x.expeditionId === e.expeditionId)!;
+      for (const p of r.party) {
+        const st = sorties.get(p.mercId) ?? { n: 0, win: 0 };
+        sorties.set(p.mercId, { n: st.n + 1, win: st.win + (r.outcome === 'victory' ? 1 : 0) });
+      }
       console.log(`${s.day}일 복귀: ${r.rift.name} ${r.outcome} ${r.rounds}R 제로+${r.reward.zero} 아르케+${r.reward.arche} 부상 ${r.injuries.length}`);
     }
     if (e.type === 'upkeep' && e.unpaid) console.log(`${s.day}일 유지비 미납 ${e.unpaid}`);
@@ -36,3 +43,10 @@ for (let d = 0; d < Number(daysArg); d++) {
 }
 console.log('\n최종', { day: s.day, ...s.resources, victories: s.records.victories });
 console.log(s.mercenaries.filter((m) => m.affiliation.kind === 'guild').map((m) => `${m.name} Lv${m.level} exp${m.exp}${m.injury ? ' 부상' : ''}`).join('\n'));
+
+console.log('\n용병별 출전');
+const totalSorties = [...sorties.values()].reduce((a, x) => a + x.n, 0);
+for (const [id, st] of [...sorties.entries()].sort((a, b) => b[1].n - a[1].n || (a[0] < b[0] ? -1 : 1))) {
+  const m = s.mercenaries.find((x) => x.id === id)!;
+  console.log(`${m.name}\t출전 ${st.n} (${Math.round((st.n / totalSorties) * 100)}%)\t승 ${st.win}\t승률 ${Math.round((st.win / st.n) * 100)}%`);
+}
