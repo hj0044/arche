@@ -301,3 +301,7 @@ button.rift-main:active:not(:disabled) { background: var(--surface-2); }
 .rift-row-reward { margin-left: auto; color: var(--muted); }
 .home-urgent { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; min-height: 44px; padding: 0 14px; border-radius: 10px; border: 1px solid var(--border); border-left: 3px solid var(--bad); background: var(--surface); text-align: left; font-size: 0.875rem; }
 .preempt-news { margin: 0; padding: 8px 12px; border-radius: 10px; background: var(--surface-2); border-left: 3px solid var(--bad); display: flex; flex-direction: column; gap: 2px; }
+/* 지시서 014: 펼치기 링크도 44px 터치 영역 */
+.more-toggle { min-height: 44px; align-self: flex-start; padding: 0 2px; }
+.facility-effects { display: flex; flex-direction: column; gap: 4px; }
+.facility-effects p { margin: 0; }

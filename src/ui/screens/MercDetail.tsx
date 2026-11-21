@@ -38,6 +38,7 @@ const SKILL_DESC: Record<string, string> = {
 export function MercDetail({ ctx, mercId }: { ctx: Ctx; mercId: string }) {
   const s = ctx.game.state;
   const [confirm, setConfirm] = useState(false);
+  const [logOpen, setLogOpen] = useState(false);
   const m = s.mercenaries.find((x) => x.id === mercId);
   if (!m) return null;
   const unit = mercToUnit(tables, m);
@@ -150,6 +151,81 @@ export function MercDetail({ ctx, mercId }: { ctx: Ctx; mercId: string }) {
         )}
       </Panel>
 
+      {isGuild && m.loyalty && (
+        <Panel title="충성도" action={<LoyaltyBadge value={m.loyalty.value} />}>
+          <div className="small">
+            <span className="strong">{loyaltyDisplay(m.loyalty.value)}</span>
+            <span className="muted"> / {tables.loyalty.range[1]}</span>
+            {(() => {
+              const tier = loyaltyTier(tables, m.loyalty!.value);
+              return tier.statBonus !== 0 ? (
+                <span className={tier.statBonus > 0 ? 'ok' : 'warn'}>
+                  {' '}
+                  · 공격·방어 {tier.statBonus > 0 ? '+' : ''}
+                  {Math.round(tier.statBonus * 100)}%
+                </span>
+              ) : null;
+            })()}
+          </div>
+          <Bar value={m.loyalty.value} max={tables.loyalty.range[1]} />
+          {loyaltyTier(tables, m.loyalty.value).warn && (
+            <p className="warn small" role="status">
+              {loyaltyTier(tables, m.loyalty.value).refuseChance > 0
+                ? `충성도가 위험합니다. 파견을 거부할 수 있고, ${tables.loyalty.departure.afterConsecutiveDays}일 넘게 이어지면 길드를 떠날 수 있습니다.`
+                : '충성도가 낮아 전투 능력이 줄었습니다.'}
+            </p>
+          )}
+          <button
+            className="btn block"
+            disabled={m.loyalty.bonusDay === s.day || s.resources.zero < salaryBonusCost(tables, m)}
+            onClick={() =>
+              run(() => {
+                ctx.setState(paySalaryBonus(tables, s, m.id));
+                ctx.toast(`${m.name}에게 급료 보너스를 줬습니다.`);
+              })
+            }
+          >
+            {m.loyalty.bonusDay === s.day
+              ? '오늘 급료 보너스를 줬습니다'
+              : `급료 보너스 (제로 ${num(salaryBonusCost(tables, m))}${s.resources.zero < salaryBonusCost(tables, m) ? ' 부족' : ''})`}
+          </button>
+          {m.loyalty.refusedOnDay === s.day && <p className="bad small">오늘은 파견을 거부했습니다.</p>}
+          {m.loyalty.restStreak > 0 && (
+            <p className={`small ${m.loyalty.restStreak > tables.loyalty.restMaxDays ? 'warn' : 'muted'}`}>
+              대기 {m.loyalty.restStreak}일
+              {m.loyalty.restStreak > tables.loyalty.restMaxDays
+                ? ` · ⚠ 대기 하락 중(출전 없이 ${tables.loyalty.restMaxDays}일을 넘김)`
+                : ` · 쉬는 날 상승(${tables.loyalty.restMaxDays}일까지)`}
+            </p>
+          )}
+          {m.loyalty.recent.length > 0 && (() => {
+            // 최신 기록 몇 줄만 보이고 나머지는 펼쳐서 본다(지시서 014).
+            const all = [...m.loyalty!.recent].reverse();
+            const shown = logOpen ? all : all.slice(0, tables.ui.loyaltyLogPreview);
+            return (
+              <>
+                <ul className="loyalty-log" aria-label="최근 충성도 기록">
+                  {shown.map((r, i) => (
+                    <li key={i} className="small">
+                      <span className="muted">{r.day}일차</span> {loyaltyReasonName[r.reason] ?? r.reason}{' '}
+                      <span className={r.delta >= 0 ? 'ok' : 'warn'}>
+                        {r.delta >= 0 ? '+' : ''}
+                        {r.delta}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+                {all.length > tables.ui.loyaltyLogPreview && (
+                  <button className="link more-toggle" aria-expanded={logOpen} onClick={() => setLogOpen(!logOpen)}>
+                    {logOpen ? '기록 접기 ▴' : `기록 ${all.length - tables.ui.loyaltyLogPreview}줄 더 보기 ▾`}
+                  </button>
+                )}
+              </>
+            );
+          })()}
+        </Panel>
+      )}
+
       {isGuild && !m.isProtagonist && (() => {
         const t = trainingAccess(tables, s, m.id);
         if (!t.facilityId) return null;
@@ -200,68 +276,6 @@ export function MercDetail({ ctx, mercId }: { ctx: Ctx; mercId: string }) {
         );
       })()}
 
-      {isGuild && m.loyalty && (
-        <Panel title="충성도" action={<LoyaltyBadge value={m.loyalty.value} />}>
-          <div className="small">
-            <span className="strong">{loyaltyDisplay(m.loyalty.value)}</span>
-            <span className="muted"> / {tables.loyalty.range[1]}</span>
-            {(() => {
-              const tier = loyaltyTier(tables, m.loyalty!.value);
-              return tier.statBonus !== 0 ? (
-                <span className={tier.statBonus > 0 ? 'ok' : 'warn'}>
-                  {' '}
-                  · 공격·방어 {tier.statBonus > 0 ? '+' : ''}
-                  {Math.round(tier.statBonus * 100)}%
-                </span>
-              ) : null;
-            })()}
-          </div>
-          <Bar value={m.loyalty.value} max={tables.loyalty.range[1]} />
-          {loyaltyTier(tables, m.loyalty.value).warn && (
-            <p className="warn small" role="status">
-              {loyaltyTier(tables, m.loyalty.value).refuseChance > 0
-                ? `충성도가 위험합니다. 파견을 거부할 수 있고, ${tables.loyalty.departure.afterConsecutiveDays}일 넘게 이어지면 길드를 떠날 수 있습니다.`
-                : '충성도가 낮아 전투 능력이 줄었습니다.'}
-            </p>
-          )}
-          {m.loyalty.refusedOnDay === s.day && <p className="bad small">오늘은 파견을 거부했습니다.</p>}
-          {m.loyalty.restStreak > 0 && (
-            <p className={`small ${m.loyalty.restStreak > tables.loyalty.restMaxDays ? 'warn' : 'muted'}`}>
-              대기 {m.loyalty.restStreak}일
-              {m.loyalty.restStreak > tables.loyalty.restMaxDays
-                ? ` · ⚠ 대기 하락 중(출전 없이 ${tables.loyalty.restMaxDays}일을 넘김)`
-                : ` · 쉬는 날 상승(${tables.loyalty.restMaxDays}일까지)`}
-            </p>
-          )}
-          {m.loyalty.recent.length > 0 && (
-            <ul className="loyalty-log">
-              {[...m.loyalty.recent].reverse().map((r, i) => (
-                <li key={i} className="small">
-                  <span className="muted">{r.day}일차</span> {loyaltyReasonName[r.reason] ?? r.reason}{' '}
-                  <span className={r.delta >= 0 ? 'ok' : 'warn'}>
-                    {r.delta >= 0 ? '+' : ''}
-                    {r.delta}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          )}
-          <button
-            className="btn block"
-            disabled={m.loyalty.bonusDay === s.day || s.resources.zero < salaryBonusCost(tables, m)}
-            onClick={() =>
-              run(() => {
-                ctx.setState(paySalaryBonus(tables, s, m.id));
-                ctx.toast(`${m.name}에게 급료 보너스를 줬습니다.`);
-              })
-            }
-          >
-            {m.loyalty.bonusDay === s.day
-              ? '오늘 급료 보너스를 줬습니다'
-              : `급료 보너스 (제로 ${num(salaryBonusCost(tables, m))}${s.resources.zero < salaryBonusCost(tables, m) ? ' 부족' : ''})`}
-          </button>
-        </Panel>
-      )}
 
       <Panel title="프로필">
         <div className="kv">

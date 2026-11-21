@@ -22,6 +22,8 @@ const poaches: string[] = [];
 
 let trainingExpTotal = 0;
 let unpaidDays = 0;
+/** 미납한 용병 수의 합(용병·일) */
+let unpaidMercDays = 0;
 for (let d = 0; d < Number(daysArg); d++) {
   const { state, events } = autoplayDay(tables, s, (line) => console.log(line));
   s = state;
@@ -38,7 +40,10 @@ for (let d = 0; d < Number(daysArg); d++) {
     if (e.type === 'upkeep' && e.unpaid) console.log(`${s.day}일 유지비 미납 ${e.unpaid}`);
     if (e.type === 'refused') refusals++;
     if (e.type === 'trained') trainingExpTotal += e.exp;
-    if (e.type === 'upkeep' && e.unpaid > 0) unpaidDays++;
+    if (e.type === 'upkeep' && e.unpaid > 0) {
+      unpaidDays++;
+      unpaidMercDays += e.unpaidMercIds.length;
+    }
     if (e.type === 'facilityBuilt') console.log(`${s.day}일 완공: ${tables.facilities.facilities.find((f) => f.id === e.facilityId)!.name} Lv${e.level}`);
     if (e.type === 'poached') {
       const m = s.mercenaries.find((x) => x.id === e.mercId)!;
@@ -70,4 +75,4 @@ console.log(`대기 하락 ${idleDecays}회, 무소속 이동 ${poaches.length}�
 
 console.log('\n거점 시설');
 console.log(`레벨: ${tables.facilities.facilities.map((f) => `${f.name} Lv${s.facilities.levels[f.id] ?? 0}`).join(', ')}${s.facilities.construction ? ` (진행 중: ${tables.facilities.facilities.find((f) => f.id === s.facilities.construction!.facilityId)!.name})` : ''}`);
-console.log(`훈련 경험치 합계 ${trainingExpTotal}, 미납 ${unpaidDays}일, 이탈 ${departures.length}회`);
+console.log(`훈련 경험치 합계 ${trainingExpTotal}, 미납 ${unpaidDays}일(용병·일 ${unpaidMercDays}), 이탈 ${departures.length}회`);

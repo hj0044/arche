@@ -212,6 +212,9 @@ export function validateSemantics(state: GameState, t: SemanticTables): string[]
       within('state.facilities.construction.targetLevel', c.targetLevel, [1, f.maxLevel]);
     }
     atLeast('state.facilities.construction.completeDay', c.completeDay, c.startDay);
+    // 진행 중 공사: 시작일 ≤ 오늘 < 완료일(완료일이 된 날 시작에 반영되므로 오늘이 완료일 이상인 공사는 남아 있을 수 없다)
+    if (c.startDay > state.day) errors.push(`state.facilities.construction.startDay: 오늘(${state.day})보다 미래에 시작한 공사(${c.startDay})`);
+    if (c.completeDay <= state.day) errors.push(`state.facilities.construction.completeDay: 이미 끝났어야 할 공사(완료일 ${c.completeDay}, 오늘 ${state.day})`);
   }
   const placed = new Set<string>();
   for (const [id, ids] of Object.entries(fs.assignments)) {

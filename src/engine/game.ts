@@ -643,7 +643,7 @@ function settleExpedition(tables: GameTables, state: GameState, ex: Expedition):
 }
 
 /**
- * 하루를 넘긴다. 순서: 유지비 → 날짜 +1 → (충성도 정산·이탈은 복귀 정산 뒤) → → 부상 회복 → 복귀한 파견 정산 → 마감 지난 리프트 소멸 → 라이벌 선점 → 새 리프트 출현.
+ * 하루를 넘긴다. 순서: 훈련 경험치 → 날짜 +1 → 공사 완료 → 부상 회복 → 복귀한 파견 정산(보상) → 유지비 → 충성도 정산·이탈 → 마감 지난 리프트 소멸 → 라이벌 선점 → 새 리프트 출현.
  */
 export function advanceDay(tables: GameTables, prev: GameState): { state: GameState; events: DayEvent[] } {
   const state = structuredClone(prev);
@@ -672,23 +672,6 @@ export function advanceDay(tables: GameTables, prev: GameState): { state: GameSt
   }
   const tierBefore = new Map(state.mercenaries.filter(simulated).map((m) => [m.id, loyaltyTier(tables, m.loyalty!.value).id]));
 
-  // 하루가 끝날 때 유지비를 낸다. 모자라면 그 용병 몫은 미납으로 기록만 한다.
-  let paid = 0;
-  let unpaid = 0;
-  const unpaidMercIds: string[] = [];
-  for (const m of state.mercenaries.filter(isGuildMember)) {
-    const fee = upkeepPerDay(tables, m);
-    if (fee <= 0) continue;
-    if (state.resources.zero >= fee) {
-      state.resources.zero -= fee;
-      paid += fee;
-    } else {
-      unpaid += fee;
-      unpaidMercIds.push(m.id);
-      m.unpaidUpkeep = { days: (m.unpaidUpkeep?.days ?? 0) + 1, zero: (m.unpaidUpkeep?.zero ?? 0) + fee };
-    }
-  }
-  if (paid || unpaid) events.push({ type: 'upkeep', paid, unpaid, unpaidMercIds });
 
   state.day += 1;
 
@@ -715,6 +698,28 @@ export function advanceDay(tables: GameTables, prev: GameState): { state: GameSt
     state.reports.push(report);
     events.push({ type: 'returned', expeditionId: ex.id, outcome: report.outcome });
   }
+  // ── 유지비(지시서 014): 복귀 보상을 먼저 받은 뒤 낸다(이긴 날 보상으로 그날 유지비를 낼 수 있다).
+  // 돈이 모자라면 충성도가 낮은 용병부터 낸다(같으면 id 순, 충성도가 없으면 맨 뒤). 못 낸 몫은 미납으로 기록한다.
+  // 충성도는 이 시점 값(오늘의 충성도 정산 전)으로 정렬한다.
+  let paid = 0;
+  let unpaid = 0;
+  const unpaidMercIds: string[] = [];
+  const payOrder = state.mercenaries
+    .filter(isGuildMember)
+    .sort((a, b) => (a.loyalty?.value ?? Infinity) - (b.loyalty?.value ?? Infinity) || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+  for (const m of payOrder) {
+    const fee = upkeepPerDay(tables, m);
+    if (fee <= 0) continue;
+    if (state.resources.zero >= fee) {
+      state.resources.zero -= fee;
+      paid += fee;
+    } else {
+      unpaid += fee;
+      unpaidMercIds.push(m.id);
+      m.unpaidUpkeep = { days: (m.unpaidUpkeep?.days ?? 0) + 1, zero: (m.unpaidUpkeep?.zero ?? 0) + fee };
+    }
+  }
+  if (paid || unpaid) events.push({ type: 'upkeep', paid, unpaid, unpaidMercIds });
   // ── 충성도 정산(하루가 끝날 때 한꺼번에): 변동 적용 → 위험 연속 일수 갱신 → 이탈 판정
   const changeDay = state.day;
   for (const ex of returning) {

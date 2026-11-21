@@ -387,6 +387,8 @@ export interface UiTable {
   riftPlayableRiskTiers: string[];
   /** 리프트 목록을 열 때 바로 계산하는 위험도 카드 수(나머지는 한가할 때) */
   riftEagerRiskCount: number;
+  /** 용병 상세 충성도에서 처음 보이는 최근 기록 줄 수(나머지는 펼치기, 지시서 014) */
+  loyaltyLogPreview: number;
 }
 
 export const cities: readonly CityRow[] = citiesJson as CityRow[];

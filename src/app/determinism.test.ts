@@ -40,7 +40,7 @@ describe.each([
 });
 
 describe('결정성 회귀(충성도: 미납·거부·이탈이 일어나는 길드)', () => {
-  it('저장 왕복 상태와 메모리 상태를 15일 진행하면 충성도·거부·이탈까지 매일 같다', () => {
+  it('저장 왕복 상태와 메모리 상태를 20일 진행하면 충성도·거부·이탈까지 매일 같다', () => {
     let origin = start([{ mercId: 'm02', row: 'back' }, { mercId: 'm03', row: 'back' }]);
     origin = {
       ...origin,
@@ -50,7 +50,7 @@ describe('결정성 회귀(충성도: 미납·거부·이탈이 일어나는 길
     let memory = structuredClone(origin);
     let loaded = parseSave(serializeSave(createSaveFile(origin, 'manual'))).state;
     const kinds = new Set<string>();
-    for (let day = 0; day < 15; day++) {
+    for (let day = 0; day < 20; day++) {
       const a = advanceDay(tables, memory);
       const b = advanceDay(tables, loaded);
       expect(b.events).toEqual(a.events);

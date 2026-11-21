@@ -111,5 +111,6 @@
     "safe",
     "fair"
   ],
-  "riftEagerRiskCount": 6
+  "riftEagerRiskCount": 6,
+  "loyaltyLogPreview": 2
 }
