@@ -40,7 +40,7 @@ describe('일괄 레벨업', () => {
   it('성장 한계에서 멈추고, 파견 중은 빼고, 부상 중은 넣는다', () => {
     let s = withArche(give(give(give(gm(), 'm01', 2), 'm02', 2), 'm03', 2), 9999);
     s = { ...s, mercenaries: s.mercenaries.map((m) => (m.id === 'm01' ? { ...m, growth: { ...m.growth, cap: 6 } } : m.id === 'm03' ? { ...m, injury: { severity: 'light', recoverDay: 9 } } : m)) };
-    const rift: Rift = { id: 'A', cityId: 'seoul', tier: 'crack', name: 'A', appearedDay: 1, fog: { deadlineOffset: 0, levelOffset: 0, countOffset: 0, rewardU: 0 }, deadlineDay: 9, durationDays: 2, enemies: [{ monsterId: 'void_hound', grade: 'low', level: 1, row: 'front' }], reward: { zero: 1, arche: 1, materials: {} } };
+    const rift: Rift = { id: 'A', cityId: 'seoul', tier: 'crack', name: 'A', appearedDay: 1, fog: { deadlineOffset: 0, levelOffset: 0, countOffset: 0, rewardU: 0 }, territoryFactionId: null, deadlineDay: 9, durationDays: 2, enemies: [{ monsterId: 'void_hound', grade: 'low', level: 1, row: 'front' }], reward: { zero: 1, arche: 1, materials: {} } };
     s = dispatch(tables, { ...s, rifts: [rift] }, 'A', [{ mercId: 'm02', row: 'back' }]);
     const { state } = levelUpAll(tables, s);
     expect(lv(state, 'm01')).toBe(6); // 한계
@@ -72,7 +72,7 @@ describe('일괄 레벨업', () => {
 describe('탐지소 보상 범위(보이는 정보로만)', () => {
   const fsAt = (scout: number) => ({ ...initialFacilities(tables), levels: { ...initialFacilities(tables).levels, scout } });
   const base: Rift = {
-    id: 'B', cityId: 'seoul', tier: 'gate', name: 'B', appearedDay: 1, fog: { deadlineOffset: 0, levelOffset: 2, countOffset: 0, rewardU: 0.3 }, deadlineDay: 9, durationDays: 2,
+    id: 'B', cityId: 'seoul', tier: 'gate', name: 'B', appearedDay: 1, fog: { deadlineOffset: 0, levelOffset: 2, countOffset: 0, rewardU: 0.3 }, territoryFactionId: null, deadlineDay: 9, durationDays: 2,
     enemies: [{ monsterId: 'void_hound', grade: 'mid', level: 20, row: 'front' }], reward: { zero: 250, arche: 40, materials: { earth_parts: 2 } },
   };
 

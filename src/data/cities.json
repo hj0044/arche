@@ -4,8 +4,9 @@
     "name": "서울",
     "summary": "균열이 잦아 입문하기 좋은 도시.",
     "riftSpawn": {
-      "maxActive": 5,
-      "dailySpawnChance": 0.75,
+      "maxActive": 8,
+      "dailySpawnChance": 0.7,
+      "dailySpawnRolls": 2,
       "initialCount": 3,
       "initialGuaranteed": [
         {
@@ -33,8 +34,9 @@
     "name": "도쿄",
     "summary": "관문 비중이 높고 항로는 열리지 않는 도시.",
     "riftSpawn": {
-      "maxActive": 4,
-      "dailySpawnChance": 0.6,
+      "maxActive": 6,
+      "dailySpawnChance": 0.42,
+      "dailySpawnRolls": 2,
       "initialCount": 3,
       "initialGuaranteed": [
         {
@@ -58,8 +60,9 @@
     "name": "뉴욕",
     "summary": "영입 기회가 많고 항로가 가끔 열리는 도시.",
     "riftSpawn": {
-      "maxActive": 5,
-      "dailySpawnChance": 0.6,
+      "maxActive": 7,
+      "dailySpawnChance": 0.42,
+      "dailySpawnRolls": 2,
       "initialCount": 3,
       "initialGuaranteed": [
         {

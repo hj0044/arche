@@ -53,3 +53,13 @@ export const loyaltyReasonName: Record<string, string> = {
   idleDecay: '대기 하락',
   salaryBonus: '급료 보너스',
 };
+
+/** 리프트 영역 세력 표시(지시서 013). 없으면 "영역 미정" */
+export const territoryLabel = (factionId: string | null | undefined) => (factionId ? `${factionName(factionId)} 영역` : '영역 미정');
+
+/** 받침이 있으면 a, 없으면 b(을/를, 이/가). 한글이 아니면 a(b) 형태 */
+export function josa(word: string, a: string, b: string): string {
+  const code = word.charCodeAt(word.length - 1) - 0xac00;
+  if (code < 0 || code > 11171) return `${a}(${b})`;
+  return code % 28 ? a : b;
+}

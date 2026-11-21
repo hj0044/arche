@@ -1,6 +1,7 @@
 import { getGrowthSpeed, getRiftTier, travelDays, type GameTables, type Outcome, type Row, type UnlockRule } from '../data';
 import { resolveCombat, validateParty, type CombatEvent, type CombatSlot } from './combat';
 import { rollInjuries, type Injury } from './injury';
+import { rollPreemption } from './preemption';
 import { expShare, generateRift, riftEnemySlots, riftReward, type Rift, type RiftReward } from './rift';
 export { expPerMember, expPerMemberAt, expShare, riftLevel, riftReward, shareOf } from './rift';
 import { createRng } from './rng';
@@ -131,6 +132,8 @@ export type DayEvent =
   | { type: 'returned'; expeditionId: string; outcome: Outcome }
   | { type: 'riftExpired'; riftId: string; name: string }
   | { type: 'riftSpawned'; riftId: string; cityId: string }
+  /** 라이벌 선점(지시서 013): 리프트가 목록에서 사라진다. factionId는 영역 세력(없으면 null) */
+  | { type: 'preempted'; riftId: string; name: string; cityId: string; factionId: string | null }
   | { type: 'upkeep'; paid: number; unpaid: number; unpaidMercIds: string[] }
   | { type: 'loyaltyTier'; mercId: string; from: string; to: string }
   | { type: 'departed'; mercId: string; factionId: string }
@@ -638,7 +641,7 @@ function settleExpedition(tables: GameTables, state: GameState, ex: Expedition):
 }
 
 /**
- * 하루를 넘긴다. 순서: 유지비 → 날짜 +1 → (충성도 정산·이탈은 복귀 정산 뒤) → → 부상 회복 → 복귀한 파견 정산 → 마감 지난 리프트 소멸 → 새 리프트 출현.
+ * 하루를 넘긴다. 순서: 유지비 → 날짜 +1 → (충성도 정산·이탈은 복귀 정산 뒤) → → 부상 회복 → 복귀한 파견 정산 → 마감 지난 리프트 소멸 → 라이벌 선점 → 새 리프트 출현.
  */
 export function advanceDay(tables: GameTables, prev: GameState): { state: GameState; events: DayEvent[] } {
   const state = structuredClone(prev);
@@ -805,12 +808,21 @@ export function advanceDay(tables: GameTables, prev: GameState): { state: GameSt
   state.rifts = state.rifts.filter((r) => !expired.includes(r));
   for (const r of expired) events.push({ type: 'riftExpired', riftId: r.id, name: r.name });
 
+  // ── 라이벌 선점(마감 만료 뒤, 새 리프트 출현 전). 그날 생긴 리프트와 파견이 출발한 리프트는 판정하지 않는다.
+  const preempted = rollPreemption(tables, state, state.day);
+  state.rifts = state.rifts.filter((r) => !preempted.includes(r));
+  for (const r of preempted) events.push({ type: 'preempted', riftId: r.id, name: r.name, cityId: r.cityId, factionId: r.territoryFactionId });
+
   const rng = createRng(`${state.seed}:day${state.day}`);
   for (const city of tables.cities) {
-    const active = state.rifts.filter((r) => r.cityId === city.id).length;
-    if (active < city.riftSpawn.maxActive && rng.chance(city.riftSpawn.dailySpawnChance)) {
-      const rift = spawnRiftInto(tables, state, city.id, `${state.seed}:day${state.day}:${city.id}`);
-      events.push({ type: 'riftSpawned', riftId: rift.id, cityId: city.id });
+    const rolls = city.riftSpawn.dailySpawnRolls ?? 1;
+    for (let i = 0; i < rolls; i++) {
+      const active = state.rifts.filter((r) => r.cityId === city.id).length;
+      if (active < city.riftSpawn.maxActive && rng.chance(city.riftSpawn.dailySpawnChance)) {
+        // 첫 판정의 시드는 이전과 같게 둔다.
+        const rift = spawnRiftInto(tables, state, city.id, `${state.seed}:day${state.day}:${city.id}${i ? `:${i}` : ''}`);
+        events.push({ type: 'riftSpawned', riftId: rift.id, cityId: city.id });
+      }
     }
   }
 

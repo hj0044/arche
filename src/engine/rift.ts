@@ -36,6 +36,11 @@ export interface Rift {
   omen?: RiftOmen;
   /** 탐지소 흐림 오프셋(생길 때 시드로 정해 저장. 볼 때마다 범위가 흔들리지 않게 한다) */
   fog: RiftFog;
+  /**
+   * 영역 세력(지시서 013): 리프트가 생길 때 도시의 세력 영향력을 가중치로 정한다.
+   * 1차에서는 표시와 선점 알림에만 쓴다. 고를 세력이 없으면 null(미정).
+   */
+  territoryFactionId: string | null;
 }
 
 export interface RiftFog {
@@ -61,6 +66,19 @@ function weightedPick(weights: Record<string, number>, rng: Rng): string {
     if (roll < 0) return id;
   }
   return entries[entries.length - 1][0];
+}
+
+/**
+ * 영역 세력 고르기. 가중치 = 그 도시의 세력 영향력(0 이하인 세력은 나오지 않음).
+ * 데이터의 제외 목록(무소속 등)은 빼고, 고를 세력이 없으면 null.
+ */
+export function pickTerritoryFaction(tables: Pick<GameTables, 'factions' | 'riftPreemption'>, cityId: string, rng: Rng): string | null {
+  const exclude = tables.riftPreemption.territoryExcludeFactions;
+  const weights = Object.fromEntries(
+    tables.factions.filter((f) => !exclude.includes(f.id)).map((f) => [f.id, f.cityInfluence[cityId] ?? 0] as const),
+  );
+  if (!Object.values(weights).some((w) => w > 0)) return null;
+  return weightedPick(weights, rng);
 }
 
 const rollRange = (rng: Rng, [lo, hi]: [number, number]) => rng.int(lo, hi);
@@ -100,6 +118,8 @@ export function generateRift(
   const reward = { zero: rollRange(rng, tier.rewards.zero), arche: rollRange(rng, tier.rewards.arche), materials };
   // 흐림 오프셋은 별도 난수 흐름으로 굴린다(징조 표식 확률을 바꿔도 흐림이 흔들리지 않게).
   const fogRng = createRng(`fog:${rng.getState()}`);
+  // 영역 세력도 별도 난수 흐름(기존 리프트 생성 결과가 바뀌지 않게).
+  const territoryFactionId = pickTerritoryFaction(tables, cityId, createRng(`territory:${rng.getState()}`));
   // 징조 표식은 다른 값을 모두 정한 뒤에 굴려서, 표식 확률이나 문구를 바꿔도 리프트의 나머지 내용은 그대로다.
   const omen: RiftOmen | undefined =
     tables.omens.length > 0 && rng.chance(tier.omenChance) ? { textId: rng.pick(tables.omens).id } : undefined;
@@ -122,6 +142,7 @@ export function generateRift(
     reward,
     ...(omen ? { omen } : {}),
     fog,
+    territoryFactionId,
   };
 }
 

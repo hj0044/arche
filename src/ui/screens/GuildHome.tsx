@@ -9,6 +9,7 @@ import { StatusSummary } from '../StatusSummary';
 import { BulkLevelUp } from '../BulkLevelUp';
 import type { Ctx } from '../nav';
 import { assignedFacility, getFacility } from '../../engine/facilities';
+import { cityChips } from '../riftFilter';
 
 export function GuildHome({ ctx }: { ctx: Ctx }) {
   const s = ctx.game.state;
@@ -16,6 +17,10 @@ export function GuildHome({ ctx }: { ctx: Ctx }) {
   const recent = s.reports.slice(-tables.ui.recentReportsOnHome).reverse();
   const materials = Object.entries(s.resources.materials).filter(([, n]) => n > 0);
   const unpaid = guild.reduce((sum, m) => sum + (m.unpaidUpkeep?.zero ?? 0), 0);
+  // 마감 임박 리프트(모든 도시). 누르면 거점 도시, 거점에 없으면 임박이 가장 많은 도시를 연다.
+  const chips = cityChips(tables, s);
+  const urgent = chips.reduce((a, c) => a + c.urgent, 0);
+  const urgentCity = chips.find((c) => c.cityId === s.baseCityId && c.urgent > 0) ?? [...chips].sort((a, b) => b.urgent - a.urgent)[0];
 
   return (
     <AppShell
@@ -47,6 +52,13 @@ export function GuildHome({ ctx }: { ctx: Ctx }) {
       {unpaid > 0 && <p className="error small">유지비 미납 누적 제로 {num(unpaid)}. 지금은 기록만 남습니다.</p>}
 
       <StatusSummary ctx={ctx} />
+      <button className="home-urgent" onClick={() => ctx.go({ name: 'rifts', cityId: urgent > 0 ? urgentCity?.cityId : undefined })}>
+        <span className={urgent ? 'bad strong' : 'muted'}>
+          {urgent ? '⚠ ' : ''}마감 임박 리프트 {urgent}개
+          {urgent > 0 && <span className="muted"> ({chips.filter((c) => c.urgent).map((c) => `${cityName(c.cityId)} ${c.urgent}`).join(', ')})</span>}
+        </span>
+        <span className="muted">리프트 ›</span>
+      </button>
       <BulkLevelUp ctx={ctx} hideWhenNone title="레벨업 가능" />
 
       <Panel title={`진행 중인 파견 ${s.expeditions.length}`}>

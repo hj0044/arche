@@ -15,6 +15,7 @@ const rift = (patch: Partial<Rift> = {}): Rift => ({
   name: 'R1',
   appearedDay: 1,
   fog: { deadlineOffset: 0, levelOffset: 2, countOffset: 1, rewardU: 0.5 },
+  territoryFactionId: null,
   deadlineDay: 9,
   durationDays: 1,
   enemies: [

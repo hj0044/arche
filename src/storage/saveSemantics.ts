@@ -133,6 +133,7 @@ export function validateSemantics(state: GameState, t: SemanticTables): string[]
       atLeast(`${p}.reward.materials.${k}`, v, 0);
     }
     if (r.omen) ref(`${p}.omen.textId`, t.omens, r.omen.textId, '징조 문구');
+    if (r.territoryFactionId !== null) ref(`${p}.territoryFactionId`, t.factions, r.territoryFactionId, '세력');
     const fog = t.facilities.fog;
     within(`${p}.fog.deadlineOffset`, r.fog.deadlineOffset, [0, fog.deadlineWidth]);
     within(`${p}.fog.levelOffset`, r.fog.levelOffset, [0, fog.levelWidth]);

@@ -1,12 +1,16 @@
 import type { GameState } from '../engine/game';
 import facilitiesJson from '../data/facilities.json';
 import loyaltyJson from '../data/loyalty.json';
+import factionsJson from '../data/factions.json';
+import riftPreemptionJson from '../data/rift-preemption.json';
+import { pickTerritoryFaction } from '../engine/rift';
+import { createRng } from '../engine/rng';
 import { validate } from './saveSchema';
 import { validateSemantics, type SemanticTables } from './saveSemantics';
 
 /** 세이브 형식 식별자와 현재 버전. 형식이 바뀌면 버전을 올리고 MIGRATIONS에 변환을 추가한다. */
 export const SAVE_FORMAT = 'arche-save';
-export const SAVE_VERSION = 5;
+export const SAVE_VERSION = 6;
 
 export type SaveKind = 'manual' | 'auto';
 
@@ -42,6 +46,7 @@ const MAX_SHOWN_PROBLEMS = 3;
  * v2 → v3: 충성도 필드 추가. 마이그레이션으로 시작값을 채운다.
  * v3 → v4: 주인공을 뺀 모든 용병이 충성도를 갖고(길드 밖은 시작값 보관), 연속 쉰 일수를 추가한다.
  * v4 → v5: 거점 시설 상태와 리프트 흐림 오프셋을 추가한다.
+ * v5 → v6: 리프트 영역 세력(territoryFactionId)을 추가한다(지시서 013).
  * 예: 1: (raw) => ({ ...raw, version: 2, state: { ...raw.state, 새필드: 기본값 } }) */
 const MIGRATIONS: Record<number, (raw: Record<string, unknown>) => Record<string, unknown>> = {
   // v2 → v3: 충성도 추가. 길드 소속 용병(주인공 제외)에 시작값 충성도를 넣는다.
@@ -91,6 +96,25 @@ const MIGRATIONS: Record<number, (raw: Record<string, unknown>) => Record<string
     for (const e of state.expeditions ?? []) addFog(e.rift);
     for (const r of state.reports ?? []) addFog(r.rift);
     return { ...raw, version: 5, state };
+  },
+  // v5 → v6: 리프트(목록·파견·보고)에 영역 세력을 넣는다. 시드 = 세이브 시드:territory:리프트 id, 가중치는 도시 영향력.
+  // 같은 세이브면 같은 결과다. 고를 세력이 없으면 null(미정).
+  5: (raw) => {
+    const state = structuredClone(raw.state) as Record<string, unknown> & {
+      seed?: string;
+      rifts?: Record<string, unknown>[];
+      expeditions?: { rift?: Record<string, unknown> }[];
+      reports?: { rift?: Record<string, unknown> }[];
+    };
+    const t = { factions: factionsJson, riftPreemption: riftPreemptionJson };
+    const addTerritory = (r?: Record<string, unknown>) => {
+      if (!r || r.territoryFactionId !== undefined) return;
+      r.territoryFactionId = pickTerritoryFaction(t, String(r.cityId), createRng(`${state.seed ?? ''}:territory:${String(r.id)}`));
+    };
+    for (const r of state.rifts ?? []) addTerritory(r);
+    for (const e of state.expeditions ?? []) addTerritory(e.rift);
+    for (const r of state.reports ?? []) addTerritory(r.rift);
+    return { ...raw, version: 6, state };
   },
 };
 

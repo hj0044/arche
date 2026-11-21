@@ -88,5 +88,28 @@
       "id": "levelup",
       "name": "레벨업 가능"
     }
-  ]
+  ],
+  "riftSort": [
+    {
+      "id": "deadline",
+      "name": "마감 임박순"
+    },
+    {
+      "id": "risk",
+      "name": "위험도 낮은 순"
+    },
+    {
+      "id": "reward",
+      "name": "보상 많은 순"
+    },
+    {
+      "id": "tier",
+      "name": "등급 높은 순"
+    }
+  ],
+  "riftPlayableRiskTiers": [
+    "safe",
+    "fair"
+  ],
+  "riftEagerRiskCount": 6
 }

@@ -5,7 +5,7 @@ import { StatusSummary } from '../StatusSummary';
 import { BulkLevelUp } from '../BulkLevelUp';
 import { levelUpCandidates } from '../../engine/status';
 import { Panel } from '../components';
-import { cityName, factionName, loyaltyTierName, materialName, num, omenText, outcomeName, severityName } from '../format';
+import { cityName, factionName, josa, loyaltyTierName, materialName, num, omenText, outcomeName, severityName } from '../format';
 import type { Ctx } from '../nav';
 
 export function DayResult({ ctx, events }: { ctx: Ctx; events: DayEvent[] }) {
@@ -16,6 +16,7 @@ export function DayResult({ ctx, events }: { ctx: Ctx; events: DayEvent[] }) {
   const expired = events.flatMap((e) => (e.type === 'riftExpired' ? [e.name] : []));
   const spawned = events.flatMap((e) => (e.type === 'riftSpawned' ? [s.rifts.find((r) => r.id === e.riftId)] : [])).filter((r) => r !== undefined);
   const upkeep = events.find((e) => e.type === 'upkeep');
+  const preempted = events.flatMap((e) => (e.type === 'preempted' ? [e] : []));
   const departed = events.flatMap((e) => (e.type === 'departed' ? [e.mercId] : []));
   const refused = events.flatMap((e) => (e.type === 'refused' ? [e.mercId] : []));
   const built = events.flatMap((e) => (e.type === 'facilityBuilt' ? [e] : []));
@@ -27,7 +28,7 @@ export function DayResult({ ctx, events }: { ctx: Ctx; events: DayEvent[] }) {
   // 오늘 경험치를 받은 용병(복귀·훈련) 가운데 레벨업할 수 있게 된 용병. 파견 중이면 제외.
   const gainedIds = [...returned.flatMap((r) => r.expGains.map((g) => g.mercId)), ...events.flatMap((e) => (e.type === 'trained' ? [e.mercId] : []))];
   const levelUps = levelUpCandidates(tables, s, gainedIds);
-  const quiet = !built.length && !trained.length && !unassigned.length && !poached.length && !departed.length && !refused.length && !tierChanges.length && !returned.length && !recovered.length && !expired.length && !spawned.length;
+  const quiet = !preempted.length && !built.length && !trained.length && !unassigned.length && !poached.length && !departed.length && !refused.length && !tierChanges.length && !returned.length && !recovered.length && !expired.length && !spawned.length;
 
   return (
     <AppShell
@@ -39,6 +40,20 @@ export function DayResult({ ctx, events }: { ctx: Ctx; events: DayEvent[] }) {
         </button>
       }
     >
+      {preempted.length > 0 && (
+        <div className="small preempt-news" role="status" aria-label="라이벌 선점">
+          {preempted.map((e) => {
+            const who = e.factionId ? factionName(e.factionId) : '라이벌 세력';
+            return (
+              <span key={e.riftId}>
+                <span aria-hidden="true">⚔ </span>
+                {who}
+                {josa(who, '이', '가')} {e.factionId ? '자기 영역의 ' : ''}'{e.name}'{josa(e.name, '을', '를')} 선점했습니다
+              </span>
+            );
+          })}
+        </div>
+      )}
       {upkeep?.type === 'upkeep' && (
         <p className={`small ${upkeep.unpaid ? 'warn' : 'muted'}`}>
           {upkeep.paid > 0 && `유지비 제로 −${num(upkeep.paid)}`}

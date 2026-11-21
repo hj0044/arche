@@ -20,7 +20,8 @@
     "make-audit-save": "tsx scripts/make-audit-save.ts",
     "loyalty-sweep": "tsx scripts/loyalty-sweep.ts",
     "risk-check": "tsx scripts/risk-check.ts",
-    "economy-sweep": "tsx scripts/economy-sweep.ts"
+    "economy-sweep": "tsx scripts/economy-sweep.ts",
+    "rift-stats": "tsx scripts/rift-stats.ts"
   },
   "dependencies": {
     "react": "^19.3.1",
