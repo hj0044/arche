@@ -110,3 +110,43 @@ export function LoyaltyBadge({ value, showValue = false }: { value: number; show
     </span>
   );
 }
+
+/**
+ * 칩 한 줄(012 용병 화면에서 만듦). 같은 축 안에서 하나만 고르고, 다시 누르면 해제(전체).
+ * required면 "전체" 칩이 없고 해제되지 않는다(013 도시 칩). 칩마다 배지를 붙일 수 있다.
+ */
+export function ChipRow<T extends { id: string; name: string; badge?: ReactNode; ariaLabel?: string }>(props: {
+  label: string;
+  items: T[];
+  value: string | null;
+  onChange: (v: string | null) => void;
+  elementColor?: boolean;
+  /** 라벨 줄을 숨기고 aria-label로만 둔다 */
+  hideLabel?: boolean;
+  required?: boolean;
+}) {
+  return (
+    <>
+      {!props.hideLabel && <p className="filter-label">{props.label}</p>}
+      <div className="chips scroll" role="group" aria-label={props.label}>
+        {!props.required && (
+          <button className={`chip small ${props.value === null ? 'on' : ''}`} aria-pressed={props.value === null} onClick={() => props.onChange(null)}>
+            전체
+          </button>
+        )}
+        {props.items.map((it) => (
+          <button
+            key={it.id}
+            className={`chip small ${props.elementColor ? `el-${it.id}` : ''} ${props.value === it.id ? 'on' : ''}`}
+            aria-pressed={props.value === it.id}
+            aria-label={it.ariaLabel}
+            onClick={() => props.onChange(props.value === it.id && !props.required ? null : it.id)}
+          >
+            {it.name}
+            {it.badge}
+          </button>
+        ))}
+      </div>
+    </>
+  );
+}

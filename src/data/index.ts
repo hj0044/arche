@@ -28,6 +28,7 @@ import poachingJson from './poaching.json';
 import facilitiesJson from './facilities.json';
 import autoplayJson from './autoplay.json';
 import combatPowerJson from './combat-power.json';
+import riftPreemptionJson from './rift-preemption.json';
 
 export type Range = [number, number];
 export type StatId = 'hp' | 'atk' | 'def' | 'spd';
@@ -40,8 +41,11 @@ export interface CityRow {
   name: string;
   summary: string;
   riftSpawn: {
+    /** 동시에 열려 있을 수 있는 리프트 수(파견 중인 리프트는 세지 않는다) */
     maxActive: number;
     dailySpawnChance: number;
+    /** 하루에 출현 판정을 몇 번 하는가(없으면 1). 판정마다 한도를 다시 본다. */
+    dailySpawnRolls?: number;
     initialCount: number;
     /** 시작 리프트 중 앞쪽을 이 리프트 등급·몬스터 등급으로 고정한다(입문용) */
     initialGuaranteed: { tier: string; grade?: string }[];
@@ -239,6 +243,25 @@ export interface GameTables {
   facilities: FacilitiesTable;
   autoplay: AutoplayPolicy;
   combatPower: CombatPowerTable;
+  riftPreemption: RiftPreemptionTable;
+}
+
+/** 라이벌 리프트 선점(지시서 013). 등급과 세력은 다른 표의 id를 쓴다(목록을 코드에 박지 않음). */
+export interface RiftPreemptionTable {
+  /** 리프트 등급 id → 하루 기본 선점 확률 */
+  baseChanceByTier: Record<string, number>;
+  /** 표에 없는 등급의 기본 확률 */
+  defaultBaseChance: number;
+  /** 남은 일수(마감일 − 오늘)가 maxDaysLeft 이하인 행 중 maxDaysLeft가 가장 작은 행의 배율. 없으면 ×1 */
+  deadlineMultipliers: { maxDaysLeft: number; multiplier: number }[];
+  exclude: {
+    /** 마감 없는 리프트(안정화된 통로)는 판정하지 않는다 */
+    noDeadline: boolean;
+    /** 그날 새로 생긴 리프트는 판정하지 않는다 */
+    appearedToday: boolean;
+  };
+  /** 영역 세력에서 빼는 세력 id(이름 없는 무소속 등) */
+  territoryExcludeFactions: string[];
 }
 
 /** 전투력과 예상 위험도 */
@@ -358,6 +381,14 @@ export interface UiTable {
   mercSort: { guild: { id: string; name: string }[]; recruit: { id: string; name: string }[] };
   /** 용병 화면 상태 필터 칩 */
   mercStatusFilters: { id: string; name: string }[];
+  /** 리프트 화면 정렬 항목(지시서 013). 비교 방법은 id로 화면 코드가 정한다. 첫 항목이 기본 */
+  riftSort: { id: string; name: string }[];
+  /** "공략 가능"으로 세는 위험도 단계 id(combat-power.json riskTiers). 위험도 범위의 나쁜 쪽 끝으로 판정 */
+  riftPlayableRiskTiers: string[];
+  /** 리프트 목록을 열 때 바로 계산하는 위험도 카드 수(나머지는 한가할 때) */
+  riftEagerRiskCount: number;
+  /** 용병 상세 충성도에서 처음 보이는 최근 기록 줄 수(나머지는 펼치기, 지시서 014) */
+  loyaltyLogPreview: number;
 }
 
 export const cities: readonly CityRow[] = citiesJson as CityRow[];
@@ -390,6 +421,7 @@ export const tables: GameTables = {
   facilities: facilitiesJson as unknown as FacilitiesTable,
   autoplay: autoplayJson,
   combatPower: combatPowerJson as CombatPowerTable,
+  riftPreemption: riftPreemptionJson as RiftPreemptionTable,
 };
 
 /** 세이브 정책(명세 9절 확정 규칙의 값). 저장 코드와 화면 문구가 같은 값을 읽는다. */

@@ -39,7 +39,7 @@ describe('세이브 스키마 검증', () => {
   });
 
   it('이전 버전(v1)은 계속 거부한다', () => {
-    expect(errorOf({ ...auditFile(), version: 1 }).message).toMatch(/이전 버전/);
+    expect(errorOf({ ...auditFile(), version: 1 }).message).toMatch(/지원하지 않는 세이브/);
   });
 
   it('resources가 없는 v2는 필드 경로가 든 오류로 거부한다', () => {

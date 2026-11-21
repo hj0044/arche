@@ -48,6 +48,7 @@ const rift = (id: string, patch: Partial<Rift> = {}): Rift => ({
   name: id,
   appearedDay: 1,
   fog: { deadlineOffset: 1, levelOffset: 2, countOffset: 1, rewardU: 0.5 },
+  territoryFactionId: null,
   deadlineDay: 9,
   durationDays: 1,
   enemies: [

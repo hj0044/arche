@@ -20,6 +20,7 @@ export function Base({ ctx }: { ctx: Ctx }) {
   const s = ctx.game.state;
   const fs = s.facilities;
   const [picking, setPicking] = useState<string | null>(null);
+  const [effectsOpen, setEffectsOpen] = useState<string | null>(null);
   const job = fs.construction;
 
   const run = (fn: () => void) => {
@@ -33,12 +34,6 @@ export function Base({ ctx }: { ctx: Ctx }) {
 
   return (
     <AppShell title="거점" subtitle={`${cityName(s.baseCityId)} · 제로 ${num(s.resources.zero)}`} footer={<MainTabs ctx={ctx} current="base" />}>
-      {job && (
-        <p className="poach-news small" role="status">
-          🔨 {tables.facilities.facilities.find((f) => f.id === job.facilityId)?.name} Lv{job.targetLevel} 공사 중 · {job.completeDay}일차 완료(
-          {Math.max(0, job.completeDay - s.day)}일 뒤)
-        </p>
-      )}
       {tables.facilities.facilities.map((f) => {
         const lv = facilityLevel(fs, f.id);
         const next = lv + 1;
@@ -62,17 +57,6 @@ export function Base({ ctx }: { ctx: Ctx }) {
               </>
             }
           >
-            <p className="muted small">{f.description}</p>
-            {lv > 0 && <p className="small">현재: {describeEffect(tables, f.id, lv)}</p>}
-            {!maxed && (
-              <p className="small">
-                다음 Lv{next}: {describeEffect(tables, f.id, next)}
-                <span className="muted">
-                  {' '}
-                  · 제로 {num(cost!.zero)} · {cost!.days}일
-                </span>
-              </p>
-            )}
             <button
               className="btn block"
               disabled={!!reason}
@@ -84,13 +68,24 @@ export function Base({ ctx }: { ctx: Ctx }) {
               }
             >
               {building
-                ? `공사 중 · ${Math.max(0, job!.completeDay - s.day)}일 뒤 완료`
+                ? `🔨 Lv${job!.targetLevel} 공사 중 · ${Math.max(0, job!.completeDay - s.day)}일 뒤 완료(${job!.completeDay}일차)`
                 : maxed
                   ? '최대 레벨'
                   : reason
                     ? `${lv === 0 ? '건설' : '강화'} 불가 · ${reason}`
                     : `${lv === 0 ? '건설' : `Lv${next}로 강화`} (제로 ${num(cost!.zero)}, ${cost!.days}일)`}
             </button>
+            {/* 현재·다음 효과 비교는 펼쳐서 본다(비용·일수는 위 버튼에만, 지시서 014) */}
+            <button className="link more-toggle" aria-expanded={effectsOpen === f.id} onClick={() => setEffectsOpen(effectsOpen === f.id ? null : f.id)}>
+              {effectsOpen === f.id ? '효과 접기 ▴' : '효과 보기 ▾'}
+            </button>
+            {effectsOpen === f.id && (
+              <div className="facility-effects small">
+                <p className="muted">{f.description}</p>
+                <p>현재: {lv > 0 ? describeEffect(tables, f.id, lv) : '없음(미건설)'}</p>
+                {!maxed && <p>다음 Lv{next}: {describeEffect(tables, f.id, next)}</p>}
+              </div>
+            )}
 
             {canHaveSlots && (
               <div className="assign-block">

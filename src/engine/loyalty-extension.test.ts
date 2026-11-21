@@ -22,6 +22,7 @@ const rift = (id: string): Rift => ({
   name: id,
   appearedDay: 1,
   fog: { deadlineOffset: 0, levelOffset: 0, countOffset: 0, rewardU: 0 },
+  territoryFactionId: null,
   deadlineDay: 99,
   durationDays: 1,
   enemies: [{ monsterId: 'void_hound', grade: 'low', level: 1, row: 'front' }],

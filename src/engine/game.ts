@@ -1,6 +1,7 @@
 import { getGrowthSpeed, getRiftTier, travelDays, type GameTables, type Outcome, type Row, type UnlockRule } from '../data';
 import { resolveCombat, validateParty, type CombatEvent, type CombatSlot } from './combat';
 import { rollInjuries, type Injury } from './injury';
+import { rollPreemption } from './preemption';
 import { expShare, generateRift, riftEnemySlots, riftReward, type Rift, type RiftReward } from './rift';
 export { expPerMember, expPerMemberAt, expShare, riftLevel, riftReward, shareOf } from './rift';
 import { createRng } from './rng';
@@ -131,6 +132,8 @@ export type DayEvent =
   | { type: 'returned'; expeditionId: string; outcome: Outcome }
   | { type: 'riftExpired'; riftId: string; name: string }
   | { type: 'riftSpawned'; riftId: string; cityId: string }
+  /** 라이벌 선점(지시서 013): 리프트가 목록에서 사라진다. factionId는 영역 세력(없으면 null) */
+  | { type: 'preempted'; riftId: string; name: string; cityId: string; factionId: string | null }
   | { type: 'upkeep'; paid: number; unpaid: number; unpaidMercIds: string[] }
   | { type: 'loyaltyTier'; mercId: string; from: string; to: string }
   | { type: 'departed'; mercId: string; factionId: string }
@@ -307,7 +310,9 @@ function spawnRiftInto(
   fixed?: { tier: string; grade?: string },
 ): Rift {
   state.counters.rift += 1;
-  const rift = generateRift(tables, cityId, state.day, `r${state.counters.rift}`, createRng(rngSeed), fixed);
+  // 같은 도시에서 지금 활성인 리프트(목록과 파견 중) 이름과 겹치지 않게 한다.
+  const taken = [...state.rifts, ...state.expeditions.map((e) => e.rift)].filter((r) => r.cityId === cityId).map((r) => r.name);
+  const rift = generateRift(tables, cityId, state.day, `r${state.counters.rift}`, createRng(rngSeed), fixed, taken);
   state.rifts.push(rift);
   return rift;
 }
@@ -638,7 +643,7 @@ function settleExpedition(tables: GameTables, state: GameState, ex: Expedition):
 }
 
 /**
- * 하루를 넘긴다. 순서: 유지비 → 날짜 +1 → (충성도 정산·이탈은 복귀 정산 뒤) → → 부상 회복 → 복귀한 파견 정산 → 마감 지난 리프트 소멸 → 새 리프트 출현.
+ * 하루를 넘긴다. 순서: 훈련 경험치 → 날짜 +1 → 공사 완료 → 부상 회복 → 복귀한 파견 정산(보상) → 유지비 → 충성도 정산·이탈 → 마감 지난 리프트 소멸 → 라이벌 선점 → 새 리프트 출현.
  */
 export function advanceDay(tables: GameTables, prev: GameState): { state: GameState; events: DayEvent[] } {
   const state = structuredClone(prev);
@@ -667,23 +672,6 @@ export function advanceDay(tables: GameTables, prev: GameState): { state: GameSt
   }
   const tierBefore = new Map(state.mercenaries.filter(simulated).map((m) => [m.id, loyaltyTier(tables, m.loyalty!.value).id]));
 
-  // 하루가 끝날 때 유지비를 낸다. 모자라면 그 용병 몫은 미납으로 기록만 한다.
-  let paid = 0;
-  let unpaid = 0;
-  const unpaidMercIds: string[] = [];
-  for (const m of state.mercenaries.filter(isGuildMember)) {
-    const fee = upkeepPerDay(tables, m);
-    if (fee <= 0) continue;
-    if (state.resources.zero >= fee) {
-      state.resources.zero -= fee;
-      paid += fee;
-    } else {
-      unpaid += fee;
-      unpaidMercIds.push(m.id);
-      m.unpaidUpkeep = { days: (m.unpaidUpkeep?.days ?? 0) + 1, zero: (m.unpaidUpkeep?.zero ?? 0) + fee };
-    }
-  }
-  if (paid || unpaid) events.push({ type: 'upkeep', paid, unpaid, unpaidMercIds });
 
   state.day += 1;
 
@@ -710,6 +698,28 @@ export function advanceDay(tables: GameTables, prev: GameState): { state: GameSt
     state.reports.push(report);
     events.push({ type: 'returned', expeditionId: ex.id, outcome: report.outcome });
   }
+  // ── 유지비(지시서 014): 복귀 보상을 먼저 받은 뒤 낸다(이긴 날 보상으로 그날 유지비를 낼 수 있다).
+  // 돈이 모자라면 충성도가 낮은 용병부터 낸다(같으면 id 순, 충성도가 없으면 맨 뒤). 못 낸 몫은 미납으로 기록한다.
+  // 충성도는 이 시점 값(오늘의 충성도 정산 전)으로 정렬한다.
+  let paid = 0;
+  let unpaid = 0;
+  const unpaidMercIds: string[] = [];
+  const payOrder = state.mercenaries
+    .filter(isGuildMember)
+    .sort((a, b) => (a.loyalty?.value ?? Infinity) - (b.loyalty?.value ?? Infinity) || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+  for (const m of payOrder) {
+    const fee = upkeepPerDay(tables, m);
+    if (fee <= 0) continue;
+    if (state.resources.zero >= fee) {
+      state.resources.zero -= fee;
+      paid += fee;
+    } else {
+      unpaid += fee;
+      unpaidMercIds.push(m.id);
+      m.unpaidUpkeep = { days: (m.unpaidUpkeep?.days ?? 0) + 1, zero: (m.unpaidUpkeep?.zero ?? 0) + fee };
+    }
+  }
+  if (paid || unpaid) events.push({ type: 'upkeep', paid, unpaid, unpaidMercIds });
   // ── 충성도 정산(하루가 끝날 때 한꺼번에): 변동 적용 → 위험 연속 일수 갱신 → 이탈 판정
   const changeDay = state.day;
   for (const ex of returning) {
@@ -805,12 +815,21 @@ export function advanceDay(tables: GameTables, prev: GameState): { state: GameSt
   state.rifts = state.rifts.filter((r) => !expired.includes(r));
   for (const r of expired) events.push({ type: 'riftExpired', riftId: r.id, name: r.name });
 
+  // ── 라이벌 선점(마감 만료 뒤, 새 리프트 출현 전). 그날 생긴 리프트와 파견이 출발한 리프트는 판정하지 않는다.
+  const preempted = rollPreemption(tables, state, state.day);
+  state.rifts = state.rifts.filter((r) => !preempted.includes(r));
+  for (const r of preempted) events.push({ type: 'preempted', riftId: r.id, name: r.name, cityId: r.cityId, factionId: r.territoryFactionId });
+
   const rng = createRng(`${state.seed}:day${state.day}`);
   for (const city of tables.cities) {
-    const active = state.rifts.filter((r) => r.cityId === city.id).length;
-    if (active < city.riftSpawn.maxActive && rng.chance(city.riftSpawn.dailySpawnChance)) {
-      const rift = spawnRiftInto(tables, state, city.id, `${state.seed}:day${state.day}:${city.id}`);
-      events.push({ type: 'riftSpawned', riftId: rift.id, cityId: city.id });
+    const rolls = city.riftSpawn.dailySpawnRolls ?? 1;
+    for (let i = 0; i < rolls; i++) {
+      const active = state.rifts.filter((r) => r.cityId === city.id).length;
+      if (active < city.riftSpawn.maxActive && rng.chance(city.riftSpawn.dailySpawnChance)) {
+        // 첫 판정의 시드는 이전과 같게 둔다.
+        const rift = spawnRiftInto(tables, state, city.id, `${state.seed}:day${state.day}:${city.id}${i ? `:${i}` : ''}`);
+        events.push({ type: 'riftSpawned', riftId: rift.id, cityId: city.id });
+      }
     }
   }
 

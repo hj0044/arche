@@ -5,7 +5,7 @@ import { assignedFacility, getFacility } from '../../engine/facilities';
 import { guildStatusSummary, trainingAccess } from '../../engine/status';
 import { AppShell } from '../AppShell';
 import { BulkLevelUp } from '../BulkLevelUp';
-import { Bar, ElementTag, LoyaltyBadge, RoleTag, Segmented } from '../components';
+import { Bar, ChipRow, ElementTag, LoyaltyBadge, RoleTag, Segmented } from '../components';
 import { cityName, factionName, growthSpeedName, num, severityName } from '../format';
 import { MainTabs } from '../MainTabs';
 import { filterAndSort, filterChips, type MercListOptions } from '../mercFilter';
@@ -105,29 +105,6 @@ function RecruitCard({ ctx, m }: { ctx: Ctx; m: MercenaryState }) {
         {m.profile.hometown ? `${cityName(m.profile.hometown)} 출신` : '출신 미상'} · {faction} · 한계 {m.growth.cap} · {growthSpeedName(m.growth.speed)}
       </div>
     </button>
-  );
-}
-
-function ChipRow<T extends { id: string; name: string }>(props: { label: string; items: T[]; value: string | null; onChange: (v: string | null) => void; elementColor?: boolean }) {
-  return (
-    <>
-      <p className="filter-label">{props.label}</p>
-      <div className="chips scroll" role="group" aria-label={props.label}>
-        <button className={`chip small ${props.value === null ? 'on' : ''}`} aria-pressed={props.value === null} onClick={() => props.onChange(null)}>
-          전체
-        </button>
-        {props.items.map((it) => (
-          <button
-            key={it.id}
-            className={`chip small ${props.elementColor ? `el-${it.id}` : ''} ${props.value === it.id ? 'on' : ''}`}
-            aria-pressed={props.value === it.id}
-            onClick={() => props.onChange(props.value === it.id ? null : it.id)}
-          >
-            {it.name}
-          </button>
-        ))}
-      </div>
-    </>
   );
 }
 

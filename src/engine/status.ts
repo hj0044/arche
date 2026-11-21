@@ -125,8 +125,19 @@ export interface LevelUpOverview {
   plan: { mercs: number; levels: number; arche: number; steps: LevelUpStep[] };
 }
 
+/** 같은 상태 객체·같은 표면 같은 결과라서 기억해 둔다(하단 탭 배지가 화면마다 부르고, 일괄 미리보기는 상태 복사가 많다). */
+const overviewMemo = new WeakMap<GameState, { tables: GameTables; result: LevelUpOverview }>();
+
 /** 레벨업 현황과 일괄 레벨업 미리보기(상태를 바꾸지 않음) */
 export function levelUpOverview(tables: GameTables, state: GameState): LevelUpOverview {
+  const hit = overviewMemo.get(state);
+  if (hit && hit.tables === tables) return hit.result;
+  const result = computeLevelUpOverview(tables, state);
+  overviewMemo.set(state, { tables, result });
+  return result;
+}
+
+function computeLevelUpOverview(tables: GameTables, state: GameState): LevelUpOverview {
   const ready = levelUpCandidates(tables, state);
   const { steps } = levelUpAll(tables, state);
   const plan = { mercs: new Set(steps.map((x) => x.mercId)).size, levels: steps.length, arche: steps.reduce((a, x) => a + x.cost, 0), steps };

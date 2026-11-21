@@ -34,6 +34,7 @@ const rift: Schema = {
 (rift as { fields: Record<string, Schema> }).fields.fog = {
   fields: { deadlineOffset: 'number', levelOffset: 'number', countOffset: 'number', rewardU: 'number' },
 };
+(rift as { fields: Record<string, Schema> }).fields.territoryFactionId = { nullable: 'string' };
 
 const partyMember: Schema = { fields: { mercId: 'string', row: { oneOf: ['front', 'back'] } } };
 

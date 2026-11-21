@@ -35,6 +35,7 @@ function withRift(state: GameState, patch: Partial<Rift> & { id: string }): Game
     name: '시험 균열',
     appearedDay: state.day,
     fog: { deadlineOffset: 0, levelOffset: 0, countOffset: 0, rewardU: 0 },
+    territoryFactionId: null,
     deadlineDay: state.day + 3,
     durationDays: 1,
     enemies: [{ monsterId: 'void_hound', grade: 'low', level: 1, row: 'front' }],
@@ -82,10 +83,12 @@ describe('새 게임', () => {
 
 describe('리프트 마감', () => {
   it('마감일이 지나면 사라진다', () => {
+    // 선점은 끈다(마감 규칙만 본다).
+    const t: GameTables = { ...tables, riftPreemption: { ...tables.riftPreemption, baseChanceByTier: {}, defaultBaseChance: 0 } };
     let s = withRift(opener(), { id: 'T', deadlineDay: 2 });
-    s = advanceDay(tables, s).state; // 2일: 아직 있음
+    s = advanceDay(t, s).state; // 2일: 아직 있음
     expect(s.rifts.some((r) => r.id === 'T')).toBe(true);
-    const next = advanceDay(tables, s); // 3일: 사라짐
+    const next = advanceDay(t, s); // 3일: 사라짐
     expect(next.state.rifts.some((r) => r.id === 'T')).toBe(false);
     expect(next.events).toContainEqual({ type: 'riftExpired', riftId: 'T', name: '시험 균열' });
   });

@@ -36,6 +36,11 @@ export interface Rift {
   omen?: RiftOmen;
   /** 탐지소 흐림 오프셋(생길 때 시드로 정해 저장. 볼 때마다 범위가 흔들리지 않게 한다) */
   fog: RiftFog;
+  /**
+   * 영역 세력(지시서 013): 리프트가 생길 때 도시의 세력 영향력을 가중치로 정한다.
+   * 1차에서는 표시와 선점 알림에만 쓴다. 고를 세력이 없으면 null(미정).
+   */
+  territoryFactionId: string | null;
 }
 
 export interface RiftFog {
@@ -63,6 +68,19 @@ function weightedPick(weights: Record<string, number>, rng: Rng): string {
   return entries[entries.length - 1][0];
 }
 
+/**
+ * 영역 세력 고르기. 가중치 = 그 도시의 세력 영향력(0 이하인 세력은 나오지 않음).
+ * 데이터의 제외 목록(무소속 등)은 빼고, 고를 세력이 없으면 null.
+ */
+export function pickTerritoryFaction(tables: Pick<GameTables, 'factions' | 'riftPreemption'>, cityId: string, rng: Rng): string | null {
+  const exclude = tables.riftPreemption.territoryExcludeFactions;
+  const weights = Object.fromEntries(
+    tables.factions.filter((f) => !exclude.includes(f.id)).map((f) => [f.id, f.cityInfluence[cityId] ?? 0] as const),
+  );
+  if (!Object.values(weights).some((w) => w > 0)) return null;
+  return weightedPick(weights, rng);
+}
+
 const rollRange = (rng: Rng, [lo, hi]: [number, number]) => rng.int(lo, hi);
 
 /** 도시의 출현 가중치로 등급을 골라 리프트 하나를 만든다. 1단계 몬스터는 모두 흑막 쪽이다. */
@@ -73,6 +91,8 @@ export function generateRift(
   id: string,
   rng: Rng,
   fixed?: { tier: string; grade?: string },
+  /** 같은 도시에서 지금 쓰고 있는 리프트 이름(전체 이름). 고를 수 있으면 겹치지 않게 한다 */
+  takenNames: readonly string[] = [],
 ): Rift {
   const city = tables.cities.find((c) => c.id === cityId);
   if (!city) throw new Error(`도시 데이터에 없는 id: ${cityId}`);
@@ -94,12 +114,21 @@ export function generateRift(
   });
   const materials: Record<string, number> = {};
   for (const [mat, range] of Object.entries(tier.rewards.materials)) materials[mat] = rollRange(rng, range);
-  const name = `${city.name} ${rng.pick(tier.names)}`;
+  // 이름은 별도 난수 흐름으로 고른다(징조·흐림과 같은 방식). 예전에 이름을 고르던 자리의 난수 한 번은 그대로 소비해
+  // 이름 목록이나 겹침 규칙을 바꿔도 마감·소요·보상 등 뒤의 값이 흔들리지 않게 한다.
+  const nameRng = createRng(`name:${rng.getState()}`);
+  rng.next();
+  const fullName = (n: string) => `${city.name} ${n}`;
+  const free = tier.names.filter((n) => !takenNames.includes(fullName(n)));
+  // 고를 수 있는 이름이 모자라면 겹침을 허용한다.
+  const name = fullName(nameRng.pick(free.length ? free : tier.names));
   const deadlineDay = day + rollRange(rng, tier.deadlineDays);
   const durationDays = rollRange(rng, tier.durationDays);
   const reward = { zero: rollRange(rng, tier.rewards.zero), arche: rollRange(rng, tier.rewards.arche), materials };
   // 흐림 오프셋은 별도 난수 흐름으로 굴린다(징조 표식 확률을 바꿔도 흐림이 흔들리지 않게).
   const fogRng = createRng(`fog:${rng.getState()}`);
+  // 영역 세력도 별도 난수 흐름(기존 리프트 생성 결과가 바뀌지 않게).
+  const territoryFactionId = pickTerritoryFaction(tables, cityId, createRng(`territory:${rng.getState()}`));
   // 징조 표식은 다른 값을 모두 정한 뒤에 굴려서, 표식 확률이나 문구를 바꿔도 리프트의 나머지 내용은 그대로다.
   const omen: RiftOmen | undefined =
     tables.omens.length > 0 && rng.chance(tier.omenChance) ? { textId: rng.pick(tables.omens).id } : undefined;
@@ -122,6 +151,7 @@ export function generateRift(
     reward,
     ...(omen ? { omen } : {}),
     fog,
+    territoryFactionId,
   };
 }
 

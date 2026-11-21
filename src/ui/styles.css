@@ -284,3 +284,24 @@ button.rift-main:active:not(:disabled) { background: var(--surface-2); }
 .filter-panel select { width: 100%; }
 .btn.on-filter { border-color: var(--accent); color: var(--accent); }
 .list-status { min-height: 44px; }
+
+/* 리프트 목록(지시서 013): 도시 칩, 요약 한 줄, 두 줄 카드 */
+.chip-badge { display: inline-block; margin-left: 6px; padding: 0 6px; border-radius: 9px; background: var(--bad); color: #1a0606; font-size: 0.75rem; font-weight: 700; line-height: 18px; }
+.rift-summary { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 8px; font-size: 0.875rem; }
+.list-count { align-self: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rift-rows { gap: 6px; }
+.rift-row { width: 100%; min-height: 56px; padding: 8px 12px; display: flex; flex-direction: column; gap: 3px; text-align: left; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; }
+.rift-row:active { background: var(--surface-2); }
+.rift-row.tier-gate { border-left: 3px solid var(--warn); }
+.rift-row.tier-route { border-left: 3px solid var(--el-void); }
+.rift-row-line { display: flex; align-items: center; gap: 6px 8px; min-width: 0; white-space: nowrap; }
+.rift-row-line.small { font-size: 0.8125rem; }
+.rift-row-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; font-weight: 600; font-size: 0.9375rem; }
+.rift-row-territory { flex-shrink: 0; max-width: 42%; overflow: hidden; text-overflow: ellipsis; color: var(--muted); font-size: 0.75rem; }
+.rift-row-reward { margin-left: auto; color: var(--muted); }
+.home-urgent { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; min-height: 44px; padding: 0 14px; border-radius: 10px; border: 1px solid var(--border); border-left: 3px solid var(--bad); background: var(--surface); text-align: left; font-size: 0.875rem; }
+.preempt-news { margin: 0; padding: 8px 12px; border-radius: 10px; background: var(--surface-2); border-left: 3px solid var(--bad); display: flex; flex-direction: column; gap: 2px; }
+/* 지시서 014: 펼치기 링크도 44px 터치 영역 */
+.more-toggle { min-height: 44px; align-self: flex-start; padding: 0 2px; }
+.facility-effects { display: flex; flex-direction: column; gap: 4px; }
+.facility-effects p { margin: 0; }
