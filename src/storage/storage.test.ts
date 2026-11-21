@@ -57,43 +57,12 @@ describe('세이브 파일 형식', () => {
     expect(() => parseSave({ format: SAVE_FORMAT, version: SAVE_VERSION, state: { day: 1 } })).toThrow(/손상/);
   });
 
-  it('v2 세이브는 v3, v4를 거쳐 주인공을 뺀 모든 용병에 충성도 시작값을 채운다', () => {
-    const cur = createSaveFile(playedState(), 'manual');
-    const v2 = JSON.parse(serializeSave(cur));
-    v2.version = 2;
-    for (const m of v2.state.mercenaries) delete m.loyalty;
-    const up = parseSave(v2);
-    expect(up.version).toBe(SAVE_VERSION);
-    for (const m of up.state.mercenaries) {
-      if (m.isProtagonist) expect(m.loyalty).toBeUndefined();
-      else expect(m.loyalty).toMatchObject({ value: tables.loyalty.start, dangerDays: 0, restStreak: 0 });
+  it('현재 버전이 아닌 옛 세이브는 마이그레이션 없이 "지원하지 않는 세이브"로 거절한다', () => {
+    for (let v = 1; v < SAVE_VERSION; v++) {
+      const old = { ...createSaveFile(playedState(), 'manual'), version: v };
+      expect(() => parseSave(old)).toThrow(/지원하지 않는 세이브/);
+      expect(isLoadable(old)).toBe(false);
     }
-  });
-
-  it('v3 세이브(길드 용병만 충성도, 연속 쉰 일수 없음)는 v4로 올리며 기존 충성도 값은 지킨다', () => {
-    const cur = createSaveFile(playedState(), 'manual');
-    const v3 = JSON.parse(serializeSave(cur));
-    v3.version = 3;
-    for (const m of v3.state.mercenaries) {
-      if (m.affiliation.kind !== 'guild') delete m.loyalty;
-      else if (m.loyalty) {
-        delete m.loyalty.restStreak;
-        m.loyalty.value = 33;
-      }
-    }
-    const up = parseSave(v3);
-    for (const m of up.state.mercenaries) {
-      if (m.isProtagonist) continue;
-      expect(m.loyalty!.restStreak).toBe(0);
-      expect(m.loyalty!.value).toBe(m.affiliation.kind === 'guild' ? 33 : tables.loyalty.start);
-    }
-  });
-
-  it('이전 버전(v1) 세이브는 불러오지 않는다(용병·세력 id 변경으로 폐기)', () => {
-    const v1 = { ...createSaveFile(playedState(), 'manual'), version: 1 };
-    expect(SAVE_VERSION).toBe(6);
-    expect(() => parseSave(v1)).toThrow(/이전 버전/);
-    expect(isLoadable(v1)).toBe(false);
     expect(isLoadable(createSaveFile(playedState(), 'auto'))).toBe(true);
   });
 });
@@ -178,55 +147,12 @@ describe.each(repos)('세이브 서비스 (%s 저장소)', (_name, makeRepo) => 
   });
 });
 
-describe('세이브 v4 → v5 마이그레이션(거점 시설)', () => {
-  it('시설은 시작 레벨, 건설·배치 없음, 리프트 흐림 오프셋 0으로 채운다', () => {
-    const cur = createSaveFile(playedState(), 'manual');
-    const v4 = JSON.parse(serializeSave(cur));
-    v4.version = 4;
-    delete v4.state.facilities;
-    for (const r of v4.state.rifts) delete r.fog;
-    for (const e of v4.state.expeditions) delete e.rift.fog;
-    for (const r of v4.state.reports) delete r.rift.fog;
-    const up = parseSave(v4);
-    expect(up.version).toBe(SAVE_VERSION);
-    expect(up.state.facilities).toEqual({ levels: { infirmary: 0, training: 0, scout: 1 }, construction: null, assignments: {} });
-    for (const r of [...up.state.rifts, ...up.state.expeditions.map((e) => e.rift), ...up.state.reports.map((x) => x.rift)]) {
-      expect(r.fog).toEqual({ deadlineOffset: 0, levelOffset: 0, countOffset: 0, rewardU: 0 });
-    }
-  });
-});
-
-describe('세이브 v5 → v6 마이그레이션(리프트 영역 세력)', () => {
-  const toV5 = () => {
-    const v5 = JSON.parse(serializeSave(createSaveFile(playedState(), 'manual')));
-    v5.version = 5;
-    for (const r of v5.state.rifts) delete r.territoryFactionId;
-    for (const e of v5.state.expeditions) delete e.rift.territoryFactionId;
-    for (const r of v5.state.reports) delete r.rift.territoryFactionId;
-    return v5;
-  };
-
-  it('모든 리프트(목록·파견·보고)에 도시 영향력 기준 영역 세력을 채우고, 의미 검증을 통과한다', () => {
-    const up = parseSave(toV5(), { ...tables, limits: saveLimits });
-    expect(up.version).toBe(SAVE_VERSION);
-    const all = [...up.state.rifts, ...up.state.expeditions.map((e) => e.rift), ...up.state.reports.map((x) => x.rift)];
-    expect(all.length).toBeGreaterThan(0);
-    for (const r of all) {
-      const f = tables.factions.find((x) => x.id === r.territoryFactionId)!;
-      expect(f).toBeDefined();
-      expect(f.cityInfluence[r.cityId]).toBeGreaterThan(0);
-      expect(tables.riftPreemption.territoryExcludeFactions).not.toContain(f.id);
-    }
-  });
-
-  it('같은 세이브면 같은 영역 세력이 나온다(시드 결정)', () => {
-    expect(parseSave(toV5()).state.rifts.map((r) => r.territoryFactionId)).toEqual(parseSave(toV5()).state.rifts.map((r) => r.territoryFactionId));
-  });
-
-  it('이미 영역 세력이 있으면 그대로 둔다', () => {
-    const v5 = toV5();
-    v5.state.rifts[0].territoryFactionId = 'rrb';
-    expect(parseSave(v5).state.rifts[0].territoryFactionId).toBe('rrb');
+describe('세이브 v6(리프트 영역 세력)', () => {
+  it('새 버전으로 저장하고 불러오면 의미 검증을 통과하고 영역 세력이 그대로다', () => {
+    const s = playedState();
+    const up = parseSave(serializeSave(createSaveFile(s, 'manual')), { ...tables, limits: saveLimits });
+    expect(up.state.rifts.map((r) => r.territoryFactionId)).toEqual(s.rifts.map((r) => r.territoryFactionId));
+    expect(up.state.rifts.some((r) => r.territoryFactionId !== null)).toBe(true);
   });
 
   it('없는 세력 id는 의미 검증에서 막는다', () => {

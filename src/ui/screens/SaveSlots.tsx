@@ -191,7 +191,7 @@ export function SaveSlots({ ctx, onLoad, onBack, toast }: SaveSlotsProps) {
                         불러오기
                       </button>
                     ) : (
-                      <span className="pill">이전 버전</span>
+                      <span className="pill">지원하지 않는 세이브</span>
                     )}
                   </div>
                 </li>
