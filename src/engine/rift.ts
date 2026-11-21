@@ -91,6 +91,8 @@ export function generateRift(
   id: string,
   rng: Rng,
   fixed?: { tier: string; grade?: string },
+  /** 같은 도시에서 지금 쓰고 있는 리프트 이름(전체 이름). 고를 수 있으면 겹치지 않게 한다 */
+  takenNames: readonly string[] = [],
 ): Rift {
   const city = tables.cities.find((c) => c.id === cityId);
   if (!city) throw new Error(`도시 데이터에 없는 id: ${cityId}`);
@@ -112,7 +114,14 @@ export function generateRift(
   });
   const materials: Record<string, number> = {};
   for (const [mat, range] of Object.entries(tier.rewards.materials)) materials[mat] = rollRange(rng, range);
-  const name = `${city.name} ${rng.pick(tier.names)}`;
+  // 이름은 별도 난수 흐름으로 고른다(징조·흐림과 같은 방식). 예전에 이름을 고르던 자리의 난수 한 번은 그대로 소비해
+  // 이름 목록이나 겹침 규칙을 바꿔도 마감·소요·보상 등 뒤의 값이 흔들리지 않게 한다.
+  const nameRng = createRng(`name:${rng.getState()}`);
+  rng.next();
+  const fullName = (n: string) => `${city.name} ${n}`;
+  const free = tier.names.filter((n) => !takenNames.includes(fullName(n)));
+  // 고를 수 있는 이름이 모자라면 겹침을 허용한다.
+  const name = fullName(nameRng.pick(free.length ? free : tier.names));
   const deadlineDay = day + rollRange(rng, tier.deadlineDays);
   const durationDays = rollRange(rng, tier.durationDays);
   const reward = { zero: rollRange(rng, tier.rewards.zero), arche: rollRange(rng, tier.rewards.arche), materials };

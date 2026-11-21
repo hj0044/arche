@@ -310,7 +310,9 @@ function spawnRiftInto(
   fixed?: { tier: string; grade?: string },
 ): Rift {
   state.counters.rift += 1;
-  const rift = generateRift(tables, cityId, state.day, `r${state.counters.rift}`, createRng(rngSeed), fixed);
+  // 같은 도시에서 지금 활성인 리프트(목록과 파견 중) 이름과 겹치지 않게 한다.
+  const taken = [...state.rifts, ...state.expeditions.map((e) => e.rift)].filter((r) => r.cityId === cityId).map((r) => r.name);
+  const rift = generateRift(tables, cityId, state.day, `r${state.counters.rift}`, createRng(rngSeed), fixed, taken);
   state.rifts.push(rift);
   return rift;
 }

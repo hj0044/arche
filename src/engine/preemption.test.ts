@@ -145,16 +145,17 @@ describe('영역 세력', () => {
     expect(pickTerritoryFaction(t, 'seoul', createRng('n'))).toBe('newco');
   });
 
-  it('기존 리프트 생성 결과(레벨·보상·흐림 등)는 변경 전과 같다(회귀)', () => {
-    // 해시는 지시서 013 이전 rift.ts의 generateRift로 같은 입력 120개를 만들어 얻은 값이다.
-    const out: Omit<Rift, 'territoryFactionId'>[] = [];
+  it('기존 리프트 생성 결과(레벨·보상·흐림 등)는 변경 전과 같다(회귀, 이름 제외)', () => {
+    // 해시는 지시서 013 이전 rift.ts의 generateRift로 같은 입력 120개를 만들고 이름만 뺀 값이다.
+    // 영역 세력과 이름(1-2 교체)은 별도 난수 흐름이라 나머지 값은 그대로여야 한다.
+    const out: Omit<Rift, 'territoryFactionId' | 'name'>[] = [];
     for (const c of tables.cities) {
       for (let i = 0; i < 40; i++) {
-        const { territoryFactionId: _t, ...r } = generateRift(tables, c.id, 1 + i, `g${i}`, createRng(`reg:${c.id}:${i}`));
+        const { territoryFactionId: _t, name: _n, ...r } = generateRift(tables, c.id, 1 + i, `g${i}`, createRng(`reg:${c.id}:${i}`));
         out.push(r);
       }
     }
-    expect(seedFromString(JSON.stringify(out))).toBe(370544311);
+    expect(seedFromString(JSON.stringify(out))).toBe(1076688158);
   });
 });
 
@@ -180,5 +181,42 @@ describe('합성 데이터(새 등급·새 세력)', () => {
     expect(s.rifts.some((r) => r.tier === 'abyss')).toBe(true);
     expect(preempted).toBeGreaterThan(0);
     expect(factionsSeen.has('newco')).toBe(true);
+  });
+});
+
+
+describe('리프트 이름(지시서 013 1-2)', () => {
+  const strip = ({ name: _n, ...r }: Rift) => r;
+  it('이름은 "도시 이름 + 등급 이름 목록 중 하나"이고, 겹치는 이름을 피한다', () => {
+    const tier = tables.riftTiers.find((t) => t.id === 'route')!;
+    const all = tier.names.map((n) => `뉴욕 ${n}`);
+    const taken = all.slice(0, -1);
+    for (let i = 0; i < 20; i++) {
+      const r = generateRift(tables, 'newyork', 1, 'x', createRng(`n${i}`), { tier: 'route' }, taken);
+      expect(r.name).toBe(all.at(-1));
+    }
+  });
+  it('고를 이름이 모자라면 겹침을 허용한다', () => {
+    const tier = tables.riftTiers.find((t) => t.id === 'gate')!;
+    const r = generateRift(tables, 'tokyo', 1, 'x', createRng('full'), { tier: 'gate' }, tier.names.map((n) => `도쿄 ${n}`));
+    expect(tier.names.map((n) => `도쿄 ${n}`)).toContain(r.name);
+  });
+  it('겹침 목록이 달라도 이름 말고 다른 값은 같다(별도 난수 흐름)', () => {
+    for (let i = 0; i < 20; i++) {
+      const a = generateRift(tables, 'seoul', 3, 'x', createRng(`k${i}`));
+      const b = generateRift(tables, 'seoul', 3, 'x', createRng(`k${i}`), undefined, [a.name]);
+      expect(b.name).not.toBe(a.name);
+      expect(strip(b)).toEqual(strip(a));
+    }
+  });
+  it('하루 진행에서 같은 도시의 활성 리프트(목록·파견 중) 이름이 겹치지 않는다', () => {
+    let s = opener('names');
+    for (let d = 0; d < 40; d++) {
+      s = advanceDay(tables, s).state;
+      for (const c of tables.cities) {
+        const names = [...s.rifts, ...s.expeditions.map((e) => e.rift)].filter((r) => r.cityId === c.id).map((r) => r.name);
+        expect(new Set(names).size).toBe(names.length);
+      }
+    }
   });
 });

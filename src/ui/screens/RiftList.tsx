@@ -11,6 +11,12 @@ import { citySummary, cityChips, daysLeft, filterAndSortRifts, isUrgent, needsAl
 import { MainTabs } from '../MainTabs';
 import type { Ctx } from '../nav';
 
+/** 리프트 이름에서 앞의 "도시 이름 "을 뺀 것 */
+const shortName = (r: Rift) => {
+  const prefix = `${cityName(r.cityId)} `;
+  return r.name.startsWith(prefix) ? r.name.slice(prefix.length) : r.name;
+};
+
 /** 마감 표시 */
 const deadlineText = (left: ValueRange | null) =>
   !left ? '마감 없음' : left[1] === 0 ? '오늘 마감' : left[0] === left[1] ? `마감 D-${left[0]}` : `마감 D-${left[0]}~${left[1]}`;
@@ -147,7 +153,8 @@ export function RiftRow({ rift, s, risk, onClick }: { rift: Rift; s: GameState; 
     <button className={`rift-row tier-${rift.tier}`} onClick={onClick} aria-label={`${rift.name}${tooLate ? ', 보낼 수 없음' : ''}`}>
       <span className="rift-row-line">
         <span className="tag tier">{tierName(rift.tier)}</span>
-        <span className="rift-row-name">{rift.name}</span>
+        {/* 목록은 도시 칩으로 이미 걸렀으니 앞의 도시 이름은 빼고 보인다(저장된 이름은 그대로) */}
+        <span className="rift-row-name">{shortName(rift)}</span>
         {v.omen && <OmenBadge />}
         {rift.stable && <span className="pill ok">안정화</span>}
         <span className="rift-row-territory">{territoryLabel(rift.territoryFactionId)}</span>
