@@ -41,7 +41,7 @@
   "stablePassageRewardRatio": 0.5,
   "rewardLevelScale": 0.05,
   "upkeepZeroPerDay": {
-    "base": 5,
+    "base": 3,
     "perLevel": 1
   },
   "protagonistUpkeep": false,
