@@ -113,6 +113,29 @@ export interface RiftTierRow {
   names: string[];
   /** 흑막 징조 표식이 붙을 확률(연출 전용, 규칙에 영향 없음) */
   omenChance: number;
+  /** 보상 배율(없으면 1). 변형 배율과 곱한다(지시서 015: 비교 실험용 자리) */
+  rewardMultiplier?: number;
+  /** 부상 일수 배율(없으면 1). 변형 배율과 곱한다 */
+  injuryDaysMultiplier?: number;
+  /**
+   * 등급 안의 변형(지시서 015). 가중치로 하나를 고르고, 적은 값만 등급 값을 덮어쓴다.
+   * 없으면 등급 값 그대로. 첫 행은 시작 리프트(initialGuaranteed)에 쓰는 기본 변형이다.
+   */
+  variants?: RiftVariantRow[];
+}
+
+export interface RiftVariantRow {
+  id: string;
+  /** 화면에 붙는 짧은 이름(예: 소규모). 없으면 표시 안 함 */
+  label?: string;
+  weight: number;
+  monsterLevel?: Range;
+  enemyCount?: Range;
+  monsterGradeWeights?: Record<string, number>;
+  /** 레벨 치우침(없으면 도시 levelSkew). 1이면 고르게 */
+  levelSkew?: number;
+  rewardMultiplier?: number;
+  injuryDaysMultiplier?: number;
 }
 
 export interface MaterialRow { id: string; name: string; world: string; note: string }

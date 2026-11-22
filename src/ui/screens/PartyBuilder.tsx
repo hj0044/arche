@@ -47,7 +47,7 @@ export function PartyBuilder({ ctx, riftId }: { ctx: Ctx; riftId: string }) {
     refusedToday(s, m)
       ? '오늘 거부'
       : m.injury
-        ? '부상'
+        ? `${m.injury.recoverDay}일차부터 출전`
         : isOnExpedition(s, m.id)
           ? '파견 중'
           : assignedFacility(s.facilities, m.id)

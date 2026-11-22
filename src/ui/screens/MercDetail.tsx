@@ -23,7 +23,7 @@ import { AppShell } from '../AppShell';
 import { Bar, ConfirmDialog, ElementTag, LoyaltyBadge, Panel, RoleTag } from '../components';
 import { loyaltyDisplay, loyaltyTier, tendencyOf } from '../../engine/loyalty';
 import { assignedFacility, getFacility } from '../../engine/facilities';
-import { loyaltyReasonName, backgroundShort, cityName, factionName, growthSpeedName, num, severityName, tierName, worldName } from '../format';
+import { injuryText, loyaltyReasonName, backgroundShort, cityName, factionName, growthSpeedName, num, tierName, worldName } from '../format';
 import type { Ctx } from '../nav';
 
 const SKILL_DESC: Record<string, string> = {
@@ -61,7 +61,7 @@ export function MercDetail({ ctx, mercId }: { ctx: Ctx; mercId: string }) {
   };
 
   const status = m.injury
-    ? `${severityName(m.injury.severity)} · ${m.injury.recoverDay}일차 회복`
+    ? injuryText(m.injury)
     : isOnExpedition(s, m.id)
       ? '파견 중'
       : assignedFacility(s.facilities, m.id)

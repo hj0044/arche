@@ -3,7 +3,7 @@ import { guildUpkeepPerDay, isOnExpedition } from '../../engine/game';
 import { AppShell } from '../AppShell';
 import { ElementTag, LoyaltyBadge, OmenBadge, Panel, RoleTag } from '../components';
 import { loyaltyTier } from '../../engine/loyalty';
-import { cityName, materialName, num, outcomeName, severityName } from '../format';
+import { cityName, injuryText, materialName, num, outcomeName } from '../format';
 import { MainTabs } from '../MainTabs';
 import { StatusSummary } from '../StatusSummary';
 import { BulkLevelUp } from '../BulkLevelUp';
@@ -130,7 +130,7 @@ export function GuildHome({ ctx }: { ctx: Ctx }) {
                 </div>
                 {m.injury ? (
                   <span className="pill bad">
-                    {severityName(m.injury.severity)} {m.injury.recoverDay - s.day}일
+                    {injuryText(m.injury)}
                   </span>
                 ) : isOnExpedition(s, m.id) ? (
                   <span className="pill">파견 중</span>

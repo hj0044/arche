@@ -124,6 +124,7 @@ export function validateSemantics(state: GameState, t: SemanticTables): string[]
       else within(`${ep}.level`, e.level, grade.level);
     });
     if (tier) within(`${p}.durationDays`, r.durationDays, tier.durationDays);
+    if (tier && r.variant !== undefined && !tier.variants?.some((v) => v.id === r.variant)) errors.push(`${p}.variant: 리프트 등급 "${r.tier}"에 없는 변형 id "${r.variant}"`);
     atLeast(`${p}.appearedDay`, r.appearedDay, L.minDay);
     if (r.deadlineDay !== null) atLeast(`${p}.deadlineDay`, r.deadlineDay, r.appearedDay);
     atLeast(`${p}.reward.zero`, r.reward.zero, 0);

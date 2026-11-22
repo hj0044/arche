@@ -63,3 +63,6 @@ export function josa(word: string, a: string, b: string): string {
   if (code < 0 || code > 11171) return `${a}(${b})`;
   return code % 28 ? a : b;
 }
+
+/** 부상 표기(지시서 015): 남은 일수 대신 출전할 수 있게 되는 날. "경상 · 13일차부터 출전" */
+export const injuryText = (injury: { severity: string; recoverDay: number }) => `${severityName(injury.severity)} · ${injury.recoverDay}일차부터 출전`;

@@ -2,7 +2,7 @@ import { getGrowthSpeed, getRiftTier, travelDays, type GameTables, type Outcome,
 import { resolveCombat, validateParty, type CombatEvent, type CombatSlot } from './combat';
 import { rollInjuries, type Injury } from './injury';
 import { rollPreemption } from './preemption';
-import { expShare, generateRift, riftEnemySlots, riftReward, type Rift, type RiftReward } from './rift';
+import { expShare, generateRift, riftEnemySlots, riftModifiers, riftReward, type Rift, type RiftReward } from './rift';
 export { expPerMember, expPerMemberAt, expShare, riftLevel, riftReward, shareOf } from './rift';
 import { createRng } from './rng';
 import {
@@ -609,6 +609,7 @@ function settleExpedition(tables: GameTables, state: GameState, ex: Expedition):
     outcome,
     createRng(`${combatSeed}:injury`),
     injuryReductionDays(tables, state.facilities),
+    riftModifiers(tables, ex.rift).injuryDays,
   );
   for (const inj of injuries) {
     getMerc(state, inj.unitId).injury = { severity: inj.severity, recoverDay: state.day + inj.days + 1 };

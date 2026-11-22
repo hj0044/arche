@@ -6,9 +6,10 @@ import { validateSemantics, type SemanticTables } from './saveSemantics';
  * 세이브 형식 식별자와 현재 버전. 형식이 바뀌면 버전만 올린다.
  * 개발 초기라 옛 버전 세이브는 지원하지 않는다(AGENTS.md 세이브 규칙): 마이그레이션 없이 "지원하지 않는 세이브"로 거절한다.
  * v6: 리프트 영역 세력(territoryFactionId, 지시서 013).
+ * v7: 리프트 등급 변형(variant, 지시서 015).
  */
 export const SAVE_FORMAT = 'arche-save';
-export const SAVE_VERSION = 6;
+export const SAVE_VERSION = 7;
 
 export type SaveKind = 'manual' | 'auto';
 

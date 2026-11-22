@@ -6,7 +6,7 @@ import { guildStatusSummary, trainingAccess } from '../../engine/status';
 import { AppShell } from '../AppShell';
 import { BulkLevelUp } from '../BulkLevelUp';
 import { Bar, ChipRow, ElementTag, LoyaltyBadge, RoleTag, Segmented } from '../components';
-import { cityName, factionName, growthSpeedName, num, severityName } from '../format';
+import { cityName, factionName, growthSpeedName, injuryText, num } from '../format';
 import { MainTabs } from '../MainTabs';
 import { filterAndSort, filterChips, type MercListOptions } from '../mercFilter';
 import type { Ctx } from '../nav';
@@ -40,7 +40,7 @@ function GuildStatusPill({ s, m }: { s: GameState; m: MercenaryState }) {
   if (m.injury)
     return (
       <span className="pill bad">
-        {severityName(m.injury.severity)} {Math.max(0, m.injury.recoverDay - s.day)}일
+        {injuryText(m.injury)}
       </span>
     );
   if (isOnExpedition(s, m.id)) return <span className="pill">파견 중</span>;

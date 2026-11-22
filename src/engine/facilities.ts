@@ -4,7 +4,7 @@
  * 새 효과 종류는 EFFECT_HANDLERS에 처리기를 등록하는 한 곳만 바꾸면 된다.
  */
 import { getRiftTier, type FacilityEffect, type FacilityRow, type GameTables, type Outcome } from '../data';
-import { riftReward, type Rift, type RiftOmen, type RiftReward } from './rift';
+import { riftModifiers, riftReward, type Rift, type RiftOmen, type RiftReward } from './rift';
 
 export interface FacilitiesState {
   /** 시설 id → 현재 레벨(0은 미건설) */
@@ -190,7 +190,10 @@ const exact = (v: number): ValueRange => [v, v];
 function blurredReward(tables: GameTables, rift: Rift, outcome: Outcome, level: ValueRange): VisibleReward {
   const tier = getRiftTier(tables, rift.tier);
   const prog = tables.progression;
+  // 등급·변형 배율은 보이는 정보(변형은 화면에 표시되고 적 수 범위로도 드러난다)라 그대로 곱한다.
+  const mult = riftModifiers(tables, rift).reward;
   const ratio = (lv: number) =>
+    mult *
     prog.rewardRatioByOutcome[outcome] * (rift.stable ? prog.stablePassageRewardRatio : 1) * (1 + prog.rewardLevelScale * lv);
   const range = ([lo, hi]: [number, number]): ValueRange => [Math.floor(lo * ratio(level[0])), Math.floor(hi * ratio(level[1]))];
   return {

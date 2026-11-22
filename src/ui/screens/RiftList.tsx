@@ -1,12 +1,13 @@
 import { useEffect, useLayoutEffect, useReducer, useState } from 'react';
 import { tables, travelDays } from '../../data';
 import { scoutingRow, visibleRift, type FacilitiesState, type ValueRange, type VisibleReward } from '../../engine/facilities';
-import type { Rift } from '../../engine/rift';
+import { riftVariant, type Rift } from '../../engine/rift';
 import { riftAutoRisk, type RiftAutoRisk } from '../../engine/status';
 import { AppShell } from '../AppShell';
 import type { GameState } from '../../engine/game';
 import { ChipRow, ElementTag, OmenBadge } from '../components';
 import { cityName, gradeName, materialName, monsterName, num, omenText, territoryLabel, tierName } from '../format';
+import { expeditionDays, latestDeparture, zeroPerDay } from '../riftInfo';
 import { citySummary, cityChips, daysLeft, filterAndSortRifts, isUrgent, needsAllRisks, type RiftListOptions, type RiskLookup } from '../riftFilter';
 import { MainTabs } from '../MainTabs';
 import type { Ctx } from '../nav';
@@ -20,6 +21,12 @@ const shortName = (r: Rift) => {
 /** 마감 표시 */
 const deadlineText = (left: ValueRange | null) =>
   !left ? '마감 없음' : left[1] === 0 ? '오늘 마감' : left[0] === left[1] ? `마감 D-${left[0]}` : `마감 D-${left[0]}~${left[1]}`;
+
+/** 등급 변형 표시 이름(예: 소규모). 데이터 label이 없으면 표시 안 함 */
+const variantLabel = (r: Rift) => riftVariant(tables, r)?.label;
+
+/** 일차 범위 글자(같으면 한 값) */
+const dayRange = (r: ValueRange) => (r[0] === r[1] ? `${r[0]}` : `${r[0]}~${r[1]}`);
 
 /** 위험도 범위 글자 */
 const riskText = (r: RiftAutoRisk) => (r.estimate.best.id === r.estimate.worst.id ? r.estimate.best.name : `${r.estimate.best.name}~${r.estimate.worst.name}`);
@@ -53,7 +60,9 @@ export function RiftCard({
   // 마감까지 남은 일수(범위). 보이는 최대값으로도 늦으면 확실히 늦은 것이다.
   const left: ValueRange | null = daysLeft(tables, facilities, rift, day);
   const tooLate = left !== null && travel > left[1];
-  const total = rift.durationDays + travel * 2;
+  const total = expeditionDays(tables, rift, baseCityId);
+  const depart = latestDeparture(tables, facilities, rift, baseCityId);
+  const perDay = zeroPerDay(tables, facilities, rift, baseCityId);
   const fmt = (r: VisibleReward) =>
     [`제로 ${rng(r.zero)}`, `아르케 ${rng(r.arche)}`, ...Object.entries(r.materials).map(([id, n]) => `${materialName(id)} ${rng(n)}`)].join(' · ');
   const deadline = deadlineText(left);
@@ -64,6 +73,7 @@ export function RiftCard({
       <span className="rift-head">
         <span className="tag tier">{tierName(rift.tier)}</span>
         <span className="card-title">{rift.name}</span>
+        {variantLabel(rift) && <span className="pill small">{variantLabel(rift)}</span>}
         {v.omen && <OmenBadge />}
         {rift.stable && <span className="pill ok">안정화</span>}
       </span>
@@ -78,6 +88,11 @@ export function RiftCard({
           소요 {total}일{travel ? `(이동 ${travel * 2})` : ''}
         </span>
       </span>
+      {depart && !tooLate && (
+        <span className="small">
+          {depart.travel > 0 ? `이동 ${depart.travel}일 포함, ` : ''}늦어도 <span className="strong">{dayRange([Math.max(day, depart.day[0]), depart.day[1]])}일차</span>까지 출발
+        </span>
+      )}
       {autoRisk !== undefined && (
         <span className="small">
           {autoRisk === null ? (
@@ -113,7 +128,7 @@ export function RiftCard({
         <div className="rift-main">{head}</div>
       )}
       <button className="rift-more" aria-expanded={open} onClick={() => setOpen(!open)}>
-        {open ? '세부 접기 ▴' : `세부 · 승리 시 제로 ${rng(v.victoryReward.zero)} ▾`}
+        {open ? '세부 접기 ▴' : `세부 · 승리 시 제로 ${rng(v.victoryReward.zero)} (하루 ${rng(perDay)}) ▾`}
       </button>
       {open && (
         <div className="rift-details">
@@ -127,7 +142,7 @@ export function RiftCard({
               : `${v.monsterIds.map(monsterName).join(' · ')} · ${rng(v.count, '마리')}`}
           </div>
           <div className="small">
-            승리 시 {fmt(v.victoryReward)}
+            승리 시 {fmt(v.victoryReward)} · 파견 하루당 제로 {rng(perDay)}({total}일 기준)
             {tables.riftTiers.find((t) => t.id === rift.tier)?.stabilizes && !rift.stable && ' · 항로 안정화'}
           </div>
           {(v.retreatReward.zero[1] > 0 || v.retreatReward.arche[1] > 0) && <div className="muted tiny">철수 시 {fmt(v.retreatReward)}</div>}
@@ -155,6 +170,7 @@ export function RiftRow({ rift, s, risk, onClick }: { rift: Rift; s: GameState; 
         <span className="tag tier">{tierName(rift.tier)}</span>
         {/* 목록은 도시 칩으로 이미 걸렀으니 앞의 도시 이름은 빼고 보인다(저장된 이름은 그대로) */}
         <span className="rift-row-name">{shortName(rift)}</span>
+        {variantLabel(rift) && <span className="pill small">{variantLabel(rift)}</span>}
         {v.omen && <OmenBadge />}
         {rift.stable && <span className="pill ok">안정화</span>}
         <span className="rift-row-territory">{territoryLabel(rift.territoryFactionId)}</span>
@@ -172,8 +188,10 @@ export function RiftRow({ rift, s, risk, onClick }: { rift: Rift; s: GameState; 
             <span className={`risk risk-${risk.estimate.worst.id}`}>{riskText(risk)}</span>
           )}
         </span>
-        <span className="muted">Lv{rng(v.level)}</span>
-        <span className="rift-row-reward">제로 {rng(v.victoryReward.zero)}</span>
+        <span className="rift-row-reward">
+          제로 {rng(v.victoryReward.zero)}
+          <span className="muted">(하루 {rng(zeroPerDay(tables, s.facilities, rift, s.baseCityId))})</span>
+        </span>
       </span>
     </button>
   );

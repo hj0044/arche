@@ -296,9 +296,9 @@ button.rift-main:active:not(:disabled) { background: var(--surface-2); }
 .rift-row.tier-route { border-left: 3px solid var(--el-void); }
 .rift-row-line { display: flex; align-items: center; gap: 6px 8px; min-width: 0; white-space: nowrap; }
 .rift-row-line.small { font-size: 0.8125rem; }
-.rift-row-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; font-weight: 600; font-size: 0.9375rem; }
-.rift-row-territory { flex-shrink: 0; max-width: 42%; overflow: hidden; text-overflow: ellipsis; color: var(--muted); font-size: 0.75rem; }
-.rift-row-reward { margin-left: auto; color: var(--muted); }
+.rift-row-name { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; font-weight: 600; font-size: 0.9375rem; }
+.rift-row-territory { flex: 1 1 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; text-align: right; color: var(--muted); font-size: 0.75rem; }
+.rift-row-reward { margin-left: auto; flex-shrink: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .home-urgent { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; min-height: 44px; padding: 0 14px; border-radius: 10px; border: 1px solid var(--border); border-left: 3px solid var(--bad); background: var(--surface); text-align: left; font-size: 0.875rem; }
 .preempt-news { margin: 0; padding: 8px 12px; border-radius: 10px; background: var(--surface-2); border-left: 3px solid var(--bad); display: flex; flex-direction: column; gap: 2px; }
 /* 지시서 014: 펼치기 링크도 44px 터치 영역 */
