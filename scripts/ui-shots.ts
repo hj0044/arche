@@ -49,7 +49,7 @@ function diffRatio(a: PNG, b: PNG): number {
     for (let y = 0; y < h; y++) p.data.copy(out, y * w * 4, y * p.width * 4, y * p.width * 4 + w * 4);
     return out;
   };
-  const n = pixelmatch(crop(a), crop(b), null, w, h, { threshold: 0.2 });
+  const n = pixelmatch(crop(a), crop(b), undefined, w, h, { threshold: 0.2 });
   return Math.round((n / (w * h)) * 10000) / 10000;
 }
 
