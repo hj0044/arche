@@ -1,0 +1,10 @@
+{
+  "Main": {
+    "mismatchRatio": 0.1611,
+    "refRetakeMismatch": 0.0138
+  },
+  "Content": {
+    "mismatchRatio": 0.1435,
+    "refRetakeMismatch": 0.0045
+  }
+}

@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { tables } from '../../data';
 import { GameError, newGame, pickCandidateToLeave, type GameState, type ProtagonistSetup } from '../../engine/game';
-import { newSlotId } from '../../storage/saveService';
+import { newSlotId } from '../../app/saves';
 import { AppShell } from '../AppShell';
 import { ElementTag, RoleTag, Segmented } from '../components';
 import { backgroundName, elementName, roleName, term } from '../format';
-import { saves } from '../saves';
+import { saves } from '../../app/saves';
 
 interface NewGameProps {
   onBack: () => void;

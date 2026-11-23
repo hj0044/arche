@@ -69,6 +69,10 @@
   - 도시별 활성 리프트·한도 도달·선점 비율: `npm run rift-stats -- [일수] [시드 수] [--no-preempt]`
   - 리프트 난도 분포(해볼 만 있는 날 비율 등): `npm run difficulty-stats -- [일수] [시드 수]`
   - 검수용 고정 세이브 만들기: `npm run make-audit-save -- [시드] [출력 경로]` (기본 `audit-20261120`, `/tmp/arche-audit-v2.json`)
+  - UI 픽스처 만들기(시안 예시를 닮은 세이브 → `src/ui/fixtures/ui-mock.json`): `npm run make-ui-fixture`
+  - 시안·앱 화면 나란히 찍기(`docs/design/ui/shots/{ref,app,compare}`, `report.json`): `npm run ui:shots [-- 화면이름 ...]`
+  - UI 계약 검사(Playwright, 픽스처, `contract.json` 대조): `npm run ui:check`
+  - 개발 서버에서 픽스처로 화면 보기: `npm run dev` 후 `/?fixture=ui&screen=home|rifts|party|dayResult|mercs|merc|replay|base|saves|tower|boss|recruit`
   - 타입 검사: `npm run typecheck`
   - 빌드: `npm run build` → `dist/`
   - 빌드 결과 미리보기: `npm run preview`

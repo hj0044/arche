@@ -1,0 +1,2100 @@
+{
+ "format": "arche-save",
+ "version": 8,
+ "savedAt": "2026-11-23T00:00:00.000Z",
+ "kind": "manual",
+ "summary": {
+  "guildName": "새벽 길드",
+  "day": 12,
+  "baseCityId": "seoul"
+ },
+ "state": {
+  "seed": "ui-fixture",
+  "day": 12,
+  "guildName": "새벽 길드",
+  "baseCityId": "seoul",
+  "protagonist": {
+   "mode": "guildMaster",
+   "name": "길드장",
+   "background": "heir"
+  },
+  "resources": {
+   "zero": 1240,
+   "arche": 86,
+   "materials": {
+    "earth_parts": 3
+   }
+  },
+  "mercenaries": [
+   {
+    "id": "m01",
+    "name": "강태산",
+    "element": "frost",
+    "role": "shield",
+    "level": 6,
+    "exp": 140,
+    "growth": {
+     "cap": 45,
+     "speed": "normal"
+    },
+    "initialLevel": 5,
+    "profile": {
+     "age": 34,
+     "gender": "남",
+     "hometown": "seoul",
+     "background": "soldier",
+     "world": "earth",
+     "race": "human"
+    },
+    "affiliation": {
+     "kind": "guild"
+    },
+    "loyalty": {
+     "value": 62,
+     "dangerDays": 0,
+     "restStreak": 0,
+     "refusedOnDay": null,
+     "bonusDay": null,
+     "recent": []
+    }
+   },
+   {
+    "id": "m02",
+    "name": "쿠로세 렌",
+    "element": "fire",
+    "role": "archer",
+    "level": 7,
+    "exp": 0,
+    "growth": {
+     "cap": 50,
+     "speed": "fast"
+    },
+    "initialLevel": 4,
+    "profile": {
+     "age": 27,
+     "gender": "남",
+     "hometown": "tokyo",
+     "background": "freelancer",
+     "world": "earth",
+     "race": "human"
+    },
+    "affiliation": {
+     "kind": "guild"
+    },
+    "loyalty": {
+     "value": 62,
+     "dangerDays": 0,
+     "restStreak": 0,
+     "refusedOnDay": null,
+     "bonusDay": null,
+     "recent": []
+    }
+   },
+   {
+    "id": "m03",
+    "name": "마야 참",
+    "element": "light",
+    "role": "healer",
+    "level": 8,
+    "exp": 180,
+    "growth": {
+     "cap": 55,
+     "speed": "normal"
+    },
+    "initialLevel": 3,
+    "profile": {
+     "age": 31,
+     "gender": "여",
+     "hometown": "newyork",
+     "background": "researcher",
+     "world": "earth",
+     "race": "human"
+    },
+    "affiliation": {
+     "kind": "guild"
+    },
+    "loyalty": {
+     "value": 62,
+     "dangerDays": 0,
+     "restStreak": 0,
+     "refusedOnDay": null,
+     "bonusDay": null,
+     "recent": []
+    }
+   },
+   {
+    "id": "m04",
+    "name": "윤서아",
+    "element": "wind",
+    "role": "mage",
+    "level": 9,
+    "exp": 0,
+    "growth": {
+     "cap": 40,
+     "speed": "fast"
+    },
+    "initialLevel": 6,
+    "profile": {
+     "age": 24,
+     "gender": "여",
+     "hometown": "seoul",
+     "background": "citizen",
+     "world": "earth",
+     "race": "human"
+    },
+    "affiliation": {
+     "kind": "guild"
+    },
+    "loyalty": {
+     "value": 15,
+     "dangerDays": 1,
+     "restStreak": 0,
+     "refusedOnDay": null,
+     "bonusDay": null,
+     "recent": []
+    }
+   },
+   {
+    "id": "m05",
+    "name": "오진석",
+    "element": "earth",
+    "role": "shield",
+    "level": 10,
+    "exp": 0,
+    "growth": {
+     "cap": 55,
+     "speed": "normal"
+    },
+    "initialLevel": 6,
+    "profile": {
+     "age": 41,
+     "gender": "남",
+     "hometown": "seoul",
+     "background": "soldier",
+     "world": "earth",
+     "race": "human"
+    },
+    "affiliation": {
+     "kind": "guild"
+    },
+    "loyalty": {
+     "value": 62,
+     "dangerDays": 0,
+     "restStreak": 0,
+     "refusedOnDay": null,
+     "bonusDay": null,
+     "recent": []
+    },
+    "injury": {
+     "severity": "light",
+     "recoverDay": 13
+    }
+   },
+   {
+    "id": "m06",
+    "name": "신지호",
+    "element": "lightning",
+    "role": "warrior",
+    "level": 11,
+    "exp": 180,
+    "growth": {
+     "cap": 45,
+     "speed": "fast"
+    },
+    "initialLevel": 8,
+    "profile": {
+     "age": 29,
+     "gender": "남",
+     "hometown": "seoul",
+     "background": "agent",
+     "world": "earth",
+     "race": "human"
+    },
+    "affiliation": {
+     "kind": "guild"
+    },
+    "loyalty": {
+     "value": 62,
+     "dangerDays": 0,
+     "restStreak": 0,
+     "refusedOnDay": null,
+     "bonusDay": null,
+     "recent": []
+    }
+   },
+   {
+    "id": "m07",
+    "name": "백서린",
+    "element": "frost",
+    "role": "commander",
+    "level": 12,
+    "exp": 0,
+    "growth": {
+     "cap": 65,
+     "speed": "slow"
+    },
+    "initialLevel": 3,
+    "profile": {
+     "age": 38,
+     "gender": "여",
+     "hometown": "seoul",
+     "background": "soldier",
+     "world": "earth",
+     "race": "human"
+    },
+    "affiliation": {
+     "kind": "guild"
+    },
+    "loyalty": {
+     "value": 62,
+     "dangerDays": 0,
+     "restStreak": 0,
+     "refusedOnDay": null,
+     "bonusDay": null,
+     "recent": []
+    }
+   },
+   {
+    "id": "m08",
+    "name": "타치바나 아키라",
+    "element": "lightning",
+    "role": "archer",
+    "level": 6,
+    "exp": 0,
+    "growth": {
+     "cap": 50,
+     "speed": "normal"
+    },
+    "initialLevel": 5,
+    "profile": {
+     "age": 33,
+     "gender": "남",
+     "hometown": "tokyo",
+     "background": "agent",
+     "world": "earth",
+     "race": "human"
+    },
+    "affiliation": {
+     "kind": "guild"
+    },
+    "loyalty": {
+     "value": 62,
+     "dangerDays": 0,
+     "restStreak": 0,
+     "refusedOnDay": null,
+     "bonusDay": null,
+     "recent": []
+    }
+   },
+   {
+    "id": "m09",
+    "name": "다니엘 브루크스",
+    "element": "wind",
+    "role": "healer",
+    "level": 7,
+    "exp": 0,
+    "growth": {
+     "cap": 50,
+     "speed": "fast"
+    },
+    "initialLevel": 4,
+    "profile": {
+     "age": 36,
+     "gender": "남",
+     "hometown": "newyork",
+     "background": "agent",
+     "world": "earth",
+     "race": "human"
+    },
+    "affiliation": {
+     "kind": "guild"
+    },
+    "loyalty": {
+     "value": 62,
+     "dangerDays": 0,
+     "restStreak": 0,
+     "refusedOnDay": null,
+     "bonusDay": null,
+     "recent": []
+    }
+   },
+   {
+    "id": "m10",
+    "name": "임소하",
+    "element": "light",
+    "role": "mage",
+    "level": 8,
+    "exp": 0,
+    "growth": {
+     "cap": 60,
+     "speed": "normal"
+    },
+    "initialLevel": 3,
+    "profile": {
+     "age": 28,
+     "gender": "여",
+     "hometown": "seoul",
+     "background": "researcher",
+     "world": "earth",
+     "race": "human"
+    },
+    "affiliation": {
+     "kind": "guild"
+    },
+    "loyalty": {
+     "value": 62,
+     "dangerDays": 0,
+     "restStreak": 0,
+     "refusedOnDay": null,
+     "bonusDay": null,
+     "recent": []
+    }
+   },
+   {
+    "id": "m11",
+    "name": "모리타 겡지",
+    "element": "fire",
+    "role": "shield",
+    "level": 9,
+    "exp": 0,
+    "growth": {
+     "cap": 50,
+     "speed": "normal"
+    },
+    "initialLevel": 5,
+    "profile": {
+     "age": 45,
+     "gender": "남",
+     "hometown": "tokyo",
+     "background": "corporate",
+     "world": "earth",
+     "race": "human"
+    },
+    "affiliation": {
+     "kind": "guild"
+    },
+    "loyalty": {
+     "value": 62,
+     "dangerDays": 0,
+     "restStreak": 0,
+     "refusedOnDay": null,
+     "bonusDay": null,
+     "recent": []
+    }
+   },
+   {
+    "id": "m12",
+    "name": "카게야마 쇼",
+    "element": "void",
+    "role": "warrior",
+    "level": 10,
+    "exp": 0,
+    "growth": {
+     "cap": 70,
+     "speed": "fast"
+    },
+    "initialLevel": 8,
+    "profile": {
+     "age": 22,
+     "gender": "남",
+     "hometown": "tokyo",
+     "background": "corporate",
+     "world": "earth",
+     "race": "human"
+    },
+    "affiliation": {
+     "kind": "guild"
+    },
+    "loyalty": {
+     "value": 62,
+     "dangerDays": 0,
+     "restStreak": 0,
+     "refusedOnDay": null,
+     "bonusDay": null,
+     "recent": []
+    }
+   },
+   {
+    "id": "m13",
+    "name": "미야자와 유우",
+    "element": "earth",
+    "role": "archer",
+    "level": 11,
+    "exp": 0,
+    "growth": {
+     "cap": 40,
+     "speed": "fast"
+    },
+    "initialLevel": 9,
+    "profile": {
+     "age": 25,
+     "gender": "여",
+     "hometown": "tokyo",
+     "background": "corporate",
+     "world": "earth",
+     "race": "human"
+    },
+    "affiliation": {
+     "kind": "guild"
+    },
+    "loyalty": {
+     "value": 62,
+     "dangerDays": 0,
+     "restStreak": 0,
+     "refusedOnDay": null,
+     "bonusDay": null,
+     "recent": []
+    }
+   },
+   {
+    "id": "m14",
+    "name": "시라유키 하루카",
+    "element": "frost",
+    "role": "mage",
+    "level": 12,
+    "exp": 0,
+    "growth": {
+     "cap": 55,
+     "speed": "normal"
+    },
+    "initialLevel": 4,
+    "profile": {
+     "age": 30,
+     "gender": "여",
+     "hometown": "tokyo",
+     "background": "researcher",
+     "world": "earth",
+     "race": "human"
+    },
+    "affiliation": {
+     "kind": "guild"
+    },
+    "loyalty": {
+     "value": 62,
+     "dangerDays": 0,
+     "restStreak": 0,
+     "refusedOnDay": null,
+     "bonusDay": null,
+     "recent": []
+    }
+   },
+   {
+    "id": "m15",
+    "name": "빅토리아 레이놀즈",
+    "element": "light",
+    "role": "commander",
+    "level": 6,
+    "exp": 0,
+    "growth": {
+     "cap": 45,
+     "speed": "normal"
+    },
+    "initialLevel": 6,
+    "profile": {
+     "age": 42,
+     "gender": "여",
+     "hometown": "newyork",
+     "background": "corporate",
+     "world": "earth",
+     "race": "human"
+    },
+    "affiliation": {
+     "kind": "guild"
+    },
+    "loyalty": {
+     "value": 62,
+     "dangerDays": 0,
+     "restStreak": 0,
+     "refusedOnDay": null,
+     "bonusDay": null,
+     "recent": []
+    }
+   },
+   {
+    "id": "m16",
+    "name": "마도현",
+    "element": "fire",
+    "role": "warrior",
+    "level": 7,
+    "exp": 0,
+    "growth": {
+     "cap": 60,
+     "speed": "fast"
+    },
+    "initialLevel": 7,
+    "profile": {
+     "age": 32,
+     "gender": "남",
+     "hometown": "seoul",
+     "background": "mercenary_company",
+     "world": "earth",
+     "race": "human"
+    },
+    "affiliation": {
+     "kind": "guild"
+    },
+    "loyalty": {
+     "value": 62,
+     "dangerDays": 0,
+     "restStreak": 0,
+     "refusedOnDay": null,
+     "bonusDay": null,
+     "recent": []
+    }
+   },
+   {
+    "id": "m17",
+    "name": "구만수",
+    "element": "lightning",
+    "role": "shield",
+    "level": 8,
+    "exp": 0,
+    "growth": {
+     "cap": 65,
+     "speed": "normal"
+    },
+    "initialLevel": 4,
+    "profile": {
+     "age": 52,
+     "gender": "남",
+     "hometown": "seoul",
+     "background": "mercenary_company",
+     "world": "earth",
+     "race": "human"
+    },
+    "affiliation": {
+     "kind": "guild"
+    },
+    "loyalty": {
+     "value": 62,
+     "dangerDays": 0,
+     "restStreak": 0,
+     "refusedOnDay": null,
+     "bonusDay": null,
+     "recent": []
+    }
+   },
+   {
+    "id": "m18",
+    "name": "미겔 오르티스",
+    "element": "void",
+    "role": "archer",
+    "level": 9,
+    "exp": 0,
+    "growth": {
+     "cap": 70,
+     "speed": "slow"
+    },
+    "initialLevel": 1,
+    "profile": {
+     "age": 23,
+     "gender": "남",
+     "hometown": "newyork",
+     "background": "mercenary_company",
+     "world": "earth",
+     "race": "human"
+    },
+    "affiliation": {
+     "kind": "guild"
+    },
+    "loyalty": {
+     "value": 62,
+     "dangerDays": 0,
+     "restStreak": 0,
+     "refusedOnDay": null,
+     "bonusDay": null,
+     "recent": []
+    }
+   },
+   {
+    "id": "m19",
+    "name": "나카무라 사에",
+    "element": "earth",
+    "role": "healer",
+    "level": 10,
+    "exp": 0,
+    "growth": {
+     "cap": 40,
+     "speed": "normal"
+    },
+    "initialLevel": 6,
+    "profile": {
+     "age": 35,
+     "gender": "여",
+     "hometown": "tokyo",
+     "background": "mercenary_company",
+     "world": "earth",
+     "race": "human"
+    },
+    "affiliation": {
+     "kind": "guild"
+    },
+    "loyalty": {
+     "value": 62,
+     "dangerDays": 0,
+     "restStreak": 0,
+     "refusedOnDay": null,
+     "bonusDay": null,
+     "recent": []
+    }
+   },
+   {
+    "id": "m20",
+    "name": "카를로스 멘도사",
+    "element": "fire",
+    "role": "commander",
+    "level": 11,
+    "exp": 0,
+    "growth": {
+     "cap": 55,
+     "speed": "normal"
+    },
+    "initialLevel": 5,
+    "profile": {
+     "age": 47,
+     "gender": "남",
+     "hometown": "newyork",
+     "background": "mercenary_company",
+     "world": "earth",
+     "race": "human"
+    },
+    "affiliation": {
+     "kind": "guild"
+    },
+    "loyalty": {
+     "value": 62,
+     "dangerDays": 0,
+     "restStreak": 0,
+     "refusedOnDay": null,
+     "bonusDay": null,
+     "recent": []
+    }
+   },
+   {
+    "id": "m21",
+    "name": "토니 루소",
+    "element": "wind",
+    "role": "warrior",
+    "level": 5,
+    "exp": 0,
+    "growth": {
+     "cap": 50,
+     "speed": "normal"
+    },
+    "initialLevel": 5,
+    "profile": {
+     "age": 39,
+     "gender": "남",
+     "hometown": "newyork",
+     "background": "mercenary_company",
+     "world": "earth",
+     "race": "human"
+    },
+    "affiliation": {
+     "kind": "faction",
+     "factionId": "waypoint"
+    },
+    "loyalty": {
+     "value": 60,
+     "dangerDays": 0,
+     "restStreak": 0,
+     "refusedOnDay": null,
+     "bonusDay": null,
+     "recent": []
+    }
+   },
+   {
+    "id": "m22",
+    "name": "마커스 홀리스",
+    "element": "light",
+    "role": "shield",
+    "level": 6,
+    "exp": 0,
+    "growth": {
+     "cap": 45,
+     "speed": "normal"
+    },
+    "initialLevel": 6,
+    "profile": {
+     "age": 44,
+     "gender": "남",
+     "hometown": "newyork",
+     "background": "mercenary_company",
+     "world": "earth",
+     "race": "human"
+    },
+    "affiliation": {
+     "kind": "faction",
+     "factionId": "waypoint"
+    },
+    "loyalty": {
+     "value": 60,
+     "dangerDays": 0,
+     "restStreak": 0,
+     "refusedOnDay": null,
+     "bonusDay": null,
+     "recent": []
+    }
+   },
+   {
+    "id": "m23",
+    "name": "제이 박",
+    "element": "frost",
+    "role": "archer",
+    "level": 9,
+    "exp": 0,
+    "growth": {
+     "cap": 35,
+     "speed": "fast"
+    },
+    "initialLevel": 9,
+    "profile": {
+     "age": 26,
+     "gender": "남",
+     "hometown": "newyork",
+     "background": "freelancer",
+     "world": "earth",
+     "race": "human"
+    },
+    "affiliation": {
+     "kind": "faction",
+     "factionId": "waypoint"
+    },
+    "loyalty": {
+     "value": 60,
+     "dangerDays": 0,
+     "restStreak": 0,
+     "refusedOnDay": null,
+     "bonusDay": null,
+     "recent": []
+    }
+   },
+   {
+    "id": "m24",
+    "name": "루시아 페르난데스",
+    "element": "fire",
+    "role": "mage",
+    "level": 2,
+    "exp": 0,
+    "growth": {
+     "cap": 60,
+     "speed": "slow"
+    },
+    "initialLevel": 2,
+    "profile": {
+     "age": 29,
+     "gender": "여",
+     "hometown": "newyork",
+     "background": "mercenary_company",
+     "world": "earth",
+     "race": "human"
+    },
+    "affiliation": {
+     "kind": "faction",
+     "factionId": "waypoint"
+    },
+    "loyalty": {
+     "value": 60,
+     "dangerDays": 0,
+     "restStreak": 0,
+     "refusedOnDay": null,
+     "bonusDay": null,
+     "recent": []
+    }
+   },
+   {
+    "id": "m25",
+    "name": "아오키 미츠키",
+    "element": "lightning",
+    "role": "healer",
+    "level": 4,
+    "exp": 0,
+    "growth": {
+     "cap": 50,
+     "speed": "normal"
+    },
+    "initialLevel": 4,
+    "profile": {
+     "age": 27,
+     "gender": "여",
+     "hometown": "tokyo",
+     "background": "freelancer",
+     "world": "earth",
+     "race": "human"
+    },
+    "affiliation": {
+     "kind": "faction",
+     "factionId": "waypoint"
+    },
+    "loyalty": {
+     "value": 60,
+     "dangerDays": 0,
+     "restStreak": 0,
+     "refusedOnDay": null,
+     "bonusDay": null,
+     "recent": []
+    }
+   },
+   {
+    "id": "m26",
+    "name": "유도진",
+    "element": "void",
+    "role": "commander",
+    "level": 4,
+    "exp": 0,
+    "growth": {
+     "cap": 70,
+     "speed": "normal"
+    },
+    "initialLevel": 4,
+    "profile": {
+     "age": 40,
+     "gender": "남",
+     "hometown": "seoul",
+     "background": "citizen",
+     "world": "earth",
+     "race": "human"
+    },
+    "affiliation": {
+     "kind": "faction",
+     "factionId": "free"
+    },
+    "loyalty": {
+     "value": 60,
+     "dangerDays": 0,
+     "restStreak": 0,
+     "refusedOnDay": null,
+     "bonusDay": null,
+     "recent": []
+    }
+   },
+   {
+    "id": "m27",
+    "name": "타카기 다이치",
+    "element": "earth",
+    "role": "warrior",
+    "level": 8,
+    "exp": 0,
+    "growth": {
+     "cap": 55,
+     "speed": "fast"
+    },
+    "initialLevel": 8,
+    "profile": {
+     "age": 31,
+     "gender": "남",
+     "hometown": "tokyo",
+     "background": "citizen",
+     "world": "earth",
+     "race": "human"
+    },
+    "affiliation": {
+     "kind": "faction",
+     "factionId": "free"
+    },
+    "loyalty": {
+     "value": 60,
+     "dangerDays": 0,
+     "restStreak": 0,
+     "refusedOnDay": null,
+     "bonusDay": null,
+     "recent": []
+    }
+   },
+   {
+    "id": "m28",
+    "name": "안예린",
+    "element": "wind",
+    "role": "healer",
+    "level": 3,
+    "exp": 0,
+    "growth": {
+     "cap": 60,
+     "speed": "slow"
+    },
+    "initialLevel": 3,
+    "profile": {
+     "age": 26,
+     "gender": "여",
+     "hometown": "seoul",
+     "background": "researcher",
+     "world": "earth",
+     "race": "human"
+    },
+    "affiliation": {
+     "kind": "faction",
+     "factionId": "free"
+    },
+    "loyalty": {
+     "value": 60,
+     "dangerDays": 0,
+     "restStreak": 0,
+     "refusedOnDay": null,
+     "bonusDay": null,
+     "recent": []
+    }
+   },
+   {
+    "id": "m29",
+    "name": "올리버 그레이",
+    "element": "void",
+    "role": "mage",
+    "level": 5,
+    "exp": 0,
+    "growth": {
+     "cap": 45,
+     "speed": "normal"
+    },
+    "initialLevel": 5,
+    "profile": {
+     "age": 37,
+     "gender": "남",
+     "hometown": "newyork",
+     "background": "citizen",
+     "world": "earth",
+     "race": "human"
+    },
+    "affiliation": {
+     "kind": "faction",
+     "factionId": "free"
+    },
+    "loyalty": {
+     "value": 60,
+     "dangerDays": 0,
+     "restStreak": 0,
+     "refusedOnDay": null,
+     "bonusDay": null,
+     "recent": []
+    }
+   },
+   {
+    "id": "m30",
+    "name": "하야시 켄타로",
+    "element": "light",
+    "role": "commander",
+    "level": 5,
+    "exp": 0,
+    "growth": {
+     "cap": 50,
+     "speed": "normal"
+    },
+    "initialLevel": 5,
+    "profile": {
+     "age": 49,
+     "gender": "남",
+     "hometown": "tokyo",
+     "background": "soldier",
+     "world": "earth",
+     "race": "human"
+    },
+    "affiliation": {
+     "kind": "faction",
+     "factionId": "free"
+    },
+    "loyalty": {
+     "value": 60,
+     "dangerDays": 0,
+     "restStreak": 0,
+     "refusedOnDay": null,
+     "bonusDay": null,
+     "recent": []
+    }
+   }
+  ],
+  "rifts": [
+   {
+    "id": "r104",
+    "cityId": "seoul",
+    "tier": "crack",
+    "name": "서울 폐역 승강장 균열",
+    "appearedDay": 10,
+    "deadlineDay": 13,
+    "durationDays": 1,
+    "enemies": [
+     {
+      "monsterId": "void_hound",
+      "grade": "mid",
+      "level": 15,
+      "row": "front"
+     },
+     {
+      "monsterId": "husk_guard",
+      "grade": "mid",
+      "level": 15,
+      "row": "front"
+     }
+    ],
+    "reward": {
+     "zero": 149,
+     "arche": 15,
+     "materials": {}
+    },
+    "fog": {
+     "deadlineOffset": 2,
+     "levelOffset": 2,
+     "countOffset": 1,
+     "rewardU": 0.397
+    },
+    "territoryFactionId": "dokkaebi",
+    "variant": "base"
+   },
+   {
+    "id": "r120",
+    "cityId": "seoul",
+    "tier": "crack",
+    "name": "서울 골목 끝 균열",
+    "appearedDay": 10,
+    "deadlineDay": 16,
+    "durationDays": 1,
+    "enemies": [
+     {
+      "monsterId": "void_hound",
+      "grade": "mid",
+      "level": 15,
+      "row": "front"
+     },
+     {
+      "monsterId": "husk_guard",
+      "grade": "mid",
+      "level": 15,
+      "row": "front"
+     },
+     {
+      "monsterId": "spore_spitter",
+      "grade": "mid",
+      "level": 15,
+      "row": "back"
+     }
+    ],
+    "reward": {
+     "zero": 149,
+     "arche": 15,
+     "materials": {}
+    },
+    "fog": {
+     "deadlineOffset": 2,
+     "levelOffset": 2,
+     "countOffset": 1,
+     "rewardU": 0.397
+    },
+    "territoryFactionId": "dokkaebi",
+    "variant": "base"
+   },
+   {
+    "id": "r119",
+    "cityId": "seoul",
+    "tier": "crack",
+    "name": "서울 지하 배수로 균열",
+    "appearedDay": 10,
+    "deadlineDay": 17,
+    "durationDays": 1,
+    "enemies": [
+     {
+      "monsterId": "void_hound",
+      "grade": "mid",
+      "level": 30,
+      "row": "front"
+     },
+     {
+      "monsterId": "husk_guard",
+      "grade": "mid",
+      "level": 30,
+      "row": "front"
+     }
+    ],
+    "reward": {
+     "zero": 149,
+     "arche": 15,
+     "materials": {}
+    },
+    "fog": {
+     "deadlineOffset": 2,
+     "levelOffset": 2,
+     "countOffset": 1,
+     "rewardU": 0.397
+    },
+    "territoryFactionId": "dokkaebi",
+    "variant": "base"
+   },
+   {
+    "id": "r122",
+    "cityId": "seoul",
+    "tier": "crack",
+    "name": "서울 공사장 가림막 균열",
+    "appearedDay": 10,
+    "deadlineDay": 18,
+    "durationDays": 1,
+    "enemies": [
+     {
+      "monsterId": "void_hound",
+      "grade": "mid",
+      "level": 17,
+      "row": "front"
+     },
+     {
+      "monsterId": "husk_guard",
+      "grade": "mid",
+      "level": 17,
+      "row": "front"
+     },
+     {
+      "monsterId": "spore_spitter",
+      "grade": "mid",
+      "level": 17,
+      "row": "back"
+     }
+    ],
+    "reward": {
+     "zero": 149,
+     "arche": 15,
+     "materials": {}
+    },
+    "fog": {
+     "deadlineOffset": 2,
+     "levelOffset": 2,
+     "countOffset": 1,
+     "rewardU": 0.397
+    },
+    "territoryFactionId": "dokkaebi",
+    "variant": "base"
+   },
+   {
+    "id": "r124",
+    "cityId": "seoul",
+    "tier": "crack",
+    "name": "서울 옥상 물탱크 균열",
+    "appearedDay": 10,
+    "deadlineDay": 19,
+    "durationDays": 1,
+    "enemies": [
+     {
+      "monsterId": "void_hound",
+      "grade": "mid",
+      "level": 19,
+      "row": "front"
+     },
+     {
+      "monsterId": "husk_guard",
+      "grade": "mid",
+      "level": 19,
+      "row": "front"
+     },
+     {
+      "monsterId": "spore_spitter",
+      "grade": "mid",
+      "level": 19,
+      "row": "back"
+     }
+    ],
+    "reward": {
+     "zero": 149,
+     "arche": 15,
+     "materials": {}
+    },
+    "fog": {
+     "deadlineOffset": 2,
+     "levelOffset": 2,
+     "countOffset": 1,
+     "rewardU": 0.397
+    },
+    "territoryFactionId": "dokkaebi",
+    "variant": "base"
+   },
+   {
+    "id": "r125",
+    "cityId": "tokyo",
+    "tier": "crack",
+    "name": "도쿄 비상계단 균열",
+    "appearedDay": 10,
+    "deadlineDay": 15,
+    "durationDays": 2,
+    "enemies": [
+     {
+      "monsterId": "rift_caller",
+      "grade": "mid",
+      "level": 18,
+      "row": "back"
+     },
+     {
+      "monsterId": "void_hound",
+      "grade": "mid",
+      "level": 18,
+      "row": "front"
+     },
+     {
+      "monsterId": "husk_guard",
+      "grade": "mid",
+      "level": 18,
+      "row": "front"
+     },
+     {
+      "monsterId": "rift_caller",
+      "grade": "mid",
+      "level": 18,
+      "row": "back"
+     }
+    ],
+    "reward": {
+     "zero": 115,
+     "arche": 12,
+     "materials": {}
+    },
+    "fog": {
+     "deadlineOffset": 0,
+     "levelOffset": 3,
+     "countOffset": 1,
+     "rewardU": 0.375
+    },
+    "territoryFactionId": "archon",
+    "variant": "upper"
+   },
+   {
+    "id": "r126",
+    "cityId": "tokyo",
+    "tier": "crack",
+    "name": "도쿄 골목 끝 균열",
+    "appearedDay": 10,
+    "deadlineDay": 13,
+    "durationDays": 1,
+    "enemies": [
+     {
+      "monsterId": "husk_guard",
+      "grade": "low",
+      "level": 2,
+      "row": "front"
+     },
+     {
+      "monsterId": "husk_guard",
+      "grade": "low",
+      "level": 2,
+      "row": "front"
+     }
+    ],
+    "reward": {
+     "zero": 113,
+     "arche": 19,
+     "materials": {}
+    },
+    "fog": {
+     "deadlineOffset": 1,
+     "levelOffset": 2,
+     "countOffset": 0,
+     "rewardU": 0.318
+    },
+    "territoryFactionId": "dokkaebi",
+    "variant": "base"
+   },
+   {
+    "id": "r127",
+    "cityId": "tokyo",
+    "tier": "gate",
+    "name": "도쿄 불 꺼진 항만 관문",
+    "appearedDay": 10,
+    "deadlineDay": 18,
+    "durationDays": 4,
+    "enemies": [
+     {
+      "monsterId": "spore_spitter",
+      "grade": "mid",
+      "level": 17,
+      "row": "back"
+     },
+     {
+      "monsterId": "husk_guard",
+      "grade": "mid",
+      "level": 17,
+      "row": "front"
+     },
+     {
+      "monsterId": "spore_spitter",
+      "grade": "mid",
+      "level": 17,
+      "row": "back"
+     }
+    ],
+    "reward": {
+     "zero": 289,
+     "arche": 38,
+     "materials": {
+      "earth_parts": 2
+     }
+    },
+    "fog": {
+     "deadlineOffset": 2,
+     "levelOffset": 3,
+     "countOffset": 1,
+     "rewardU": 0.379
+    },
+    "territoryFactionId": "archon",
+    "variant": "lower"
+   },
+   {
+    "id": "r128",
+    "cityId": "newyork",
+    "tier": "crack",
+    "name": "뉴욕 심야 편의점 뒷문 균열",
+    "appearedDay": 10,
+    "deadlineDay": 15,
+    "durationDays": 2,
+    "enemies": [
+     {
+      "monsterId": "husk_guard",
+      "grade": "low",
+      "level": 4,
+      "row": "front"
+     },
+     {
+      "monsterId": "spore_spitter",
+      "grade": "low",
+      "level": 4,
+      "row": "back"
+     },
+     {
+      "monsterId": "husk_guard",
+      "grade": "low",
+      "level": 4,
+      "row": "front"
+     }
+    ],
+    "reward": {
+     "zero": 148,
+     "arche": 20,
+     "materials": {}
+    },
+    "fog": {
+     "deadlineOffset": 0,
+     "levelOffset": 2,
+     "countOffset": 1,
+     "rewardU": 0.026
+    },
+    "territoryFactionId": "waypoint",
+    "variant": "base"
+   },
+   {
+    "id": "r129",
+    "cityId": "newyork",
+    "tier": "route",
+    "name": "뉴욕 가라앉은 도시 항로",
+    "appearedDay": 10,
+    "deadlineDay": 20,
+    "durationDays": 6,
+    "enemies": [
+     {
+      "monsterId": "hollow_herald",
+      "grade": "high",
+      "level": 30,
+      "row": "back"
+     },
+     {
+      "monsterId": "spore_spitter",
+      "grade": "high",
+      "level": 30,
+      "row": "back"
+     },
+     {
+      "monsterId": "rift_caller",
+      "grade": "high",
+      "level": 30,
+      "row": "back"
+     },
+     {
+      "monsterId": "hollow_herald",
+      "grade": "high",
+      "level": 30,
+      "row": "back"
+     }
+    ],
+    "reward": {
+     "zero": 736,
+     "arche": 115,
+     "materials": {
+      "earth_parts": 4
+     }
+    },
+    "omen": {
+     "textId": "drain_echo"
+    },
+    "fog": {
+     "deadlineOffset": 1,
+     "levelOffset": 4,
+     "countOffset": 0,
+     "rewardU": 0.629
+    },
+    "territoryFactionId": "waypoint"
+   }
+  ],
+  "expeditions": [
+   {
+    "id": "x1",
+    "rift": {
+     "id": "r101",
+     "cityId": "seoul",
+     "tier": "crack",
+     "name": "서울 공사장 가림막 균열",
+     "appearedDay": 10,
+     "deadlineDay": 17,
+     "durationDays": 1,
+     "enemies": [
+      {
+       "monsterId": "void_hound",
+       "grade": "low",
+       "level": 1,
+       "row": "front"
+      },
+      {
+       "monsterId": "husk_guard",
+       "grade": "low",
+       "level": 1,
+       "row": "front"
+      }
+     ],
+     "reward": {
+      "zero": 103,
+      "arche": 20,
+      "materials": {}
+     },
+     "fog": {
+      "deadlineOffset": 2,
+      "levelOffset": 3,
+      "countOffset": 1,
+      "rewardU": 0.348
+     },
+     "territoryFactionId": "waypoint",
+     "variant": "base"
+    },
+    "party": [
+     {
+      "mercId": "m07",
+      "row": "front"
+     },
+     {
+      "mercId": "m08",
+      "row": "front"
+     },
+     {
+      "mercId": "m09",
+      "row": "front"
+     },
+     {
+      "mercId": "m10",
+      "row": "front"
+     }
+    ],
+    "departDay": 11,
+    "travelDays": 0,
+    "returnDay": 14
+   },
+   {
+    "id": "x2",
+    "rift": {
+     "id": "r102",
+     "cityId": "seoul",
+     "tier": "gate",
+     "name": "서울 폐교 체육관 관문",
+     "appearedDay": 10,
+     "deadlineDay": 16,
+     "durationDays": 3,
+     "enemies": [
+      {
+       "monsterId": "rift_caller",
+       "grade": "mid",
+       "level": 17,
+       "row": "back"
+      },
+      {
+       "monsterId": "spore_spitter",
+       "grade": "mid",
+       "level": 17,
+       "row": "back"
+      },
+      {
+       "monsterId": "rift_caller",
+       "grade": "mid",
+       "level": 17,
+       "row": "back"
+      }
+     ],
+     "reward": {
+      "zero": 272,
+      "arche": 44,
+      "materials": {
+       "earth_parts": 2
+      }
+     },
+     "fog": {
+      "deadlineOffset": 2,
+      "levelOffset": 4,
+      "countOffset": 0,
+      "rewardU": 0.594
+     },
+     "territoryFactionId": "dokkaebi",
+     "variant": "lower"
+    },
+    "party": [
+     {
+      "mercId": "m11",
+      "row": "front"
+     },
+     {
+      "mercId": "m12",
+      "row": "front"
+     }
+    ],
+    "departDay": 10,
+    "travelDays": 0,
+    "returnDay": 13
+   }
+  ],
+  "reports": [
+   {
+    "expeditionId": "e0",
+    "rift": {
+     "id": "r101",
+     "cityId": "seoul",
+     "tier": "crack",
+     "name": "서울 공사장 가림막 균열",
+     "appearedDay": 10,
+     "deadlineDay": 17,
+     "durationDays": 1,
+     "enemies": [
+      {
+       "monsterId": "void_hound",
+       "grade": "low",
+       "level": 1,
+       "row": "front"
+      },
+      {
+       "monsterId": "husk_guard",
+       "grade": "low",
+       "level": 1,
+       "row": "front"
+      }
+     ],
+     "reward": {
+      "zero": 103,
+      "arche": 20,
+      "materials": {}
+     },
+     "fog": {
+      "deadlineOffset": 2,
+      "levelOffset": 3,
+      "countOffset": 1,
+      "rewardU": 0.348
+     },
+     "territoryFactionId": "waypoint",
+     "variant": "base"
+    },
+    "party": [
+     {
+      "mercId": "m07",
+      "row": "front"
+     },
+     {
+      "mercId": "m08",
+      "row": "front"
+     },
+     {
+      "mercId": "m09",
+      "row": "front"
+     },
+     {
+      "mercId": "m10",
+      "row": "front"
+     }
+    ],
+    "day": 11,
+    "outcome": "victory",
+    "rounds": 3,
+    "combatSeed": "ui-fixture:x1",
+    "events": [
+     {
+      "type": "start",
+      "seed": "ui-fixture:x1",
+      "compositionMultiplier": {
+       "ally": 1,
+       "enemy": 1
+      },
+      "combatants": [
+       {
+        "key": "a0",
+        "unitId": "m07",
+        "name": "백서린",
+        "side": "ally",
+        "row": "front",
+        "element": "frost",
+        "role": "commander",
+        "level": 12,
+        "hp": 155,
+        "maxHp": 155,
+        "offRow": true
+       },
+       {
+        "key": "a1",
+        "unitId": "m08",
+        "name": "타치바나 아키라",
+        "side": "ally",
+        "row": "front",
+        "element": "lightning",
+        "role": "archer",
+        "level": 6,
+        "hp": 84,
+        "maxHp": 84,
+        "offRow": true
+       },
+       {
+        "key": "a2",
+        "unitId": "m09",
+        "name": "다니엘 브루크스",
+        "side": "ally",
+        "row": "front",
+        "element": "wind",
+        "role": "healer",
+        "level": 7,
+        "hp": 94,
+        "maxHp": 94,
+        "offRow": true
+       },
+       {
+        "key": "a3",
+        "unitId": "m10",
+        "name": "임소하",
+        "side": "ally",
+        "row": "front",
+        "element": "light",
+        "role": "mage",
+        "level": 8,
+        "hp": 86,
+        "maxHp": 86,
+        "offRow": true
+       },
+       {
+        "key": "e0",
+        "unitId": "r101_e0",
+        "name": "공허 사냥개",
+        "side": "enemy",
+        "row": "front",
+        "element": "void",
+        "role": "warrior",
+        "level": 1,
+        "hp": 92,
+        "maxHp": 92,
+        "offRow": false
+       },
+       {
+        "key": "e1",
+        "unitId": "r101_e1",
+        "name": "껍데기 수호자",
+        "side": "enemy",
+        "row": "front",
+        "element": "void",
+        "role": "shield",
+        "level": 1,
+        "hp": 112,
+        "maxHp": 112,
+        "offRow": false
+       }
+      ]
+     },
+     {
+      "type": "round",
+      "round": 1,
+      "order": [
+       "a2",
+       "a1",
+       "a0",
+       "a3",
+       "e0",
+       "e1"
+      ]
+     },
+     {
+      "type": "action",
+      "round": 1,
+      "actor": "a2",
+      "skillId": "healer_strike",
+      "effects": [
+       {
+        "kind": "damage",
+        "target": "e0",
+        "amount": 11,
+        "hpAfter": 81,
+        "elementMultiplier": 1,
+        "downed": false
+       }
+      ]
+     },
+     {
+      "type": "action",
+      "round": 1,
+      "actor": "a1",
+      "skillId": "archer_aimed",
+      "effects": [
+       {
+        "kind": "damage",
+        "target": "e1",
+        "amount": 45,
+        "hpAfter": 67,
+        "elementMultiplier": 1,
+        "downed": false
+       }
+      ]
+     },
+     {
+      "type": "action",
+      "round": 1,
+      "actor": "a0",
+      "skillId": "commander_rally",
+      "effects": [
+       {
+        "kind": "status",
+        "target": "a0",
+        "status": "buff",
+        "stats": [
+         "pAtk",
+         "eAtk"
+        ],
+        "amount": 0.25,
+        "duration": 2
+       },
+       {
+        "kind": "status",
+        "target": "a1",
+        "status": "buff",
+        "stats": [
+         "pAtk",
+         "eAtk"
+        ],
+        "amount": 0.25,
+        "duration": 2
+       },
+       {
+        "kind": "status",
+        "target": "a2",
+        "status": "buff",
+        "stats": [
+         "pAtk",
+         "eAtk"
+        ],
+        "amount": 0.25,
+        "duration": 2
+       },
+       {
+        "kind": "status",
+        "target": "a3",
+        "status": "buff",
+        "stats": [
+         "pAtk",
+         "eAtk"
+        ],
+        "amount": 0.25,
+        "duration": 2
+       }
+      ]
+     },
+     {
+      "type": "action",
+      "round": 1,
+      "actor": "a3",
+      "skillId": "mage_burst",
+      "effects": [
+       {
+        "kind": "damage",
+        "target": "e1",
+        "amount": 114,
+        "hpAfter": 0,
+        "elementMultiplier": 1.3,
+        "downed": true
+       }
+      ]
+     },
+     {
+      "type": "action",
+      "round": 1,
+      "actor": "e0",
+      "skillId": "warrior_heavy",
+      "effects": [
+       {
+        "kind": "damage",
+        "target": "a1",
+        "amount": 33,
+        "hpAfter": 51,
+        "elementMultiplier": 1,
+        "downed": false
+       }
+      ]
+     },
+     {
+      "type": "round",
+      "round": 2,
+      "order": [
+       "a2",
+       "a1",
+       "a0",
+       "a3",
+       "e0"
+      ]
+     },
+     {
+      "type": "action",
+      "round": 2,
+      "actor": "a2",
+      "skillId": "healer_mend",
+      "effects": [
+       {
+        "kind": "heal",
+        "target": "a1",
+        "amount": 33,
+        "hpAfter": 84
+       }
+      ]
+     },
+     {
+      "type": "action",
+      "round": 2,
+      "actor": "a1",
+      "skillId": "archer_double",
+      "effects": [
+       {
+        "kind": "damage",
+        "target": "e0",
+        "amount": 21,
+        "hpAfter": 60,
+        "elementMultiplier": 1,
+        "downed": false
+       },
+       {
+        "kind": "damage",
+        "target": "e0",
+        "amount": 23,
+        "hpAfter": 37,
+        "elementMultiplier": 1,
+        "downed": false
+       }
+      ]
+     },
+     {
+      "type": "action",
+      "round": 2,
+      "actor": "a0",
+      "skillId": "commander_focus",
+      "effects": [
+       {
+        "kind": "status",
+        "target": "a0",
+        "status": "buff",
+        "stats": [
+         "pDef",
+         "eDef"
+        ],
+        "amount": 0.3,
+        "duration": 2
+       },
+       {
+        "kind": "status",
+        "target": "a1",
+        "status": "buff",
+        "stats": [
+         "pDef",
+         "eDef"
+        ],
+        "amount": 0.3,
+        "duration": 2
+       },
+       {
+        "kind": "status",
+        "target": "a2",
+        "status": "buff",
+        "stats": [
+         "pDef",
+         "eDef"
+        ],
+        "amount": 0.3,
+        "duration": 2
+       },
+       {
+        "kind": "status",
+        "target": "a3",
+        "status": "buff",
+        "stats": [
+         "pDef",
+         "eDef"
+        ],
+        "amount": 0.3,
+        "duration": 2
+       }
+      ]
+     },
+     {
+      "type": "action",
+      "round": 2,
+      "actor": "a3",
+      "skillId": "mage_storm",
+      "effects": [
+       {
+        "kind": "damage",
+        "target": "e0",
+        "amount": 36,
+        "hpAfter": 1,
+        "elementMultiplier": 1.3,
+        "downed": false
+       }
+      ]
+     },
+     {
+      "type": "action",
+      "round": 2,
+      "actor": "e0",
+      "skillId": "warrior_cleave",
+      "effects": [
+       {
+        "kind": "damage",
+        "target": "a0",
+        "amount": 15,
+        "hpAfter": 140,
+        "elementMultiplier": 1,
+        "downed": false
+       },
+       {
+        "kind": "damage",
+        "target": "a1",
+        "amount": 15,
+        "hpAfter": 69,
+        "elementMultiplier": 1,
+        "downed": false
+       },
+       {
+        "kind": "damage",
+        "target": "a2",
+        "amount": 16,
+        "hpAfter": 78,
+        "elementMultiplier": 1,
+        "downed": false
+       },
+       {
+        "kind": "damage",
+        "target": "a3",
+        "amount": 22,
+        "hpAfter": 64,
+        "elementMultiplier": 1.3,
+        "downed": false
+       }
+      ]
+     },
+     {
+      "type": "expire",
+      "round": 2,
+      "target": "a0",
+      "status": "buff",
+      "skillId": "commander_rally"
+     },
+     {
+      "type": "expire",
+      "round": 2,
+      "target": "a1",
+      "status": "buff",
+      "skillId": "commander_rally"
+     },
+     {
+      "type": "expire",
+      "round": 2,
+      "target": "a2",
+      "status": "buff",
+      "skillId": "commander_rally"
+     },
+     {
+      "type": "expire",
+      "round": 2,
+      "target": "a3",
+      "status": "buff",
+      "skillId": "commander_rally"
+     },
+     {
+      "type": "round",
+      "round": 3,
+      "order": [
+       "a2",
+       "a1",
+       "a0",
+       "a3",
+       "e0"
+      ]
+     },
+     {
+      "type": "action",
+      "round": 3,
+      "actor": "a2",
+      "skillId": "healer_strike",
+      "effects": [
+       {
+        "kind": "damage",
+        "target": "e0",
+        "amount": 10,
+        "hpAfter": 0,
+        "elementMultiplier": 1,
+        "downed": true
+       }
+      ]
+     },
+     {
+      "type": "end",
+      "outcome": "victory",
+      "rounds": 3
+     }
+    ],
+    "reward": {
+     "zero": 108,
+     "arche": 21,
+     "materials": {}
+    },
+    "expGains": [
+     {
+      "mercId": "m07",
+      "exp": 40
+     },
+     {
+      "mercId": "m08",
+      "exp": 40
+     },
+     {
+      "mercId": "m09",
+      "exp": 40
+     },
+     {
+      "mercId": "m10",
+      "exp": 40
+     }
+    ],
+    "injuries": [],
+    "stabilized": false
+   }
+  ],
+  "stabilizedRoutes": [],
+  "counters": {
+   "rift": 129,
+   "expedition": 2
+  },
+  "records": {
+   "victories": 0,
+   "victoriesByTier": {}
+  },
+  "facilities": {
+   "levels": {
+    "infirmary": 1,
+    "training": 2,
+    "scout": 2
+   },
+   "construction": {
+    "facilityId": "infirmary",
+    "targetLevel": 2,
+    "startDay": 11,
+    "completeDay": 14
+   },
+   "assignments": {
+    "training": [
+     "m13",
+     "m14"
+    ]
+   }
+  }
+ }
+}

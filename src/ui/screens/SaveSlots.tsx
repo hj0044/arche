@@ -1,15 +1,15 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { tables } from '../../data';
 import type { GameState } from '../../engine/game';
-import { storageUsageRatio } from '../../storage/quota';
-import { parseSave, serializeSave, type SaveFile } from '../../storage/saveFile';
-import { newSlotId, type SlotSummary } from '../../storage/saveService';
+import { storageUsageRatio } from '../../app/saves';
+import { parseSave, serializeSave, type SaveFile } from '../../app/saves';
+import { newSlotId, type SlotSummary } from '../../app/saves';
 import { AppShell } from '../AppShell';
 import { ConfirmDialog, Panel } from '../components';
 import { cityName, formatDateTime } from '../format';
 import { MainTabs } from '../MainTabs';
 import type { Ctx } from '../nav';
-import { downloadText, saves } from '../saves';
+import { downloadText, saves } from '../../app/saves';
 
 interface SaveSlotsProps {
   /** 게임 중이 아니면 null(타이틀에서 불러오기) */
