@@ -93,6 +93,22 @@
           1,
           2
         ]
+      },
+      {
+        "id": "small_low",
+        "label": "소규모",
+        "weight": 2,
+        "monsterGradeWeights": {
+          "low": 1
+        },
+        "monsterLevel": [
+          6,
+          15
+        ],
+        "enemyCount": [
+          1,
+          2
+        ]
       }
     ]
   },
