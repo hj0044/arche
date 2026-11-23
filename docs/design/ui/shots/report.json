@@ -18,5 +18,9 @@
   "Result": {
     "mismatchRatio": 0.0853,
     "refRetakeMismatch": 0.0264
+  },
+  "Merc": {
+    "mismatchRatio": 0.1589,
+    "refRetakeMismatch": 0.0255
   }
 }

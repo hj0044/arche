@@ -1,232 +1,128 @@
+/**
+ * 계약자 관리(시안 Merc, 지시서 017). 구역 순서: header · search · chips · legend · grid(4열).
+ * 검색·초성·정렬·필터·일괄 레벨업은 012의 mercFilter를 쓴다. 영입은 콘텐츠의 영입 탭으로 옮겼다.
+ */
 import { useState } from 'react';
 import { tables } from '../../data';
-import { expToNextLevel, isOnExpedition, recruitInfo, refusedToday, type GameState, type MercenaryState } from '../../engine/game';
-import { assignedFacility, getFacility } from '../../engine/facilities';
-import { guildStatusSummary, trainingAccess } from '../../engine/status';
-import { AppShell } from '../AppShell';
-import { BulkLevelUp } from '../BulkLevelUp';
-import { Bar, LegacyChipRow as ChipRow, ElementTag, LoyaltyBadge, RoleTag, Segmented } from '../components';
-import { cityName, factionName, growthSpeedName, injuryText, num, term, josa } from '../format';
-import { MainTabs } from '../MainTabs';
-import { filterAndSort, filterChips, type MercListOptions } from '../mercFilter';
+import { expToNextLevel, getMerc, isOnExpedition, levelUpAll, refusedToday, type GameState, type MercenaryState } from '../../engine/game';
+import { assignedFacility } from '../../engine/facilities';
+import { levelUpOverview } from '../../engine/status';
+import { Chip, ChipRow, Icon, LogoRow, MercCard, Screen } from '../components';
+import { num, term } from '../format';
+import { filterAndSort, type MercListOptions } from '../mercFilter';
 import type { Ctx } from '../nav';
 
-type Tab = 'guild' | 'recruit';
 interface ViewState {
-  tab: Tab;
   query: string;
-  sort: Record<Tab, string>;
-  role: string | null;
-  element: string | null;
+  sort: string;
   status: string | null;
-  faction: string | null;
-  /** 칩 줄을 펼쳤는가 */
-  open: boolean;
 }
-const initialView = (): ViewState => ({
-  tab: 'guild',
-  query: '',
-  sort: { guild: tables.ui.mercSort.guild[0].id, recruit: tables.ui.mercSort.recruit[0].id },
-  role: null,
-  element: null,
-  status: null,
-  faction: null,
-  open: false,
-});
-/** 용병 상세에서 돌아와도 정렬·검색·필터를 유지한다(세이브에는 넣지 않음, 슬롯이 바뀌면 처음으로). */
+/** 상세에서 돌아와도 유지(세이브에는 넣지 않음, 슬롯이 바뀌면 처음으로) */
 let remembered: { slotId: string; view: ViewState } | null = null;
 
-function GuildStatusPill({ s, m }: { s: GameState; m: MercenaryState }) {
-  if (m.injury)
-    return (
-      <span className="pill bad">
-        {injuryText(m.injury)}
-      </span>
-    );
-  if (isOnExpedition(s, m.id)) return <span className="pill">파견 중</span>;
-  const f = assignedFacility(s.facilities, m.id);
-  if (f) return <span className="pill">{getFacility(tables, f).name} 배치</span>;
-  if (refusedToday(s, m)) return <span className="pill bad">오늘 거부</span>;
-  return <span className="pill ok">출전 가능</span>;
-}
-
-function GuildCard({ ctx, m }: { ctx: Ctx; m: MercenaryState }) {
-  const s = ctx.game.state;
-  const capped = m.level >= m.growth.cap;
-  const need = expToNextLevel(tables, m.level, m.growth.speed);
-  const ready = !capped && m.exp >= need && !isOnExpedition(s, m.id);
-  return (
-    <button className={`merc-card ${ready ? 'ready' : ''}`} onClick={() => ctx.go({ name: 'merc', mercId: m.id })}>
-      <div className="merc-line">
-        <span className="strong">
-          {m.name} <span className="muted small">Lv{m.level}</span>
-          {m.isProtagonist && <span className="pill small"> 주인공</span>}
-        </span>
-        <GuildStatusPill s={s} m={m} />
-      </div>
-      <div className="tags">
-        <ElementTag id={m.element} />
-        <RoleTag id={m.role} />
-        {m.loyalty && <LoyaltyBadge value={m.loyalty.value} />}
-      </div>
-      <div className="merc-exp">
-        <Bar value={capped ? need : m.exp} max={need} kind="exp" />
-        <span className={`small ${ready ? 'ok strong' : 'muted'}`}>
-          {capped ? '한계' : ready ? '레벨업 가능' : `다음 레벨까지 ${num(need - m.exp)}`}
-        </span>
-      </div>
-    </button>
-  );
-}
-
-function RecruitCard({ ctx, m }: { ctx: Ctx; m: MercenaryState }) {
-  const s = ctx.game.state;
-  const info = recruitInfo(tables, s, m.id);
-  const faction = m.affiliation.kind === 'faction' ? factionName(m.affiliation.factionId) : '무소속';
-  return (
-    <button className="merc-card" onClick={() => ctx.go({ name: 'merc', mercId: m.id })}>
-      <div className="merc-line">
-        <span className="strong">
-          {m.name} <span className="muted small">Lv{m.level}</span>
-        </span>
-        {!info.unlocked ? (
-          <span className="pill">
-            잠김 {info.progress?.current}/{info.progress?.required}
-          </span>
-        ) : (
-          <span className={`pill ${s.resources.zero >= info.cost ? 'ok' : 'bad'}`}>제로 {num(info.cost)}</span>
-        )}
-      </div>
-      <div className="tags">
-        <ElementTag id={m.element} />
-        <RoleTag id={m.role} />
-      </div>
-      <div className="merc-sub">
-        {m.profile.hometown ? `${cityName(m.profile.hometown)} 출신` : '출신 미상'} · {faction} · 한계 {m.growth.cap} · {growthSpeedName(m.growth.speed)}
-      </div>
-    </button>
-  );
+/** 카드의 상태 글자와 색 */
+function stateOf(s: GameState, m: MercenaryState): { text: string; cls: string; bar: string } {
+  if (m.injury) return { text: `${m.injury.recoverDay}일차~`, cls: 'warn', bar: 'var(--c-bad)' };
+  if (isOnExpedition(s, m.id)) return { text: '파견 중', cls: 'dim', bar: 'var(--c-info)' };
+  if (assignedFacility(s.facilities, m.id)) return { text: '훈련 중', cls: 'info', bar: 'var(--c-info)' };
+  if (refusedToday(s, m)) return { text: '오늘 거부', cls: 'bad', bar: 'var(--c-warn)' };
+  return { text: '대기', cls: 'ok', bar: 'var(--c-ok)' };
 }
 
 export function MercList({ ctx }: { ctx: Ctx }) {
   const s = ctx.game.state;
-  const [view, setViewRaw] = useState<ViewState>(() => (remembered?.slotId === ctx.game.slotId ? remembered.view : initialView()));
-  const setView = (patch: Partial<ViewState>) =>
+  const [view, setViewRaw] = useState<ViewState>(() =>
+    remembered?.slotId === ctx.game.slotId ? remembered.view : { query: '', sort: tables.ui.mercSort.guild[0].id, status: null },
+  );
+  const setView = (p: Partial<ViewState>) =>
     setViewRaw((v) => {
-      const next = { ...v, ...patch };
+      const next = { ...v, ...p };
       remembered = { slotId: ctx.game.slotId, view: next };
       return next;
     });
-  const tab = view.tab;
-  const chips = filterChips(tables);
-
   const guild = s.mercenaries.filter((m) => m.affiliation.kind === 'guild');
-  const recruitable = s.mercenaries.filter((m) => recruitInfo(tables, s, m.id).eligible);
-  const opts: MercListOptions = {
-    tab,
-    sortId: view.sort[tab],
-    query: view.query,
-    role: view.role,
-    element: view.element,
-    status: tab === 'guild' ? view.status : null,
-    faction: tab === 'recruit' ? view.faction : null,
+  const opts: MercListOptions = { tab: 'guild', sortId: view.sort, query: view.query, role: null, element: null, status: view.status, faction: null };
+  const list = filterAndSort(tables, s, guild, opts);
+  const o = levelUpOverview(tables, s);
+  const bulkCount = o.plan.mercs;
+  const bulk = () => {
+    const { state, steps } = levelUpAll(tables, s);
+    if (!steps.length) return ctx.toast(o.readyCount ? '아르케가 부족합니다' : '레벨업할 수 있는 계약자가 없습니다');
+    ctx.setState(state);
+    const fresh = steps.flatMap((x) => x.newTraits.map((t) => `${getMerc(state, x.mercId).name}: ${tables.traits.traits.find((r) => r.id === t)?.name ?? t}`));
+    ctx.toast(`${new Set(steps.map((x) => x.mercId)).size}명 총 ${steps.length}레벨, 아르케 −${num(o.plan.arche)}${fresh.length ? ` · 새 특성 ${fresh.join(', ')}` : ''}`);
   };
-  const list = filterAndSort(tables, s, tab === 'guild' ? guild : recruitable, opts);
-  const activeCount = [opts.role, opts.element, opts.status, opts.faction].filter(Boolean).length;
-  const filtered = !!(opts.query || activeCount);
-  const sortName = tables.ui.mercSort[tab].find((o) => o.id === opts.sortId)?.name;
-  const clear = () => setView({ query: '', role: null, element: null, status: null, faction: null });
-
-  const sum = guildStatusSummary(tables, s);
-  const train = trainingAccess(tables, s, '');
 
   return (
-    <AppShell title={term.merc} subtitle={`제로 ${num(s.resources.zero)} · 아르케 ${num(s.resources.arche)}`} footer={<MainTabs ctx={ctx} current="mercs" />}>
-      <Segmented
-        value={tab}
-        onChange={(t) => setView({ tab: t })}
-        options={[
-          { value: 'guild', label: `길드 ${guild.length}` },
-          { value: 'recruit', label: `영입 ${recruitable.length}` },
-        ]}
-      />
-      {tab === 'guild' && (
-        <>
-          <div className="merc-summary" aria-label="길드 상황">
-            <span className="strong">출전 가능 {sum.available}</span>
-            <span>부상 {sum.blocked.injured}</span>
-            <span>파견 {sum.blocked.expedition}</span>
-            <span>훈련 {sum.blocked.training}</span>
-            {train.built && (
-              <span className="muted">
-                훈련소 칸 {train.used}/{train.slots}
-              </span>
-            )}
-          </div>
-          <BulkLevelUp ctx={ctx} />
-        </>
-      )}
-
-      <div className="list-tools">
-        <input
-          type="search"
-          placeholder="이름·초성 검색"
-          aria-label={`${term.merc} 검색`}
-          value={view.query}
-          onChange={(e) => setView({ query: e.target.value })}
-        />
-        <button className={`btn small ${activeCount ? 'on-filter' : ''}`} aria-expanded={view.open} onClick={() => setView({ open: !view.open })}>
-          필터·정렬{activeCount ? ` ${activeCount}` : ''} {view.open ? '▴' : '▾'}
-        </button>
-      </div>
-      {view.open && (
-        <div className="filter-panel">
-          <select aria-label="정렬" value={view.sort[tab]} onChange={(e) => setView({ sort: { ...view.sort, [tab]: e.target.value } })}>
-            {tables.ui.mercSort[tab].map((o) => (
-              <option key={o.id} value={o.id}>
-                정렬: {o.name}
+    <Screen ctx={ctx} tab="mercs">
+      <div className="pg top" data-role="page">
+        <div data-ui="Merc.header">
+          <LogoRow ctx={ctx} back={{ name: 'mercs' }} right={<span className="logo-meta">길드 {guild.length}명 · 전체 {s.mercenaries.length}명</span>} />
+        </div>
+        <div className="row" style={{ gap: 8 }} data-ui="Merc.search">
+          <label className="search-box" data-touch>
+            <Icon name="search" />
+            <input type="search" placeholder="이름, 초성 검색" aria-label={`${term.merc} 검색`} value={view.query} onChange={(e) => setView({ query: e.target.value })} />
+          </label>
+          <select className="sort-box" aria-label="정렬" value={view.sort} onChange={(e) => setView({ sort: e.target.value })}>
+            {tables.ui.mercSort.guild.map((x) => (
+              <option key={x.id} value={x.id}>
+                {x.name} ▾
               </option>
             ))}
           </select>
-          <ChipRow label="역할" items={chips.roles} value={view.role} onChange={(v) => setView({ role: v })} />
-          <ChipRow label="속성" items={chips.elements} value={view.element} onChange={(v) => setView({ element: v })} elementColor />
-          {tab === 'guild' ? (
-            <ChipRow label="상태" items={chips.statuses} value={view.status} onChange={(v) => setView({ status: v })} />
-          ) : (
-            <ChipRow label="세력" items={tables.factions} value={view.faction} onChange={(v) => setView({ faction: v })} />
-          )}
         </div>
-      )}
-      {tab === 'recruit' && view.sort.recruit === 'hometownFirst' && (
-        <p className="hint">고향이 {cityName(s.baseCityId)}인 {term.merc}{josa(term.merc, '이', '가')} 먼저 보이고, 다른 도시 출신은 영입비가 더 들 수 있습니다.</p>
-      )}
-
-      <div className="merc-line small list-status">
-        <span className="muted">
-          {list.length}명 · {sortName}
-        </span>
-        {filtered && (
-          <button className="link" onClick={clear}>
-            필터 해제
-          </button>
-        )}
+        <ChipRow label="필터" data-ui="Merc.chips">
+          <Chip on={view.status === null} onClick={() => setView({ status: null })}>
+            전체
+          </Chip>
+          {tables.ui.mercQuickFilters.map((f) => (
+            <Chip key={f.id} on={view.status === f.id} onClick={() => setView({ status: view.status === f.id ? null : f.id })}>
+              {f.name}
+            </Chip>
+          ))}
+          <Chip accent onClick={bulk} label={`일괄 레벨업 ${bulkCount}명`}>
+            일괄 레벨업 {bulkCount}
+          </Chip>
+        </ChipRow>
+        <div className="legend" data-ui="Merc.legend">
+          <span>성장 한계</span>
+          {tables.ui.capTiers.map((t) => (
+            <span key={t.id} data-cap={t.id}>
+              <i />
+              {t.name}
+            </span>
+          ))}
+        </div>
       </div>
-      {list.length === 0 &&
-        (filtered ? (
-          <div className="panel">
-            <p className="muted">조건에 맞는 {term.merc}{josa(term.merc, '이', '가')} 없습니다</p>
-            <button className="btn block" onClick={clear}>
-              필터 해제
-            </button>
-          </div>
-        ) : (
-          <p className="muted">없습니다.</p>
-        ))}
-      <ul className="rows">
-        {list.map((m) => (
-          <li key={m.id}>{tab === 'guild' ? <GuildCard ctx={ctx} m={m} /> : <RecruitCard ctx={ctx} m={m} />}</li>
-        ))}
-      </ul>
-    </AppShell>
+      <div className="pg" style={{ paddingBottom: 12 }} data-role="page">
+        <div className="merc-grid" data-ui="Merc.grid">
+          {list.map((m) => {
+            const st = stateOf(s, m);
+            const capped = m.level >= m.growth.cap;
+            const need = expToNextLevel(tables, m.level, m.growth.speed);
+            const up = !capped && !isOnExpedition(s, m.id) && m.exp >= need;
+            return (
+              <MercCard
+                key={m.id}
+                id={m.id}
+                name={m.name}
+                element={m.element}
+                role={m.role}
+                level={m.level}
+                cap={m.growth.cap}
+                expRatio={capped ? 1 : m.exp / need}
+                expColor={st.bar}
+                up={up}
+                state={st.text}
+                stateClass={st.cls}
+                onClick={() => ctx.go({ name: 'merc', mercId: m.id })}
+              />
+            );
+          })}
+        </div>
+        {list.length === 0 && <p className="t14 dim">조건에 맞는 {term.merc}가 없습니다</p>}
+      </div>
+    </Screen>
   );
 }

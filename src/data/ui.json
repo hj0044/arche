@@ -16,6 +16,10 @@
   "mercSort": {
     "guild": [
       {
+        "id": "capDesc",
+        "name": "한계순"
+      },
+      {
         "id": "levelDesc",
         "name": "레벨 높은 순"
       },
@@ -189,5 +193,19 @@
         520
       ]
     }
-  }
+  },
+  "mercQuickFilters": [
+    {
+      "id": "available",
+      "name": "대기"
+    },
+    {
+      "id": "injured",
+      "name": "부상"
+    },
+    {
+      "id": "lowLoyalty",
+      "name": "충성 낮음"
+    }
+  ]
 }

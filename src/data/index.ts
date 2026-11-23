@@ -498,6 +498,8 @@ export interface UiTable {
   mercSort: { guild: { id: string; name: string }[]; recruit: { id: string; name: string }[] };
   /** 용병 화면 상태 필터 칩 */
   mercStatusFilters: { id: string; name: string }[];
+  /** 계약자 화면 빠른 필터 칩(지시서 017 시안: 대기·부상·충성 낮음). id는 mercStatuses의 상태 */
+  mercQuickFilters: { id: string; name: string }[];
   /** 리프트 화면 정렬 항목(지시서 013). 비교 방법은 id로 화면 코드가 정한다. 첫 항목이 기본 */
   riftSort: { id: string; name: string }[];
   /** "공략 가능"으로 세는 위험도 단계 id(combat-power.json riskTiers, 지금은 접전 이상). 위험도 범위의 나쁜 쪽 끝으로 판정 */
