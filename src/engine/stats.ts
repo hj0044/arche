@@ -190,6 +190,21 @@ export function computeEffectiveStats(tables: GameTables, unit: StatUnit, ctx: S
   return out;
 }
 
+/**
+ * 전투 시작 스탯(지시서 018): 같은 편 전체가 퍼뜨리는 아군 효과를 모두 반영한, 1라운드·체력 가득·각자 열의 최종 스탯.
+ * 전투(시작 최대 체력)와 파티 전투력이 이 함수 하나를 쓴다.
+ */
+export function battleStartStats(tables: GameTables, side: readonly { unit: StatUnit; row?: Row }[]): Stats[] {
+  const auras = side.flatMap((s) => allyAuraRows(tables, s.unit));
+  return side.map((s) => computeEffectiveStats(tables, s.unit, { round: 1, hpRatio: 1, row: s.row, allyAuras: auras }));
+}
+
+/** stats.json 검증: 보조 스탯 최종 상한(치명타율·치명타 피해율·회피율) 키가 모두 있어야 한다(지시서 018) */
+export const REQUIRED_STAT_CAPS = ['crit', 'critDmg', 'eva'] as const;
+export function validateStatsTable(tables: GameTables): string[] {
+  return REQUIRED_STAT_CAPS.filter((id) => typeof tables.stats.caps[id] !== 'number').map((id) => `stats.caps.${id}: 상한 값이 없음`);
+}
+
 /** 특성의 피해·받는 피해·치유 배율(1 + 합, 상한 적용) */
 export function traitMultiplier(tables: GameTables, unit: StatUnit, kind: 'damageMul' | 'damageTakenMul' | 'healMul', ctx: StatContext = {}): number {
   let sum = 0;

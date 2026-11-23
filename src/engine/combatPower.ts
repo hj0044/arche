@@ -4,7 +4,7 @@
  * 시뮬레이션은 전용 시드(power:리프트id:회차)만 써서 세이브 상태와 실제 전투 난수 흐름을 건드리지 않는다.
  */
 import { getRole, type GameTables, type Row, type Stats } from '../data';
-import { allyAuraRows, computeEffectiveStats } from './stats';
+import { allyAuraRows, battleStartStats, computeEffectiveStats } from './stats';
 import { resolveCombat, type CombatSlot } from './combat';
 import type { ValueRange, VisibleRift } from './facilities';
 import { createMonster, type Unit } from './unit';
@@ -25,9 +25,12 @@ export function unitPower(tables: GameTables, u: Unit, row?: Row): number {
   return statsPower(tables, computeEffectiveStats(tables, u, { round: 1, hpRatio: 1, row, allyAuras: allyAuraRows(tables, u) }));
 }
 
-/** 파티 전투력: 파티원의 실제 현재 스탯(충성도 보정 포함, 호출 쪽이 mercToUnit으로 만든 유닛) 가중 합 */
+/**
+ * 파티 전투력: 파티원의 실제 현재 스탯(충성도 보정 포함, 호출 쪽이 mercToUnit으로 만든 유닛) 가중 합.
+ * 전투 시작과 같은 함수(battleStartStats)로 파티 전체의 아군 효과까지 반영한다(지시서 018).
+ */
 export function combatPower(tables: GameTables, party: CombatSlot[]): number {
-  return Math.round(party.reduce((s, p) => s + unitPower(tables, p.unit, p.row), 0));
+  return Math.round(battleStartStats(tables, party).reduce((s, st) => s + statsPower(tables, st), 0));
 }
 
 /** 보이는 정보의 한 경우(레벨, 마릿수)로 상대 무리를 만든다. 정확한 구성이 보이면 그 구성을 쓴다. */
@@ -95,7 +98,9 @@ const MEMO_LIMIT = 200;
 /** 예상 위험도. 같은 입력이면 같은 결과(메모이제이션). */
 export function estimateRisk(tables: GameTables, party: CombatSlot[], visible: VisibleRift): RiskEstimate {
   const key = JSON.stringify([
-    party.map((p) => [p.unit.id, p.unit.level, p.unit.element, p.unit.role, p.unit.stats, p.row]),
+    // 특성·단계·스킬·레벨·최종 스탯까지 키에 넣는다(지시서 018: 특성만 다른 입력이 같은 캐시를 받던 오류)
+    party.map((p) => [p.unit.id, p.unit.level, p.unit.element, p.unit.role, p.unit.stats, p.row, p.unit.traits ?? [], p.unit.skills]),
+    battleStartStats(tables, party),
     visible.riftId,
     visible.grade,
     visible.level,

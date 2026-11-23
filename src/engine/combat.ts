@@ -9,7 +9,7 @@ import {
   type StatId,
 } from '../data';
 import { createRng, type Rng } from './rng';
-import { allyAuraRows, computeEffectiveStats, levelScale, traitMultiplier, type StatContext } from './stats';
+import { allyAuraRows, battleStartStats, computeEffectiveStats, levelScale, traitMultiplier, type StatContext } from './stats';
 import type { Unit } from './unit';
 
 export interface CombatSlot {
@@ -201,10 +201,13 @@ export function resolveCombat(tables: GameTables, input: CombatInput): CombatRes
     ...extra,
   });
   const eff = (c: Combatant, extra: Partial<StatContext> = {}) => computeEffectiveStats(tables, c.unit, ctxOf(c, extra));
-  // 최대 체력은 전투 시작 상황(체력 가득, 1라운드, 열, 아군 효과)으로 정한다.
-  for (const c of all) {
-    c.maxHp = eff(c, { hpRatio: 1, round: 1 }).hp;
-    c.hp = c.maxHp;
+  // 최대 체력은 전투 시작 상황(체력 가득, 1라운드, 열, 아군 효과)으로 정한다. 파티 전투력과 같은 함수(지시서 018).
+  for (const side of ['ally', 'enemy'] as const) {
+    const members = all.filter((c) => c.side === side);
+    battleStartStats(tables, members).forEach((st, i) => {
+      members[i].maxHp = st.hp;
+      members[i].hp = st.hp;
+    });
   }
 
   const comp: Record<Side, number> = { ally: 1, enemy: 1 };
