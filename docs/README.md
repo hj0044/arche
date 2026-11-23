@@ -3,7 +3,7 @@
 ## 구성
 
 - `design/`: 정본 문서의 마크다운 사본 (게임 설계서, 세계관 설정집).
-- `design/ui/`: UI 1차 시안(정적 HTML, 확정본)과 구현 준수 규칙. `index.html`로 한 번에 본다.
+- `design/ui/`: UI 1차 시안(정적 HTML, 확정본), 기준 스크린샷(`shots/ref`), 구역·수치 계약(`contract.json`), 구현 준수 규칙. `index.html`로 한 번에 본다.
 - `design/roster-stats-draft.md`/`.json`: 계약자 30명 기본 스탯·특성 슬롯 초안([제안], 016 입력, 사용자 검수 대상).
 - `reviews/`: 검수 리포트 (`TEMPLATE.md` 양식).
 
