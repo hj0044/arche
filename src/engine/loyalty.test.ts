@@ -16,6 +16,7 @@ import {
 } from './game';
 import { applyLoyalty, loyaltyDelta, loyaltyTier, tendencyOf } from './loyalty';
 import type { Rift } from './rift';
+import { statsAtLevel } from './stats';
 import { statsForLevel } from './unit';
 
 const L = tables.loyalty;
@@ -56,12 +57,13 @@ describe('충성도 구간', () => {
 
   it('구간별 능력 배율이 전투 유닛의 공격·방어에 적용된다', () => {
     const s = gm();
-    const base = statsForLevel(tables, getMerc(s, 'm01').role, getMerc(s, 'm01').level);
+    const m01 = getMerc(s, 'm01');
+    const base = statsAtLevel(tables, tables.roster.find((r) => r.id === 'm01')!.baseStats!, m01.level);
     for (const t of L.tiers) {
       const unit = mercToUnit(tables, getMerc(setLoyalty(s, 'm01', { value: t.min }), 'm01'));
-      expect(unit.stats.atk).toBe(Math.round(base.atk * (1 + t.statBonus)));
-      expect(unit.stats.def).toBe(Math.round(base.def * (1 + t.statBonus)));
+      for (const k of ['pAtk', 'eAtk', 'pDef', 'eDef'] as const) expect(unit.stats[k]).toBeCloseTo(base[k] * (1 + t.statBonus), 1);
       expect(unit.stats.hp).toBe(base.hp);
+      expect(unit.stats.spd).toBe(base.spd);
     }
   });
 

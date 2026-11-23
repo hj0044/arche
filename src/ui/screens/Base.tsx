@@ -11,7 +11,7 @@ import {
 } from '../../engine/game';
 import { AppShell } from '../AppShell';
 import { ElementTag, Panel, RoleTag } from '../components';
-import { cityName, num } from '../format';
+import { cityName, num, term, termText } from '../format';
 import { MainTabs } from '../MainTabs';
 import type { Ctx } from '../nav';
 
@@ -81,7 +81,7 @@ export function Base({ ctx }: { ctx: Ctx }) {
             </button>
             {effectsOpen === f.id && (
               <div className="facility-effects small">
-                <p className="muted">{f.description}</p>
+                <p className="muted">{termText(f.description)}</p>
                 <p>현재: {lv > 0 ? describeEffect(tables, f.id, lv) : '없음(미건설)'}</p>
                 {!maxed && <p>다음 Lv{next}: {describeEffect(tables, f.id, next)}</p>}
               </div>
@@ -105,7 +105,7 @@ export function Base({ ctx }: { ctx: Ctx }) {
                 </ul>
                 {slots > assigned.length && (
                   <button className="btn block" aria-expanded={picking === f.id} onClick={() => setPicking(picking === f.id ? null : f.id)}>
-                    {picking === f.id ? '닫기 ▴' : '용병 배치 ▾'}
+                    {picking === f.id ? '닫기 ▴' : `${term.merc} 배치 ▾`}
                   </button>
                 )}
                 {picking === f.id && (

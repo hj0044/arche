@@ -197,6 +197,7 @@ export function riftEnemySlots(tables: GameTables, rift: Rift): CombatSlot[] {
         role: species.role,
         grade: e.grade,
         level: e.level,
+        monsterId: species.id,
       }),
       row: e.row,
     };

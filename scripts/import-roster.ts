@@ -1,6 +1,6 @@
 // docs/design/roster-phase1.csv(정본)와 src/data/roster-profile.json(임시 보충)으로 src/data/roster.json을 만든다.
 // 사용: npm run import-roster
-import { readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import backgrounds from '../src/data/backgrounds.json';
 import cities from '../src/data/cities.json';
 import elements from '../src/data/elements.json';
@@ -39,7 +39,7 @@ const rows = lines.map((line) => {
     id,
     no,
     name: col(c, '이름'),
-    role: lookup(roles, col(c, '역할'), [(r) => r.name], '역할'),
+    role: lookup(roles, col(c, '역할'), [(r) => r.name, (r) => r.aliases ?? []], '역할'),
     element: lookup(elements, col(c, '속성'), [(r) => r.loreName, (r) => r.name], '속성'),
     hometown: lookup(cities, col(c, '고향'), [(r) => r.name], '고향'),
     faction: affiliation === START_GUILD ? 'guild' : lookup(factions, affiliation, [(r) => r.name], '소속'),
@@ -58,5 +58,13 @@ const rows = lines.map((line) => {
   };
 });
 
-writeFileSync(OUT, '[\n' + rows.map((r) => '  ' + JSON.stringify(r)).join(',\n') + '\n]\n');
+// 계약자별 기본 스탯과 특성 슬롯(지시서 016)은 사람이 고치는 값이라 기존 roster.json에서 그대로 옮긴다.
+const previous = new Map<string, { baseStats?: unknown; traits?: unknown }>(
+  existsSync(OUT) ? (JSON.parse(readFileSync(OUT, 'utf8')) as { id: string; baseStats?: unknown; traits?: unknown }[]).map((r) => [r.id, r] as const) : [],
+);
+const merged = rows.map((r) => {
+  const prev = previous.get(r.id);
+  return { ...r, ...(prev?.baseStats ? { baseStats: prev.baseStats } : {}), ...(prev?.traits ? { traits: prev.traits } : {}) };
+});
+writeFileSync(OUT, '[\n' + merged.map((r) => '  ' + JSON.stringify(r)).join(',\n') + '\n]\n');
 console.log(`${rows.length}명을 ${OUT}에 썼다`);

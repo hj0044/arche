@@ -1,25 +1,176 @@
 [
-  { "id": "shield_strike",   "name": "방패 치기",   "kind": "attack", "target": "enemy",       "power": 0.8, "cooldown": 0 },
-  { "id": "shield_taunt",    "name": "도발",        "kind": "taunt",  "target": "self",        "cooldown": 3, "duration": 2 },
-  { "id": "shield_guard",    "name": "굳건한 자세", "kind": "buff",   "target": "self",        "cooldown": 4, "duration": 2, "stat": "def", "amount": 0.5 },
-
-  { "id": "warrior_slash",   "name": "베기",        "kind": "attack", "target": "enemy",       "power": 1.0, "cooldown": 0 },
-  { "id": "warrior_heavy",   "name": "강타",        "kind": "attack", "target": "enemy",       "power": 1.8, "cooldown": 3 },
-  { "id": "warrior_cleave",  "name": "휩쓸기",      "kind": "attack", "target": "enemyRow",    "power": 0.9, "cooldown": 4 },
-
-  { "id": "archer_shot",     "name": "사격",        "kind": "attack", "target": "enemy",       "power": 1.0, "cooldown": 0 },
-  { "id": "archer_aimed",    "name": "조준 사격",   "kind": "attack", "target": "enemy",       "power": 2.0, "cooldown": 3 },
-  { "id": "archer_double",   "name": "연사",        "kind": "attack", "target": "enemy",       "power": 0.75, "hits": 2, "cooldown": 2 },
-
-  { "id": "mage_bolt",       "name": "마력탄",      "kind": "attack", "target": "enemy",       "power": 0.9, "cooldown": 0 },
-  { "id": "mage_burst",      "name": "폭발",        "kind": "attack", "target": "enemy",       "power": 2.2, "cooldown": 4 },
-  { "id": "mage_storm",      "name": "광역 방출",   "kind": "attack", "target": "enemyAll",    "power": 0.8, "cooldown": 3 },
-
-  { "id": "healer_strike",   "name": "타격",        "kind": "attack", "target": "enemy",       "power": 0.6, "cooldown": 0 },
-  { "id": "healer_mend",     "name": "치유",        "kind": "heal",   "target": "allyLowest",  "power": 1.6, "cooldown": 2 },
-  { "id": "healer_prayer",   "name": "회복의 빛",   "kind": "heal",   "target": "allyAll",     "power": 0.8, "cooldown": 4 },
-
-  { "id": "commander_strike","name": "지휘 일격",   "kind": "attack", "target": "enemy",       "power": 0.8, "cooldown": 0 },
-  { "id": "commander_rally", "name": "공격 명령",   "kind": "buff",   "target": "allyAll",     "cooldown": 4, "duration": 2, "stat": "atk", "amount": 0.25 },
-  { "id": "commander_focus", "name": "방어 명령",   "kind": "buff",   "target": "allyAll",     "cooldown": 4, "duration": 2, "stat": "def", "amount": 0.3 }
+  {
+    "id": "shield_strike",
+    "name": "방패 치기",
+    "kind": "attack",
+    "target": "enemy",
+    "power": 0.8,
+    "cooldown": 0,
+    "damageType": "physical"
+  },
+  {
+    "id": "shield_taunt",
+    "name": "도발",
+    "kind": "taunt",
+    "target": "self",
+    "cooldown": 3,
+    "duration": 2
+  },
+  {
+    "id": "shield_guard",
+    "name": "굳건한 자세",
+    "kind": "buff",
+    "target": "self",
+    "cooldown": 4,
+    "duration": 2,
+    "stats": [
+      "pDef",
+      "eDef"
+    ],
+    "amount": 0.5
+  },
+  {
+    "id": "warrior_slash",
+    "name": "베기",
+    "kind": "attack",
+    "target": "enemy",
+    "power": 1.0,
+    "cooldown": 0,
+    "damageType": "physical"
+  },
+  {
+    "id": "warrior_heavy",
+    "name": "강타",
+    "kind": "attack",
+    "target": "enemy",
+    "power": 1.8,
+    "cooldown": 3,
+    "damageType": "physical"
+  },
+  {
+    "id": "warrior_cleave",
+    "name": "휩쓸기",
+    "kind": "attack",
+    "target": "enemyRow",
+    "power": 0.9,
+    "cooldown": 4,
+    "damageType": "physical"
+  },
+  {
+    "id": "archer_shot",
+    "name": "사격",
+    "kind": "attack",
+    "target": "enemy",
+    "power": 1.0,
+    "cooldown": 0,
+    "damageType": "physical"
+  },
+  {
+    "id": "archer_aimed",
+    "name": "조준 사격",
+    "kind": "attack",
+    "target": "enemy",
+    "power": 2.0,
+    "cooldown": 3,
+    "damageType": "physical"
+  },
+  {
+    "id": "archer_double",
+    "name": "연사",
+    "kind": "attack",
+    "target": "enemy",
+    "power": 0.75,
+    "hits": 2,
+    "cooldown": 2,
+    "damageType": "physical"
+  },
+  {
+    "id": "mage_bolt",
+    "name": "마력탄",
+    "kind": "attack",
+    "target": "enemy",
+    "power": 0.9,
+    "cooldown": 0,
+    "damageType": "energy"
+  },
+  {
+    "id": "mage_burst",
+    "name": "폭발",
+    "kind": "attack",
+    "target": "enemy",
+    "power": 2.2,
+    "cooldown": 4,
+    "damageType": "energy"
+  },
+  {
+    "id": "mage_storm",
+    "name": "광역 방출",
+    "kind": "attack",
+    "target": "enemyAll",
+    "power": 0.8,
+    "cooldown": 3,
+    "damageType": "energy"
+  },
+  {
+    "id": "healer_strike",
+    "name": "타격",
+    "kind": "attack",
+    "target": "enemy",
+    "power": 0.6,
+    "cooldown": 0,
+    "damageType": "energy"
+  },
+  {
+    "id": "healer_mend",
+    "name": "치유",
+    "kind": "heal",
+    "target": "allyLowest",
+    "power": 1.6,
+    "cooldown": 2,
+    "scaleStat": "eAtk"
+  },
+  {
+    "id": "healer_prayer",
+    "name": "회복의 빛",
+    "kind": "heal",
+    "target": "allyAll",
+    "power": 0.8,
+    "cooldown": 4,
+    "scaleStat": "eAtk"
+  },
+  {
+    "id": "commander_strike",
+    "name": "지휘 일격",
+    "kind": "attack",
+    "target": "enemy",
+    "power": 0.8,
+    "cooldown": 0,
+    "damageType": "energy"
+  },
+  {
+    "id": "commander_rally",
+    "name": "공격 명령",
+    "kind": "buff",
+    "target": "allyAll",
+    "cooldown": 4,
+    "duration": 2,
+    "stats": [
+      "pAtk",
+      "eAtk"
+    ],
+    "amount": 0.25
+  },
+  {
+    "id": "commander_focus",
+    "name": "방어 명령",
+    "kind": "buff",
+    "target": "allyAll",
+    "cooldown": 4,
+    "duration": 2,
+    "stats": [
+      "pDef",
+      "eDef"
+    ],
+    "amount": 0.3
+  }
 ]

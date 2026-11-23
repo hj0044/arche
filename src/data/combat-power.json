@@ -1,12 +1,48 @@
 {
-  "_note": "전투력과 예상 위험도(지시서 010, 임시값). 전투력 = Σ(스탯 × 가중치). 위험도는 보이는 정보로 만든 상대와 고정 시드(power:리프트id:회차)로 simulations번 싸운 승률로 정한다. 단계는 minWinRate가 큰 것부터 판정한다. 지시서 015: 5구간(압도/우세/접전/열세/무모), step은 화면의 5칸 막대 단계(1~5).",
-  "statWeights": { "hp": 0.25, "atk": 2, "def": 1.5, "spd": 1 },
+  "_note": "전투력과 예상 위험도(지시서 010, 임시값). 전투력 = Σ(스탯 × 가중치). 위험도는 보이는 정보로 만든 상대와 고정 시드(power:리프트id:회차)로 simulations번 싸운 승률로 정한다. 단계는 minWinRate가 큰 것부터 판정한다. 지시서 015: 5구간(압도/우세/접전/열세/무모), step은 화면의 5칸 막대 단계(1~5). 지시서 016: 전투력 = 체력×w ÷ (1 − 회피율) + (물리공격+에너지공격)×w × (1 + 치명타율 × (치명타 피해율 − 1)) + 방어×w + 속도×w. 계약자 예산은 같은 역할 기본값 전투력의 budget 범위.",
+  "statWeights": {
+    "hp": 0.25,
+    "pAtk": 2,
+    "eAtk": 2,
+    "pDef": 1.5,
+    "eDef": 1.5,
+    "spd": 1
+  },
   "simulations": 12,
   "riskTiers": [
-    { "id": "crush",    "name": "압도", "minWinRate": 0.9,  "step": 1 },
-    { "id": "safe",     "name": "우세", "minWinRate": 0.75, "step": 2 },
-    { "id": "fair",     "name": "접전", "minWinRate": 0.5,  "step": 3 },
-    { "id": "risky",    "name": "열세", "minWinRate": 0.25, "step": 4 },
-    { "id": "hopeless", "name": "무모", "minWinRate": 0,    "step": 5 }
+    {
+      "id": "crush",
+      "name": "압도",
+      "minWinRate": 0.9,
+      "step": 1
+    },
+    {
+      "id": "safe",
+      "name": "우세",
+      "minWinRate": 0.75,
+      "step": 2
+    },
+    {
+      "id": "fair",
+      "name": "접전",
+      "minWinRate": 0.5,
+      "step": 3
+    },
+    {
+      "id": "risky",
+      "name": "열세",
+      "minWinRate": 0.25,
+      "step": 4
+    },
+    {
+      "id": "hopeless",
+      "name": "무모",
+      "minWinRate": 0,
+      "step": 5
+    }
+  ],
+  "budget": [
+    0.95,
+    1.05
   ]
 }

@@ -38,8 +38,10 @@ describe('전투력', () => {
   it('스탯 가중 합(데이터 가중치)이고, 충성도 보정이 든 실제 스탯을 쓴다', () => {
     const w = tables.combatPower.statWeights;
     const p = party(5, 1);
-    const u = p[0].unit.stats;
-    expect(combatPower(tables, p)).toBe(Math.round(u.hp * w.hp + u.atk * w.atk + u.def * w.def + u.spd * w.spd));
+    const u = p[0].unit.stats; // 견본 유닛은 특성이 없어 최종 스탯 = 레벨 스탯
+    const crit = 1 + u.crit * (u.critDmg - 1);
+    const expected = (u.hp * w.hp) / (1 - u.eva) + (u.pAtk * w.pAtk + u.eAtk * w.eAtk) * crit + u.pDef * w.pDef + u.eDef * w.eDef + u.spd * w.spd;
+    expect(combatPower(tables, p)).toBe(Math.round(expected));
     const s = newGame(tables, { seed: 'cp', guildName: 'g', baseCityId: 'seoul', protagonist: { mode: 'guildMaster', name: 'g', background: 'heir' } });
     const m = s.mercenaries.find((x) => x.id === 'm01')!;
     const high = mercToUnit(tables, { ...m, loyalty: { ...m.loyalty!, value: 90 } });

@@ -9,7 +9,8 @@ import {
   type StatId,
 } from '../data';
 import { createRng, type Rng } from './rng';
-import { levelScale, type Unit } from './unit';
+import { allyAuraRows, computeEffectiveStats, levelScale, traitMultiplier, type StatContext } from './stats';
+import type { Unit } from './unit';
 
 export interface CombatSlot {
   unit: Unit;
@@ -29,7 +30,7 @@ export type StatusType = 'taunt' | 'buff';
 export interface Status {
   type: StatusType;
   skillId: string;
-  stat?: StatId;
+  stats?: StatId[];
   amount?: number;
   /** 남은 라운드 수. 라운드가 끝날 때 1씩 준다. */
   remaining: number;
@@ -60,9 +61,13 @@ export type CombatEffect =
       hpAfter: number;
       elementMultiplier: number;
       downed: boolean;
+      /** 회피해서 피해 0(지시서 016) */
+      evaded?: boolean;
+      /** 치명타 */
+      crit?: boolean;
     }
   | { kind: 'heal'; target: CombatantKey; amount: number; hpAfter: number }
-  | { kind: 'status'; target: CombatantKey; status: StatusType; stat?: StatId; amount?: number; duration: number };
+  | { kind: 'status'; target: CombatantKey; status: StatusType; stats?: StatId[]; amount?: number; duration: number };
 
 export type CombatEvent =
   | {
@@ -97,6 +102,8 @@ interface Combatant {
   cooldowns: Record<string, number>;
   statuses: Status[];
   downed: boolean;
+  /** 이번 전투에서 행동한 횟수(firstAction 특성) */
+  actions: number;
 }
 
 /** 파티 편성 규칙 검사. 문제가 없으면 빈 배열. */
@@ -116,6 +123,18 @@ export function validateParty(tables: GameTables, slots: CombatSlot[]): string[]
   return errors;
 }
 
+/**
+ * 공격 하나의 판정(지시서 016). 값과 상관없이 늘 피해 변동 → 회피 → 치명타 순으로 세 번 뽑아
+ * 난수 소비량이 능력치에 따라 달라지지 않게 한다. 회피하면 치명타는 없다.
+ */
+export function rollAttack(tables: GameTables, rng: Rng, evasion: number, critRate: number): { variance: number; evaded: boolean; crit: boolean } {
+  const variance = rng.float(tables.combat.damage.varianceMin, tables.combat.damage.varianceMax);
+  const evadeRoll = rng.next();
+  const critRoll = rng.next();
+  const evaded = evadeRoll < evasion;
+  return { variance, evaded, crit: !evaded && critRoll < critRate };
+}
+
 /** 공격 속성과 대상 속성의 상성 배율. */
 export function elementMultiplier(tables: GameTables, attacker: string, defender: string): number {
   const { advantage, disadvantage, neutral } = tables.combat.element;
@@ -133,10 +152,11 @@ export function compositionMultiplier(tables: GameTables, roleIds: string[]): nu
   return Math.round(m * 1e6) / 1e6; // 부동소수 오차 정리
 }
 
-function statWithBuffs(c: Combatant, stat: StatId): number {
+/** 스킬 버프(상태) 배율: 1 + 걸린 버프 합 */
+function buffMultiplier(c: Combatant, stat: StatId): number {
   let bonus = 0;
-  for (const s of c.statuses) if (s.type === 'buff' && s.stat === stat) bonus += s.amount ?? 0;
-  return c.unit.stats[stat] * (1 + bonus);
+  for (const s of c.statuses) if (s.type === 'buff' && s.stats?.includes(stat)) bonus += s.amount ?? 0;
+  return 1 + bonus;
 }
 
 const isTaunting = (c: Combatant) => c.statuses.some((s) => s.type === 'taunt');
@@ -147,7 +167,10 @@ export function resolveCombat(tables: GameTables, input: CombatInput): CombatRes
   if (input.enemies.length === 0) throw new Error('적이 없다');
 
   const rng = createRng(input.seed);
+  // 공격 판정 전용 난수 흐름: 공격 하나마다 피해 변동 → 회피 → 치명타 순으로 값과 상관없이 늘 세 번 뽑는다(지시서 016).
+  const hitRng = createRng(`${input.seed}:hit`);
   const cfg = tables.combat;
+  let round = 0;
 
   const toCombatant = (slot: CombatSlot, side: Side, i: number): Combatant => ({
     key: `${side === 'ally' ? 'a' : 'e'}${i}`,
@@ -155,16 +178,34 @@ export function resolveCombat(tables: GameTables, input: CombatInput): CombatRes
     side,
     row: slot.row,
     offRow: getRole(tables, slot.unit.role).defaultRow !== slot.row,
-    hp: slot.unit.stats.hp,
-    maxHp: slot.unit.stats.hp,
+    hp: 0,
+    maxHp: 0,
     cooldowns: Object.fromEntries(slot.unit.skills.map((s) => [s, 0])),
     statuses: [],
     downed: false,
+    actions: 0,
   });
   const all: Combatant[] = [
     ...input.allies.map((s, i) => toCombatant(s, 'ally', i)),
     ...input.enemies.map((s, i) => toCombatant(s, 'enemy', i)),
   ];
+
+  // 같은 편이 퍼뜨리는 특성 효과(allies 범위). 살아 있는 유닛만.
+  const auras = (side: Side) => all.filter((c) => c.side === side && !c.downed).flatMap((c) => allyAuraRows(tables, c.unit));
+  /** 특성까지 반영한 지금 스탯(최종 스탯 계산 한 곳: stats.ts) */
+  const ctxOf = (c: Combatant, extra: Partial<StatContext> = {}): StatContext => ({
+    hpRatio: c.maxHp > 0 ? c.hp / c.maxHp : 1,
+    round: Math.max(1, round),
+    row: c.row,
+    allyAuras: auras(c.side),
+    ...extra,
+  });
+  const eff = (c: Combatant, extra: Partial<StatContext> = {}) => computeEffectiveStats(tables, c.unit, ctxOf(c, extra));
+  // 최대 체력은 전투 시작 상황(체력 가득, 1라운드, 열, 아군 효과)으로 정한다.
+  for (const c of all) {
+    c.maxHp = eff(c, { hpRatio: 1, round: 1 }).hp;
+    c.hp = c.maxHp;
+  }
 
   const comp: Record<Side, number> = { ally: 1, enemy: 1 };
   for (const side of cfg.composition.appliesToSides) {
@@ -207,24 +248,48 @@ export function resolveCombat(tables: GameTables, input: CombatInput): CombatRes
   };
 
   const dealDamage = (actor: Combatant, target: Combatant, skill: SkillRow): CombatEffect => {
-    const k = cfg.damage.defenseConstant * levelScale(tables, 'def', actor.unit.level);
+    // 피해 종류: 물리는 물리공격 대 물리방어, 에너지는 에너지공격 대 에너지방어. 방어 상수는 공격자 레벨의 방어 성장률만큼 커진다.
+    const energy = skill.damageType === 'energy';
+    const atkStat = energy ? 'eAtk' : 'pAtk';
+    const defStat = energy ? 'eDef' : 'pDef';
+    const first = actor.actions === 0;
+    const a = eff(actor, { opponentElement: target.unit.element, firstAction: first });
+    const d = eff(target, { opponentElement: actor.unit.element });
+    const k = cfg.damage.defenseConstant * levelScale(tables, defStat, actor.unit.level);
     const elem = elementMultiplier(tables, actor.unit.element, target.unit.element);
-    let dmg = statWithBuffs(actor, 'atk') * (skill.power ?? 1) * (k / (k + statWithBuffs(target, 'def')));
+    let dmg = a[atkStat] * buffMultiplier(actor, atkStat) * (skill.power ?? 1) * (k / (k + d[defStat] * buffMultiplier(target, defStat)));
     dmg *= elem * comp[actor.side];
+    dmg *= traitMultiplier(tables, actor.unit, 'damageMul', ctxOf(actor, { opponentElement: target.unit.element, firstAction: first }));
+    dmg *= traitMultiplier(tables, target.unit, 'damageTakenMul', ctxOf(target, { opponentElement: actor.unit.element }));
     if (actor.offRow) dmg *= cfg.offRow.damageDealtMultiplier;
     if (target.offRow) dmg *= cfg.offRow.damageTakenMultiplier;
-    dmg *= rng.float(cfg.damage.varianceMin, cfg.damage.varianceMax);
-    const amount = Math.max(cfg.damage.minimum, Math.round(dmg));
+    const { variance, evaded, crit } = rollAttack(tables, hitRng, d.eva, a.crit);
+    dmg *= variance;
+    if (crit) dmg *= a.critDmg;
+    const amount = evaded ? 0 : Math.max(cfg.damage.minimum, Math.round(dmg));
     target.hp = Math.max(0, target.hp - amount);
     if (target.hp === 0) {
       target.downed = true;
       target.statuses = [];
     }
-    return { kind: 'damage', target: target.key, amount, hpAfter: target.hp, elementMultiplier: elem, downed: target.downed };
+    return {
+      kind: 'damage',
+      target: target.key,
+      amount,
+      hpAfter: target.hp,
+      elementMultiplier: elem,
+      downed: target.downed,
+      ...(evaded ? { evaded: true } : {}),
+      ...(crit ? { crit: true } : {}),
+    };
   };
 
+  /** 치유: 스킬의 scaleStat(기본 에너지공격)에 비례. 회피·치명타 대상이 아니다. */
   const heal = (actor: Combatant, target: Combatant, skill: SkillRow): CombatEffect => {
-    const amount = Math.min(target.maxHp - target.hp, Math.round(statWithBuffs(actor, 'atk') * (skill.power ?? 1)));
+    const stat = skill.scaleStat ?? 'eAtk';
+    const targetHp = target.maxHp > 0 ? target.hp / target.maxHp : 1;
+    const power = eff(actor)[stat] * buffMultiplier(actor, stat) * (skill.power ?? 1) * traitMultiplier(tables, actor.unit, 'healMul', ctxOf(actor, { healTargetHpRatio: targetHp }));
+    const amount = Math.min(target.maxHp - target.hp, Math.round(power));
     target.hp += amount;
     return { kind: 'heal', target: target.key, amount, hpAfter: target.hp };
   };
@@ -232,8 +297,8 @@ export function resolveCombat(tables: GameTables, input: CombatInput): CombatRes
   const addStatus = (target: Combatant, skill: SkillRow, type: StatusType): CombatEffect => {
     const duration = skill.duration ?? 1;
     target.statuses = target.statuses.filter((s) => s.skillId !== skill.id);
-    target.statuses.push({ type, skillId: skill.id, stat: skill.stat, amount: skill.amount, remaining: duration });
-    return { kind: 'status', target: target.key, status: type, stat: skill.stat, amount: skill.amount, duration };
+    target.statuses.push({ type, skillId: skill.id, stats: skill.stats, amount: skill.amount, remaining: duration });
+    return { kind: 'status', target: target.key, status: type, stats: skill.stats, amount: skill.amount, duration };
   };
 
   const isUseful = (actor: Combatant, skill: SkillRow): boolean => {
@@ -297,6 +362,7 @@ export function resolveCombat(tables: GameTables, input: CombatInput): CombatRes
         }
         break;
     }
+    actor.actions += 1;
     events.push({ type: 'action', round, actor: actor.key, skillId: skill.id, effects });
   };
 
@@ -307,17 +373,18 @@ export function resolveCombat(tables: GameTables, input: CombatInput): CombatRes
   };
 
   let outcome: CombatOutcome | undefined;
-  let round = 0;
   while (!outcome && round < cfg.maxRounds) {
     round += 1;
     // 같은 속도·같은 열일 때 쓰는 시드 순서. 키 순서대로 뽑아 결정적으로 만든다.
     const tiebreak = new Map(all.map((c) => [c.key, rng.next()]));
     const rowRank = (c: Combatant) => (c.row === 'front' ? 0 : 1);
+    // 라운드 시작의 속도(특성: battleStart·roundStack 등 반영)
+    const speed = new Map(all.map((c) => [c.key, eff(c).spd * buffMultiplier(c, 'spd')]));
     const order = all
       .filter((c) => !c.downed)
       .sort(
         (a, b) =>
-          statWithBuffs(b, 'spd') - statWithBuffs(a, 'spd') ||
+          speed.get(b.key)! - speed.get(a.key)! ||
           rowRank(a) - rowRank(b) ||
           tiebreak.get(a.key)! - tiebreak.get(b.key)!,
       );

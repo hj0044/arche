@@ -133,7 +133,7 @@ describe('열 배치와 타겟팅', () => {
     expect(targets.slice(1).every((t) => t === 'e1')).toBe(true);
   });
 
-  it('술사의 범위 공격은 양 열에 닿는다', () => {
+  it('마도사의 범위 공격은 양 열에 닿는다', () => {
     const r = resolveCombat(tables, {
       allies: [{ unit: tough(merc('m', 'mage')), row: 'back' }],
       enemies: [
@@ -169,7 +169,7 @@ describe('열 배치와 타겟팅', () => {
 });
 
 describe('도발', () => {
-  it('도발 중인 방패에게 단일 공격이 몰린다(후열 방패라도)', () => {
+  it('도발 중인 수호자에게 단일 공격이 몰린다(후열 수호자라도)', () => {
     const r = resolveCombat(tables, {
       allies: [
         { unit: tough(merc('w', 'warrior')), row: 'front' },
@@ -243,7 +243,7 @@ describe('라운드 제한', () => {
   });
 
   it('적이 전멸하면 승리, 아군이 전멸하면 패배', () => {
-    const strong = (u: Unit) => tough({ ...u, stats: { ...u.stats, atk: 9999 } });
+    const strong = (u: Unit) => tough({ ...u, stats: { ...u.stats, pAtk: 9999, eAtk: 9999 } });
     expect(
       resolveCombat(tables, { allies: [{ unit: strong(merc('a', 'warrior')), row: 'front' }], enemies: [{ unit: mon('b', 'warrior'), row: 'front' }], seed: 1 })
         .outcome,
@@ -308,7 +308,7 @@ describe('부상', () => {
     }
   });
 
-  it('치유사가 있으면 1일 줄고 최소 1일', () => {
+  it('사제가 있으면 1일 줄고 최소 1일', () => {
     for (let seed = 0; seed < 200; seed++) {
       const without = rollInjuries(tables, party, ['a'], 'victory', createRng(seed))[0];
       const withH = rollInjuries(tables, withHealer, ['a'], 'victory', createRng(seed))[0];

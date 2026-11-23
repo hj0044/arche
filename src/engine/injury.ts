@@ -19,7 +19,7 @@ export function rollInjuries(
   downedUnitIds: string[],
   outcome: CombatOutcome,
   rng: Rng,
-  /** 시설(의무실) 등 추가 감소 일수. 치유사 감소와 합산하고 최소 일수는 지킨다. */
+  /** 시설(의무실) 등 추가 감소 일수. 사제 감소와 합산하고 최소 일수는 지킨다. */
   extraReductionDays = 0,
   /** 리프트 등급·변형의 부상 일수 배율(지시서 015, 기본 1). 감소 전에 곱하고 반올림한다 */
   daysMultiplier = 1,

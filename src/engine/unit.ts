@@ -1,4 +1,6 @@
 import { getMonsterGrade, getRole, type GameTables, type Stats } from '../data';
+import { roleBaseStats, statsAtLevel, type TraitRef } from './stats';
+export { levelScale } from './stats';
 
 /** 유닛의 소속. 용병·몬스터·(이후) 일반병사·라이벌 병력이 같은 틀을 쓴다. */
 export type Affiliation =
@@ -17,7 +19,10 @@ export interface Unit {
   element: string;
   role: string;
   level: number;
+  /** 레벨 성장·외부 배율(몬스터 등급, 충성도 등)까지 적용한 스탯. 특성 효과는 computeEffectiveStats가 더한다 */
   stats: Stats;
+  /** 켜진 특성(지시서 016). 몬스터는 비어 있다 */
+  traits: TraitRef[];
   /** [기본 공격, 스킬 1, 스킬 2] */
   skills: string[];
   affiliation: Affiliation;
@@ -35,20 +40,9 @@ export interface Unit {
   race?: string;
 }
 
-/** 레벨 성장 배율: (1 + 성장률)^(레벨-1) */
-export function levelScale(tables: GameTables, stat: keyof Stats, level: number): number {
-  return Math.pow(1 + tables.stats.levelGrowthRate[stat], level - 1);
-}
-
-/** 역할 기본 스탯에 레벨 성장 배율을 곱한다. multiplier는 몬스터 등급 등 외부 배율. */
+/** 역할 기본 스탯에 레벨 성장 배율을 곱한다. multiplier는 몬스터 등급 등 외부 배율(핵심 6스탯에만). */
 export function statsForLevel(tables: GameTables, roleId: string, level: number, multiplier = 1): Stats {
-  const row = tables.stats.roleBase[roleId];
-  if (!row) throw new Error(`역할 스탯 표에 없는 역할: ${roleId}`);
-  const out = {} as Stats;
-  for (const { id } of tables.stats.stats) {
-    out[id] = Math.round(row.base[id] * levelScale(tables, id, level) * multiplier);
-  }
-  return out;
+  return statsAtLevel(tables, roleBaseStats(tables, roleId), level, multiplier);
 }
 
 export interface MonsterSpec {
@@ -59,6 +53,14 @@ export interface MonsterSpec {
   grade: string;
   level: number;
   dropTableId?: string;
+  /** monsters.json의 id(보조 스탯용). 없으면 역할 기본값 */
+  monsterId?: string;
+}
+
+/** 몬스터 스탯: 역할 기본값(보조 스탯은 몬스터 행의 aux가 있으면 그 값) × 레벨 × 등급 배율 */
+function monsterStats(tables: GameTables, spec: MonsterSpec, gradeMultiplier: number): Stats {
+  const aux = tables.monsters.find((m) => m.id === spec.monsterId)?.aux ?? {};
+  return statsAtLevel(tables, { ...roleBaseStats(tables, spec.role), ...aux }, spec.level, gradeMultiplier);
 }
 
 export function createMonster(tables: GameTables, spec: MonsterSpec): Unit {
@@ -70,7 +72,8 @@ export function createMonster(tables: GameTables, spec: MonsterSpec): Unit {
     element: spec.element,
     role: spec.role,
     level: spec.level,
-    stats: statsForLevel(tables, spec.role, spec.level, grade.statMultiplier),
+    stats: monsterStats(tables, spec, grade.statMultiplier),
+    traits: [],
     skills: [...role.skills],
     affiliation: { kind: 'monster' },
     ai: 'default',
@@ -90,7 +93,7 @@ export interface MercenarySpec {
   affiliation?: Affiliation;
 }
 
-/** M3에서 성장 개별 수치가 붙는다. 지금은 역할 기본 스탯으로 만든다. */
+/** 역할 기본 스탯으로 만드는 견본 용병(시뮬레이션·밸런스 도구용). 게임의 계약자는 game.ts mercToUnit이 계약자별 스탯·특성으로 만든다. */
 export function createMercenary(tables: GameTables, spec: MercenarySpec): Unit {
   const role = getRole(tables, spec.role);
   if (!role.enabled) throw new Error(`1단계에서 쓰지 않는 역할: ${spec.role}`);
@@ -101,6 +104,7 @@ export function createMercenary(tables: GameTables, spec: MercenarySpec): Unit {
     role: spec.role,
     level: spec.level,
     stats: statsForLevel(tables, spec.role, spec.level),
+    traits: [],
     skills: [...role.skills],
     affiliation: spec.affiliation ?? { kind: 'guild' },
     ai: 'default',

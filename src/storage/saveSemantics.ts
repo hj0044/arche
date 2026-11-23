@@ -28,10 +28,14 @@ export type SemanticTables = Pick<
   | 'combat'
   | 'loyalty'
   | 'facilities'
+  | 'terms'
+  | 'traits'
 > & { limits: SaveLimits };
 
 export function validateSemantics(state: GameState, t: SemanticTables): string[] {
   const errors: string[] = [];
+  /** 화면 용어(계약자) */
+  const M = t.terms.merc;
   const has = (rows: { id: string }[], id: string) => rows.some((r) => r.id === id);
   const ref = (path: string, rows: { id: string }[], id: string | undefined, what: string) => {
     if (id !== undefined && !has(rows, id)) errors.push(`${path}: 없는 ${what} id "${id}"`);
@@ -68,13 +72,19 @@ export function validateSemantics(state: GameState, t: SemanticTables): string[]
   const mercIds = new Set<string>();
   state.mercenaries.forEach((m, i) => {
     const p = `state.mercenaries[${i}]`;
-    if (mercIds.has(m.id)) errors.push(`${p}.id: 중복된 용병 id "${m.id}"`);
+    if (mercIds.has(m.id)) errors.push(`${p}.id: 중복된 ${M} id "${m.id}"`);
     mercIds.add(m.id);
     ref(`${p}.element`, t.elements, m.element, '속성');
     ref(`${p}.role`, t.roles, m.role, '역할');
     ref(`${p}.growth.speed`, t.growthSpeeds, m.growth.speed, '성장 속도');
     ref(`${p}.profile.background`, t.backgrounds, m.profile.background, '배경');
     ref(`${p}.profile.hometown`, t.cities, m.profile.hometown, '도시');
+    // 특성 단계(지시서 016): 있는 특성 id, 1 ~ maxRank
+    for (const [id, rank] of Object.entries(m.traitRanks ?? {})) {
+      const tr = t.traits.traits.find((x) => x.id === id);
+      if (!tr) errors.push(`${p}.traitRanks.${id}: 없는 특성 id`);
+      else within(`${p}.traitRanks.${id}`, rank, [1, tr.maxRank]);
+    }
     ref(`${p}.profile.world`, t.worlds, m.profile.world, '세계');
     ref(`${p}.profile.race`, t.races, m.profile.race, '종족');
     if (m.affiliation.kind === 'faction') ref(`${p}.affiliation.factionId`, t.factions, m.affiliation.factionId, '세력');
@@ -106,7 +116,7 @@ export function validateSemantics(state: GameState, t: SemanticTables): string[]
   });
   if (state.protagonist.mode === 'opener') {
     if (!state.protagonist.mercId) errors.push('state.protagonist.mercId 없음');
-    else if (!mercIds.has(state.protagonist.mercId)) errors.push(`state.protagonist.mercId: 세이브에 없는 용병 "${state.protagonist.mercId}"`);
+    else if (!mercIds.has(state.protagonist.mercId)) errors.push(`state.protagonist.mercId: 세이브에 없는 ${M} "${state.protagonist.mercId}"`);
   }
   const isGuild = (id: string) => state.mercenaries.find((m) => m.id === id)?.affiliation.kind === 'guild';
 
@@ -146,9 +156,9 @@ export function validateSemantics(state: GameState, t: SemanticTables): string[]
     if (party.length > t.combat.party.maxSize) errors.push(`${p}: 최대 ${t.combat.party.maxSize}명을 넘음(${party.length})`);
     const seen = new Set<string>();
     party.forEach((m, j) => {
-      if (!mercIds.has(m.mercId)) errors.push(`${p}[${j}].mercId: 세이브에 없는 용병 "${m.mercId}"`);
-      else if (requireGuild && !isGuild(m.mercId)) errors.push(`${p}[${j}].mercId: 길드 소속이 아닌 용병 "${m.mercId}"`);
-      if (seen.has(m.mercId)) errors.push(`${p}[${j}].mercId: 같은 파티에 중복된 용병 "${m.mercId}"`);
+      if (!mercIds.has(m.mercId)) errors.push(`${p}[${j}].mercId: 세이브에 없는 ${M} "${m.mercId}"`);
+      else if (requireGuild && !isGuild(m.mercId)) errors.push(`${p}[${j}].mercId: 길드 소속이 아닌 ${M} "${m.mercId}"`);
+      if (seen.has(m.mercId)) errors.push(`${p}[${j}].mercId: 같은 파티에 중복된 ${M} "${m.mercId}"`);
       seen.add(m.mercId);
     });
   };
@@ -169,7 +179,7 @@ export function validateSemantics(state: GameState, t: SemanticTables): string[]
     checkParty(`${p}.party`, ex.party, true);
     ex.party.forEach((m, j) => {
       const other = busy.get(m.mercId);
-      if (other && other !== ex.id) errors.push(`${p}.party[${j}].mercId: 용병 "${m.mercId}"가 다른 파견(${other})에도 있음`);
+      if (other && other !== ex.id) errors.push(`${p}.party[${j}].mercId: ${M} "${m.mercId}"가 다른 파견(${other})에도 있음`);
       busy.set(m.mercId, ex.id);
     });
     atLeast(`${p}.travelDays`, ex.travelDays, 0);
@@ -183,11 +193,11 @@ export function validateSemantics(state: GameState, t: SemanticTables): string[]
     checkRift(`${p}.rift`, r.rift);
     checkParty(`${p}.party`, r.party, false);
     r.expGains.forEach((g, j) => {
-      if (!mercIds.has(g.mercId)) errors.push(`${p}.expGains[${j}].mercId: 세이브에 없는 용병 "${g.mercId}"`);
+      if (!mercIds.has(g.mercId)) errors.push(`${p}.expGains[${j}].mercId: 세이브에 없는 ${M} "${g.mercId}"`);
       atLeast(`${p}.expGains[${j}].exp`, g.exp, 0);
     });
     r.injuries.forEach((inj, j) => {
-      if (!mercIds.has(inj.unitId)) errors.push(`${p}.injuries[${j}].unitId: 세이브에 없는 용병 "${inj.unitId}"`);
+      if (!mercIds.has(inj.unitId)) errors.push(`${p}.injuries[${j}].unitId: 세이브에 없는 ${M} "${inj.unitId}"`);
       if (!t.injuries.severities.some((s) => s.id === inj.severity)) errors.push(`${p}.injuries[${j}].severity: 없는 부상 등급 id "${inj.severity}"`);
     });
     atLeast(`${p}.day`, r.day, L.minDay);
@@ -224,14 +234,14 @@ export function validateSemantics(state: GameState, t: SemanticTables): string[]
     else if (ids.length > facilitySlots(t as unknown as GameTables, fs, id)) errors.push(`${p}: 칸 수(${facilitySlots(t as unknown as GameTables, fs, id)})보다 많이 배치됨`);
     ids.forEach((mercId, j) => {
       const m = state.mercenaries.find((x) => x.id === mercId);
-      if (!m) errors.push(`${p}[${j}]: 세이브에 없는 용병 "${mercId}"`);
+      if (!m) errors.push(`${p}[${j}]: 세이브에 없는 ${M} "${mercId}"`);
       else {
-        if (m.affiliation.kind !== 'guild') errors.push(`${p}[${j}]: 길드 소속이 아닌 용병 "${mercId}"`);
+        if (m.affiliation.kind !== 'guild') errors.push(`${p}[${j}]: 길드 소속이 아닌 ${M} "${mercId}"`);
         if (m.isProtagonist) errors.push(`${p}[${j}]: 주인공은 배치할 수 없음`);
-        if (m.injury) errors.push(`${p}[${j}]: 부상 중인 용병 "${mercId}"`);
+        if (m.injury) errors.push(`${p}[${j}]: 부상 중인 ${M} "${mercId}"`);
       }
-      if (busy.has(mercId)) errors.push(`${p}[${j}]: 파견 중인 용병 "${mercId}"`);
-      if (placed.has(mercId)) errors.push(`${p}[${j}]: 두 곳에 배치된 용병 "${mercId}"`);
+      if (busy.has(mercId)) errors.push(`${p}[${j}]: 파견 중인 ${M} "${mercId}"`);
+      if (placed.has(mercId)) errors.push(`${p}[${j}]: 두 곳에 배치된 ${M} "${mercId}"`);
       placed.add(mercId);
     });
   }

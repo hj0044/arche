@@ -1,77 +1,228 @@
 {
+  "_note": "지시서 016. 스탯 = 기본값(계약자별 baseStats 또는 역할 기본값) × (1 + 레벨 성장률)^(레벨-1) × 외부 배율(몬스터 등급 등) → 특성 → 상한. 핵심 6개만 레벨로 성장하고 보조 3개는 성장하지 않는다. 역할 기본값은 기존 4스탯에서 옮겼다: 주 공격 = 기존 공격, 부 공격 = 기존 공격 × 0.4, 방어는 두 종류의 평균이 기존 방어가 되도록 역할 성향에 따라 나눔(수호자 물방 ×1.25/에방 ×0.75 … 마도사 ×0.7/×1.3). 모든 수치는 임시값.",
   "stats": [
     {
       "id": "hp",
-      "name": "체력"
+      "name": "체력",
+      "kind": "core"
     },
     {
-      "id": "atk",
-      "name": "공격"
+      "id": "pAtk",
+      "name": "물리공격",
+      "kind": "core"
     },
     {
-      "id": "def",
-      "name": "방어"
+      "id": "pDef",
+      "name": "물리방어",
+      "kind": "core"
+    },
+    {
+      "id": "eAtk",
+      "name": "에너지공격",
+      "kind": "core"
+    },
+    {
+      "id": "eDef",
+      "name": "에너지방어",
+      "kind": "core"
     },
     {
       "id": "spd",
-      "name": "속도"
+      "name": "속도",
+      "kind": "core"
+    },
+    {
+      "id": "crit",
+      "name": "치명타율",
+      "kind": "aux",
+      "format": "percent"
+    },
+    {
+      "id": "critDmg",
+      "name": "치명타 피해율",
+      "kind": "aux",
+      "format": "multiplier"
+    },
+    {
+      "id": "eva",
+      "name": "회피율",
+      "kind": "aux",
+      "format": "percent"
     }
   ],
+  "caps": {
+    "crit": 0.8,
+    "eva": 0.5
+  },
   "roleBase": {
     "shield": {
       "base": {
         "hp": 140,
-        "atk": 14,
-        "def": 22,
-        "spd": 8
+        "pAtk": 14,
+        "pDef": 27.5,
+        "eAtk": 5.6,
+        "eDef": 16.5,
+        "spd": 8,
+        "crit": 0.05,
+        "critDmg": 1.5,
+        "eva": 0.0
       }
     },
     "warrior": {
       "base": {
         "hp": 115,
-        "atk": 22,
-        "def": 14,
-        "spd": 10
+        "pAtk": 22,
+        "pDef": 16.8,
+        "eAtk": 8.8,
+        "eDef": 11.2,
+        "spd": 10,
+        "crit": 0.05,
+        "critDmg": 1.5,
+        "eva": 0.0
       }
     },
     "archer": {
       "base": {
         "hp": 80,
-        "atk": 24,
-        "def": 8,
-        "spd": 13
+        "pAtk": 24,
+        "pDef": 8.8,
+        "eAtk": 9.6,
+        "eDef": 7.2,
+        "spd": 13,
+        "crit": 0.05,
+        "critDmg": 1.5,
+        "eva": 0.0
       }
     },
     "mage": {
       "base": {
         "hp": 75,
-        "atk": 26,
-        "def": 7,
-        "spd": 11
+        "pAtk": 10.4,
+        "pDef": 4.9,
+        "eAtk": 26,
+        "eDef": 9.1,
+        "spd": 11,
+        "crit": 0.05,
+        "critDmg": 1.5,
+        "eva": 0.0
       }
     },
     "healer": {
       "base": {
         "hp": 85,
-        "atk": 16,
-        "def": 9,
-        "spd": 12
+        "pAtk": 6.4,
+        "pDef": 6.75,
+        "eAtk": 16,
+        "eDef": 11.25,
+        "spd": 12,
+        "crit": 0.05,
+        "critDmg": 1.5,
+        "eva": 0.0
       }
     },
     "commander": {
       "base": {
         "hp": 95,
-        "atk": 17,
-        "def": 11,
-        "spd": 12
+        "pAtk": 6.8,
+        "pDef": 9.9,
+        "eAtk": 17,
+        "eDef": 12.1,
+        "spd": 12,
+        "crit": 0.05,
+        "critDmg": 1.5,
+        "eva": 0.0
       }
     }
   },
   "levelGrowthRate": {
     "hp": 0.035,
-    "atk": 0.035,
-    "def": 0.035,
+    "pAtk": 0.035,
+    "pDef": 0.035,
+    "eAtk": 0.035,
+    "eDef": 0.035,
     "spd": 0.01
   },
-  "_note": "스탯 = 역할 기본값 × (1 + 레벨 성장률)^(레벨-1) × 외부 배율(몬스터 등급 등)"
+  "roleBounds": {
+    "_note": "계약자 baseStats의 역할 기본값 대비 배율 범위(레벨 1). 보조 스탯은 절대값 범위",
+    "hp": [
+      0.7,
+      1.4
+    ],
+    "pAtk": [
+      0.6,
+      1.5
+    ],
+    "eAtk": [
+      0.6,
+      1.5
+    ],
+    "pDef": [
+      0.7,
+      1.4
+    ],
+    "eDef": [
+      0.7,
+      1.4
+    ],
+    "spd": [
+      0.8,
+      1.25
+    ],
+    "crit": [
+      0.02,
+      0.2
+    ],
+    "critDmg": [
+      1.3,
+      1.8
+    ],
+    "eva": [
+      0,
+      0.15
+    ]
+  },
+  "special": [
+    {
+      "id": "pen",
+      "name": "방어 관통",
+      "description": "적 방어력 일부 무시",
+      "enabled": false
+    },
+    {
+      "id": "lifesteal",
+      "name": "생명력 흡수",
+      "description": "가한 피해 일부를 체력으로 회복",
+      "enabled": false
+    },
+    {
+      "id": "dmgReduce",
+      "name": "피해 감소",
+      "description": "최종적으로 받는 피해 추가 감소",
+      "enabled": false
+    },
+    {
+      "id": "shieldBoost",
+      "name": "보호막 강화",
+      "description": "보호막 효과 강화",
+      "enabled": false
+    },
+    {
+      "id": "healBoost",
+      "name": "회복량 증가",
+      "description": "치유 스킬 효율",
+      "enabled": false
+    },
+    {
+      "id": "counter",
+      "name": "반격 확률",
+      "description": "공격받을 때 반격할 확률",
+      "enabled": false
+    },
+    {
+      "id": "critRes",
+      "name": "치명타 저항",
+      "description": "적의 치명타 발동 억제",
+      "enabled": false
+    }
+  ]
 }

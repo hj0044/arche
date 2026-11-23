@@ -56,6 +56,7 @@ const mercenary: Schema = {
     unpaidUpkeep: { fields: { days: 'number', zero: 'number' } },
     isProtagonist: 'boolean',
     departedDay: 'number',
+    traitRanks: { record: 'number' },
     loyalty: {
       fields: {
         value: 'number',

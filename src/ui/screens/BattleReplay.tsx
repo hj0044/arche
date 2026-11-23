@@ -3,7 +3,7 @@ import { tables } from '../../data';
 import type { CombatantSnapshot, CombatEvent } from '../../engine/combat';
 import { AppShell } from '../AppShell';
 import { Bar, ElementTag } from '../components';
-import { outcomeName, pct, roleName, rowName, skillName } from '../format';
+import { outcomeName, pct, roleName, rowName, skillName, statsLabel } from '../format';
 import type { Ctx, Route } from '../nav';
 
 interface Frame {
@@ -49,13 +49,14 @@ export function buildFrames(events: CombatEvent[]): { units: CombatantSnapshot[]
         if (f.kind === 'damage') {
           hp[f.target] = f.hpAfter;
           const el = f.elementMultiplier > 1 ? ' 효과적!' : f.elementMultiplier < 1 ? ' 약함' : '';
-          return `${t} -${f.amount}${el}${f.downed ? ' 쓰러짐' : ''}`;
+          if (f.evaded) return `${t} 회피`;
+          return `${t} -${f.amount}${f.crit ? ' 치명타!' : ''}${el}${f.downed ? ' 쓰러짐' : ''}`;
         }
         if (f.kind === 'heal') {
           hp[f.target] = f.hpAfter;
           return f.amount > 0 ? `${t} +${f.amount}` : '';
         }
-        return f.status === 'taunt' ? `${t} 도발` : `${t} ${f.stat === 'atk' ? '공격' : '방어'}↑`;
+        return f.status === 'taunt' ? `${t} 도발` : `${t} ${statsLabel(f.stats)}↑`;
       });
       const rest = `「${skillName(ev.skillId)}」 ${parts.filter(Boolean).join(', ')}`;
       frames.push({

@@ -22,7 +22,7 @@
     {
       "id": "training",
       "name": "훈련소",
-      "description": "배치한 용병이 매일 경험치를 얻는다.",
+      "description": "배치한 {merc:이/가} 매일 경험치를 얻는다.",
       "maxLevel": 3,
       "startLevel": 0,
       "cost": {

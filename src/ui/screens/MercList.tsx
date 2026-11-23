@@ -6,7 +6,7 @@ import { guildStatusSummary, trainingAccess } from '../../engine/status';
 import { AppShell } from '../AppShell';
 import { BulkLevelUp } from '../BulkLevelUp';
 import { Bar, ChipRow, ElementTag, LoyaltyBadge, RoleTag, Segmented } from '../components';
-import { cityName, factionName, growthSpeedName, injuryText, num } from '../format';
+import { cityName, factionName, growthSpeedName, injuryText, num, term, josa } from '../format';
 import { MainTabs } from '../MainTabs';
 import { filterAndSort, filterChips, type MercListOptions } from '../mercFilter';
 import type { Ctx } from '../nav';
@@ -141,7 +141,7 @@ export function MercList({ ctx }: { ctx: Ctx }) {
   const train = trainingAccess(tables, s, '');
 
   return (
-    <AppShell title="용병" subtitle={`제로 ${num(s.resources.zero)} · 아르케 ${num(s.resources.arche)}`} footer={<MainTabs ctx={ctx} current="mercs" />}>
+    <AppShell title={term.merc} subtitle={`제로 ${num(s.resources.zero)} · 아르케 ${num(s.resources.arche)}`} footer={<MainTabs ctx={ctx} current="mercs" />}>
       <Segmented
         value={tab}
         onChange={(t) => setView({ tab: t })}
@@ -171,7 +171,7 @@ export function MercList({ ctx }: { ctx: Ctx }) {
         <input
           type="search"
           placeholder="이름·초성 검색"
-          aria-label="용병 검색"
+          aria-label={`${term.merc} 검색`}
           value={view.query}
           onChange={(e) => setView({ query: e.target.value })}
         />
@@ -198,7 +198,7 @@ export function MercList({ ctx }: { ctx: Ctx }) {
         </div>
       )}
       {tab === 'recruit' && view.sort.recruit === 'hometownFirst' && (
-        <p className="hint">고향이 {cityName(s.baseCityId)}인 용병이 먼저 보이고, 다른 도시 출신은 영입비가 더 들 수 있습니다.</p>
+        <p className="hint">고향이 {cityName(s.baseCityId)}인 {term.merc}{josa(term.merc, '이', '가')} 먼저 보이고, 다른 도시 출신은 영입비가 더 들 수 있습니다.</p>
       )}
 
       <div className="merc-line small list-status">
@@ -214,7 +214,7 @@ export function MercList({ ctx }: { ctx: Ctx }) {
       {list.length === 0 &&
         (filtered ? (
           <div className="panel">
-            <p className="muted">조건에 맞는 용병이 없습니다</p>
+            <p className="muted">조건에 맞는 {term.merc}{josa(term.merc, '이', '가')} 없습니다</p>
             <button className="btn block" onClick={clear}>
               필터 해제
             </button>
