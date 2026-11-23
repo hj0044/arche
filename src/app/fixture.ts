@@ -20,7 +20,9 @@ export async function loadUiFixture(): Promise<FixtureStart | null> {
   deviceSettings.useStore(memorySettingsStore({ ...defaultSettings(), replaySpeed: 2 }));
   const json = (await import('../ui/fixtures/ui-mock.json')).default;
   const file = parseSave(json, saves.semantic);
+  // 시안처럼 수동 저장 1개와 자동 저장 3개(지난 날의 상태는 없어 같은 상태를 쓴다. 일차를 바꾸면 의미 검사에 걸린다)
   await saves.saveManual(UI_FIXTURE_SLOT, file.state, { overwrite: true });
+  for (let i = 0; i < saves.policy.autoSavesPerSlot; i++) await saves.saveAuto(UI_FIXTURE_SLOT, file.state);
   const screen = new URLSearchParams(location.search).get('screen') ?? 'home';
   return {
     slotId: UI_FIXTURE_SLOT,

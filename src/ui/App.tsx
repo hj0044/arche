@@ -16,6 +16,7 @@ import { NewGame } from './screens/NewGame';
 import { PartyBuilder } from './screens/PartyBuilder';
 import { Content } from './screens/Content';
 import { SaveSlots } from './screens/SaveSlots';
+import { Settings } from './screens/Settings';
 import { Title } from './screens/Title';
 
 export function App() {
@@ -116,7 +117,7 @@ export function App() {
       screen = <Base ctx={ctx} />;
       break;
     case 'saves':
-      screen = <SaveSlots ctx={ctx} onLoad={startGame} toast={toast} />;
+      screen = <Settings ctx={ctx} back={route.back} onLoad={startGame} onNewGame={() => go({ name: 'newGame' })} />;
       break;
     case 'dayResult':
       screen = <DayResult ctx={ctx} events={route.events} />;

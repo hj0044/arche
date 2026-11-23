@@ -34,5 +34,9 @@
   "Base": {
     "mismatchRatio": 0.0275,
     "refRetakeMismatch": 0.01
+  },
+  "Settings": {
+    "mismatchRatio": 0.0427,
+    "refRetakeMismatch": 0.0186
   }
 }
