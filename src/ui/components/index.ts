@@ -3,4 +3,4 @@ export * from './Icon';
 export * from './Art';
 export * from './Shell';
 export * from './parts';
-export { ConfirmDialog, Toast, Panel, Bar, ElementTag, RoleTag, OmenBadge, LoyaltyBadge, RiskLabel, Segmented, ChipRow as LegacyChipRow } from '../legacy';
+export { ConfirmDialog, Toast, Panel, ElementTag, RoleTag, Segmented } from '../legacy';

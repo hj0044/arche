@@ -7,7 +7,6 @@ import { newSlotId, type SlotSummary } from '../../app/saves';
 import { AppShell } from '../AppShell';
 import { ConfirmDialog, Panel } from '../components';
 import { cityName, formatDateTime } from '../format';
-import { MainTabs } from '../MainTabs';
 import type { Ctx } from '../nav';
 import { downloadText, saves } from '../../app/saves';
 
@@ -112,7 +111,6 @@ export function SaveSlots({ ctx, onLoad, onBack, toast }: SaveSlotsProps) {
       title={game ? '저장' : '불러오기'}
       subtitle={game ? `${game.state.guildName} · ${game.state.day}일차` : '세이브 슬롯'}
       onBack={onBack}
-      footer={ctx ? <MainTabs ctx={ctx} current="saves" /> : undefined}
     >
       {usage !== undefined && usage >= tables.ui.storageWarnRatio && (
         <p className="error small">저장 공간이 거의 찼습니다({Math.round(usage * 100)}%). 오래된 슬롯을 파일로 내보내고 지우세요.</p>
