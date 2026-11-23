@@ -1,151 +1,198 @@
+/**
+ * 홈(시안 Main, 지시서 017). 구역 순서: header · hero · resources · counts · todo · dispatch · cta.
+ * 하루 넘기기 버튼은 이 화면에만 있다.
+ */
 import { tables } from '../../data';
-import { guildUpkeepPerDay, isOnExpedition } from '../../engine/game';
-import { AppShell } from '../AppShell';
-import { ElementTag, LoyaltyBadge, OmenBadge, Panel, RoleTag } from '../components';
+import { getFacility } from '../../engine/facilities';
+import { levelUpAll } from '../../engine/game';
 import { loyaltyTier } from '../../engine/loyalty';
-import { cityName, injuryText, materialName, num, outcomeName, term } from '../format';
-import { MainTabs } from '../MainTabs';
-import { StatusSummary } from '../StatusSummary';
-import { BulkLevelUp } from '../BulkLevelUp';
+import { guildStatusSummary, levelUpOverview } from '../../engine/status';
+import { GUILD_BANNER } from '../art/fallback';
+import { Art, Avatar, Card, Gauge, Icon, LogoRow, Screen, Section, type IconName } from '../components';
+import { cityName, num } from '../format';
 import type { Ctx } from '../nav';
-import { assignedFacility, getFacility } from '../../engine/facilities';
-import { cityChips } from '../riftFilter';
+import { isUrgent, daysLeft } from '../riftFilter';
+
+interface Todo {
+  key: string;
+  icon: IconName;
+  color: string;
+  title: string;
+  sub: string;
+  right: string;
+  onClick: () => void;
+}
 
 export function GuildHome({ ctx }: { ctx: Ctx }) {
   const s = ctx.game.state;
-  const guild = s.mercenaries.filter((m) => m.affiliation.kind === 'guild');
-  const recent = s.reports.slice(-tables.ui.recentReportsOnHome).reverse();
-  const materials = Object.entries(s.resources.materials).filter(([, n]) => n > 0);
-  const unpaid = guild.reduce((sum, m) => sum + (m.unpaidUpkeep?.zero ?? 0), 0);
-  // 마감 임박 리프트(모든 도시). 누르면 거점 도시, 거점에 없으면 임박이 가장 많은 도시를 연다.
-  const chips = cityChips(tables, s);
-  const urgent = chips.reduce((a, c) => a + c.urgent, 0);
-  const urgentCity = chips.find((c) => c.cityId === s.baseCityId && c.urgent > 0) ?? [...chips].sort((a, b) => b.urgent - a.urgent)[0];
+  const sum = guildStatusSummary(tables, s);
+  const o = levelUpOverview(tables, s);
+  const materials = Object.values(s.resources.materials).reduce((a, n) => a + n, 0);
+
+  // 오늘 할 일(해당하는 것만, 최대 4종)
+  const todos: Todo[] = [];
+  const urgent = s.rifts.filter((r) => isUrgent(tables, s.facilities, r, s.day)).sort((a, b) => (daysLeft(tables, s.facilities, a, s.day)?.[0] ?? 99) - (daysLeft(tables, s.facilities, b, s.day)?.[0] ?? 99));
+  if (urgent.length) {
+    const left = daysLeft(tables, s.facilities, urgent[0], s.day)?.[0] ?? 0;
+    todos.push({
+      key: 'urgent',
+      icon: 'clock',
+      color: 'var(--c-bad)',
+      title: `마감 임박 리프트 ${urgent.length}개`,
+      sub: `${shortName(urgent[0].name, urgent[0].cityId)} · ${left === 0 ? '오늘 마감' : left === 1 ? '내일 마감' : `${left}일 뒤 마감`}`,
+      right: `D-${left}`,
+      onClick: () => ctx.go({ name: 'rifts', cityId: urgent[0].cityId }),
+    });
+  }
+  if (o.readyCount > 0)
+    todos.push({
+      key: 'levelup',
+      icon: 'arrowUp',
+      color: 'var(--c-gold)',
+      title: `레벨업 가능 ${o.readyCount}명`,
+      sub: `필요 아르케 ${num(o.totalCostOneEach)} · 보유 ${num(s.resources.arche)}`,
+      right: '일괄',
+      onClick: () => {
+        const { state, steps } = levelUpAll(tables, s);
+        if (!steps.length) return ctx.toast('아르케가 부족합니다');
+        ctx.setState(state);
+        ctx.toast(`${new Set(steps.map((x) => x.mercId)).size}명 총 ${steps.length}레벨, 아르케 −${num(steps.reduce((a, x) => a + x.cost, 0))}`);
+      },
+    });
+  const danger = s.mercenaries.filter((m) => m.affiliation.kind === 'guild' && m.loyalty && loyaltyTier(tables, m.loyalty.value).warn);
+  if (danger.length)
+    todos.push({
+      key: 'loyalty',
+      icon: 'heart',
+      color: 'var(--c-warn)',
+      title: `충성 위험 ${danger.length}명`,
+      sub: `${danger[0].name} · 급료 보너스나 휴식 필요`,
+      right: '주의',
+      onClick: () => ctx.go({ name: 'merc', mercId: danger[0].id }),
+    });
+  const job = s.facilities.construction;
+  if (job) {
+    const fac = getFacility(tables, job.facilityId);
+    const recover = s.mercenaries.filter((m) => m.affiliation.kind === 'guild' && m.injury).sort((a, b) => a.injury!.recoverDay - b.injury!.recoverDay)[0];
+    todos.push({
+      key: 'facility',
+      icon: 'plus',
+      color: 'var(--c-info)',
+      title: `${fac.name} Lv ${job.targetLevel} 공사 중`,
+      sub: `${job.completeDay}일차 완공${recover ? ` · ${recover.name} ${recover.injury!.recoverDay}일차 복귀` : ''}`,
+      right: `${Math.max(0, job.completeDay - s.day)}일`,
+      onClick: () => ctx.go({ name: 'base' }),
+    });
+  }
 
   return (
-    <AppShell
-      title={s.guildName}
-      subtitle={`${cityName(s.baseCityId)} 거점 · ${s.day}일차 · ${s.protagonist.mode === 'opener' ? '개방자' : '길드 마스터'} ${s.protagonist.name}`}
-      footer={<MainTabs ctx={ctx} current="home" />}
+    <Screen
+      ctx={ctx}
+      tab="home"
+      footer={
+        <div className="foot" data-ui="Main.cta">
+          <button className="btn-big" onClick={ctx.nextDay} disabled={ctx.busy}>
+            {ctx.busy ? '진행 중…' : `하루 넘기기 · 유지비 ${num(sum.dailyUpkeep)}`}
+          </button>
+        </div>
+      }
     >
-      <div className="resources">
-        <div className="res">
-          <span className="res-label">제로</span>
-          <span className="res-value">{num(s.resources.zero)}</span>
+      <div className="pg top" data-role="page">
+        <div data-ui="Main.header">
+          <LogoRow ctx={ctx} back={{ name: 'home' }} right={<span className="day-pill">{s.day}일차</span>} />
         </div>
-        <div className="res">
-          <span className="res-label">아르케</span>
-          <span className="res-value">{num(s.resources.arche)}</span>
-        </div>
-        <div className="res">
-          <span className="res-label">하루 유지비</span>
-          <span className="res-value">−{num(guildUpkeepPerDay(tables, s))}</span>
-        </div>
-        {materials.map(([id, n]) => (
-          <div className="res" key={id}>
-            <span className="res-label">{materialName(id)}</span>
-            <span className="res-value">{num(n)}</span>
+        <div className="card" data-role="card" data-ui="Main.hero" style={{ position: 'relative', height: 84, overflow: 'hidden' }}>
+          <Art kind="banner" id="guild" fallback={GUILD_BANNER} fill />
+          <div style={{ position: 'absolute', left: 14, bottom: 8 }} className="col">
+            <span style={{ fontSize: 17, fontWeight: 700 }}>{s.guildName}</span>
+            <span style={{ fontSize: 12, color: 'var(--c-text-banner)' }}>
+              {cityName(s.baseCityId)} 거점 · 리프트 {s.rifts.filter((r) => r.cityId === s.baseCityId).length}
+            </span>
           </div>
-        ))}
+        </div>
+        <div className="row" data-ui="Main.resources" style={{ gap: 8 }}>
+          <Res icon="zero" label="제로" value={num(s.resources.zero)} />
+          <Res icon="arche" label="아르케" value={num(s.resources.arche)} />
+          <Res icon="material" label="고유 재료" value={num(materials)} />
+        </div>
+        <div className="row" data-ui="Main.counts" style={{ gap: 6 }}>
+          <Count value={sum.available} label="대기" color="var(--c-ok)" />
+          <Count value={sum.blocked.expedition} label="파견" color="var(--c-gold)" />
+          <Count value={sum.blocked.training} label="훈련" color="var(--c-info)" />
+          <Count value={sum.blocked.injured} label="부상" color="var(--c-warn)" />
+          <Count value={`-${num(sum.dailyUpkeep)}`} label="유지비/일" color="var(--c-text-sub)" />
+        </div>
       </div>
-
-      {unpaid > 0 && <p className="error small">유지비 미납 누적 제로 {num(unpaid)}. 지금은 기록만 남습니다.</p>}
-
-      <StatusSummary ctx={ctx} />
-      <button className="home-urgent" onClick={() => ctx.go({ name: 'rifts', cityId: urgent > 0 ? urgentCity?.cityId : undefined })}>
-        <span className={urgent ? 'bad strong' : 'muted'}>
-          {urgent ? '⚠ ' : ''}마감 임박 리프트 {urgent}개
-          {urgent > 0 && <span className="muted"> ({chips.filter((c) => c.urgent).map((c) => `${cityName(c.cityId)} ${c.urgent}`).join(', ')})</span>}
-        </span>
-        <span className="muted">리프트 ›</span>
-      </button>
-      <BulkLevelUp ctx={ctx} hideWhenNone title="레벨업 가능" />
-
-      <Panel title={`진행 중인 파견 ${s.expeditions.length}`}>
-        {s.expeditions.length === 0 ? (
-          <p className="muted">
-            보낸 파티가 없습니다.{' '}
-            <button className="link" onClick={() => ctx.go({ name: 'rifts' })}>
-              리프트 보기
-            </button>
-          </p>
-        ) : (
-          <ul className="rows">
-            {s.expeditions.map((e) => (
-              <li key={e.id} className="row-item">
-                <div>
-                  <div className="strong">
-                    {e.rift.name} {e.rift.omen && <OmenBadge />}
-                  </div>
-                  <div className="muted small">
-                    {e.party.map((p) => s.mercenaries.find((m) => m.id === p.mercId)?.name).join(', ')}
-                  </div>
-                </div>
-                <span className="pill">{e.returnDay - s.day}일 뒤 복귀</span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </Panel>
-
-      {recent.length > 0 && (
-        <Panel title="최근 복귀">
-          <ul className="rows">
-            {recent.map((r) => (
-              <li key={r.expeditionId}>
-                <button
-                  className="row-item row-button"
-                  disabled={!r.events}
-                  onClick={() => ctx.go({ name: 'replay', expeditionId: r.expeditionId, back: { name: 'home' } })}
-                >
-                  <div>
-                    <div className="strong">
-                      {r.rift.name} {r.rift.omen && <OmenBadge />}
-                    </div>
-                    <div className="muted small">{r.day}일차 복귀 · 제로 +{num(r.reward.zero)} · 아르케 +{num(r.reward.arche)}</div>
-                  </div>
-                  <span className={`pill outcome-${r.outcome}`}>{outcomeName[r.outcome]}</span>
-                </button>
-              </li>
-            ))}
-          </ul>
-        </Panel>
-      )}
-
-      <Panel title={`${term.merc} ${guild.length}`} action={<button className="link" onClick={() => ctx.go({ name: 'mercs' })}>전체</button>}>
-        <ul className="rows">
-          {guild.map((m) => (
-            <li key={m.id}>
-              <button className="row-item row-button" onClick={() => ctx.go({ name: 'merc', mercId: m.id })}>
-                <div>
-                  <div className="strong">
-                    {m.name} {m.isProtagonist && <span className="pill small">주인공</span>}
-                  </div>
-                  <div className="tags">
-                    <ElementTag id={m.element} />
-                    <RoleTag id={m.role} />
-                    <span className="muted small">Lv{m.level}</span>
-                    {m.loyalty && loyaltyTier(tables, m.loyalty.value).warn && <LoyaltyBadge value={m.loyalty.value} />}
-                  </div>
-                </div>
-                {m.injury ? (
-                  <span className="pill bad">
-                    {injuryText(m.injury)}
-                  </span>
-                ) : isOnExpedition(s, m.id) ? (
-                  <span className="pill">파견 중</span>
-                ) : assignedFacility(s.facilities, m.id) ? (
-                  <span className="pill">{getFacility(tables, assignedFacility(s.facilities, m.id)!).name} 배치</span>
-                ) : m.loyalty?.refusedOnDay === s.day ? (
-                  <span className="pill bad">오늘 거부</span>
-                ) : (
-                  <span className="pill ok">대기</span>
-                )}
-              </button>
-            </li>
+      {todos.length > 0 && (
+        <Section title="오늘 할 일" data-ui="Main.todo">
+          {todos.map((t) => (
+            <Card key={t.key} onClick={t.onClick} label={t.title} className="todo">
+              <span className="todo-icon" style={{ borderColor: t.color, color: t.color }}>
+                <Icon name={t.icon} />
+              </span>
+              <span className="col grow" style={{ minWidth: 0 }}>
+                <span className="t14 m ellipsis">{t.title}</span>
+                <span className="sub ellipsis">{t.sub}</span>
+              </span>
+              <span style={{ fontSize: 12, fontWeight: 700, color: t.color, flex: 'none' }}>{t.right}</span>
+            </Card>
           ))}
-        </ul>
-      </Panel>
-    </AppShell>
+        </Section>
+      )}
+      <Section title="파견 현황" data-ui="Main.dispatch">
+        {s.expeditions.map((e) => {
+          const left = e.returnDay - s.day;
+          const total = Math.max(1, e.returnDay - e.departDay);
+          const ratio = (s.day - e.departDay) / total;
+          return (
+            <Card key={e.id} className="dispatch">
+              <span className="avatars">
+                {e.party.map((p) => {
+                  const m = s.mercenaries.find((x) => x.id === p.mercId)!;
+                  return <Avatar key={p.mercId} id={m.id} element={m.element} role={m.role} />;
+                })}
+              </span>
+              <span className="col grow" style={{ gap: 5, minWidth: 0 }}>
+                <span className="row between t13">
+                  <span className="m ellipsis">{shortName(e.rift.name, e.rift.cityId)}</span>
+                  <span className="dim" style={{ flex: 'none' }}>
+                    {left <= 1 ? '내일 복귀' : `${left}일 남음`}
+                  </span>
+                </span>
+                <Gauge ratio={ratio} color={left <= 1 ? 'var(--c-ok)' : 'var(--c-gold)'} />
+              </span>
+            </Card>
+          );
+        })}
+      </Section>
+      <div className="grow" />
+    </Screen>
+  );
+}
+
+/** 리프트 이름에서 앞의 도시 이름을 뺀 것(시안 표기) */
+function shortName(name: string, cityId: string) {
+  const prefix = `${cityName(cityId)} `;
+  return name.startsWith(prefix) ? name.slice(prefix.length) : name;
+}
+
+function Res({ icon, label, value }: { icon: IconName; label: string; value: string }) {
+  return (
+    <div className="box row grow" style={{ padding: '8px 12px', gap: 8 }}>
+      <Icon name={icon} />
+      <div className="col">
+        <span className="sub">{label}</span>
+        <span style={{ fontSize: 15, fontWeight: 700 }}>{value}</span>
+      </div>
+    </div>
+  );
+}
+
+function Count({ value, label, color }: { value: number | string; label: string; color: string }) {
+  return (
+    <div className="box col grow" style={{ borderRadius: 'var(--r-btn)', padding: '5px 0', alignItems: 'center' }}>
+      <span style={{ fontSize: 15, fontWeight: 700, color }}>{value}</span>
+      <span className="sub">{label}</span>
+    </div>
   );
 }

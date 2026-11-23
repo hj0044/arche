@@ -10,9 +10,10 @@ html, body, #root { margin: 0; height: 100%; background: var(--c-page); }
   background: var(--c-bg); color: var(--c-text); font-family: var(--font);
   display: flex; flex-direction: column; overflow: hidden; position: relative; line-height: 1.4;
 }
-.scr * { box-sizing: border-box; }
-.scr button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; text-align: inherit; }
+:where(.scr) * { box-sizing: border-box; }
+:where(.scr) :where(button) { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; text-align: inherit; }
 .scr :focus-visible { outline: 2px solid var(--c-gold); outline-offset: 2px; }
+.scr-body.shell-body { padding: 0; gap: 0; }
 .scr-body { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column; }
 .scr-body.slide-left { animation: slide-l 200ms ease-out; }
 .scr-body.slide-right { animation: slide-r 200ms ease-out; }
@@ -185,3 +186,8 @@ html, body, #root { margin: 0; height: 100%; background: var(--c-page); }
 .sheet-backdrop { position: fixed; inset: 0; background: var(--c-scrim); display: flex; align-items: flex-end; justify-content: center; z-index: 30; }
 .sheet { width: 100%; max-width: 430px; background: var(--c-panel); border-radius: var(--r-card) var(--r-card) 0 0; padding: 20px var(--pad-x) 16px; display: flex; flex-direction: column; gap: 12px; color: var(--c-text); font-family: var(--font); max-height: 80dvh; overflow-y: auto; }
 .sheet h2 { margin: 0; font-size: 17px; }
+
+/* ── 홈(시안 Main) ───────────────────────────────── */
+.card.todo { width: 100%; min-height: 50px; padding: 7px 12px; display: flex; align-items: center; gap: 10px; text-align: left; }
+.todo-icon { width: 36px; height: 36px; border-radius: var(--r-btn); background: var(--c-panel-2); border: 1px solid; display: flex; align-items: center; justify-content: center; flex: none; }
+.card.dispatch { padding: 8px 12px; display: flex; align-items: center; gap: 12px; }
