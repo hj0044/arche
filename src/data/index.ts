@@ -256,6 +256,8 @@ export interface BackgroundRow { id: string; name: string; shortName: string; fo
 export interface CombatTable {
   party: { maxSize: number; maxPerRow: number };
   maxRounds: number;
+  /** 행동 순서 흔들림 비율(지시서 018). 0이면 없음 */
+  speedJitter: number;
   element: { advantage: number; disadvantage: number; neutral: number };
   composition: { groups: string[]; bonusPerPresentGroup: number; penaltyPerMissingGroup: number; appliesToSides: Side[] };
   offRow: { damageDealtMultiplier: number; damageTakenMultiplier: number };

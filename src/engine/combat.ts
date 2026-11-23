@@ -169,6 +169,8 @@ export function resolveCombat(tables: GameTables, input: CombatInput): CombatRes
   const rng = createRng(input.seed);
   // 공격 판정 전용 난수 흐름: 공격 하나마다 피해 변동 → 회피 → 치명타 순으로 값과 상관없이 늘 세 번 뽑는다(지시서 016).
   const hitRng = createRng(`${input.seed}:hit`);
+  // 행동 순서 흔들림 전용 흐름(지시서 018): 라운드마다 전체 유닛 수만큼(쓰러진 유닛 포함) 늘 같은 개수를 뽑는다.
+  const initRng = createRng(`${input.seed}:init`);
   const cfg = tables.combat;
   let round = 0;
 
@@ -382,7 +384,8 @@ export function resolveCombat(tables: GameTables, input: CombatInput): CombatRes
     const tiebreak = new Map(all.map((c) => [c.key, rng.next()]));
     const rowRank = (c: Combatant) => (c.row === 'front' ? 0 : 1);
     // 라운드 시작의 속도(특성: battleStart·roundStack 등 반영)
-    const speed = new Map(all.map((c) => [c.key, eff(c).spd * buffMultiplier(c, 'spd')]));
+    const jitter = cfg.speedJitter;
+    const speed = new Map(all.map((c) => [c.key, eff(c).spd * buffMultiplier(c, 'spd') * (1 + jitter * (2 * initRng.next() - 1))]));
     const order = all
       .filter((c) => !c.downed)
       .sort(
