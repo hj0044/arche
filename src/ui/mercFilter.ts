@@ -4,6 +4,7 @@
  */
 import type { GameTables } from '../data';
 import { assignedFacility } from '../engine/facilities';
+import { loyaltyTier } from '../engine/loyalty';
 import { canLevelUp, expToNextLevel, isAvailable, isOnExpedition, recruitInfo, type GameState, type MercenaryState } from '../engine/game';
 
 const CHOSEONG = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
@@ -26,7 +27,7 @@ export function matchesQuery(name: string, query: string): boolean {
   return n.includes(q) || choseong(n).includes(q);
 }
 
-export type MercStatus = 'available' | 'injured' | 'expedition' | 'training' | 'levelup';
+export type MercStatus = 'available' | 'injured' | 'expedition' | 'training' | 'levelup' | 'lowLoyalty';
 
 /** 상태 필터용: 한 용병이 해당하는 상태들(레벨업 가능은 다른 상태와 겹칠 수 있다) */
 export function mercStatuses(tables: GameTables, state: GameState, m: MercenaryState): MercStatus[] {
@@ -35,6 +36,7 @@ export function mercStatuses(tables: GameTables, state: GameState, m: MercenaryS
   if (m.injury) out.push('injured');
   if (isOnExpedition(state, m.id)) out.push('expedition');
   if (assignedFacility(state.facilities, m.id)) out.push('training');
+  if (m.loyalty && loyaltyTier(tables, m.loyalty.value).warn) out.push('lowLoyalty');
   if (canLevelUp(tables, state, m.id) || (m.level < m.growth.cap && !isOnExpedition(state, m.id) && m.exp >= expToNextLevel(tables, m.level, m.growth.speed))) out.push('levelup');
   return out;
 }
@@ -60,6 +62,8 @@ function comparator(tables: GameTables, state: GameState, sortId: string): (a: M
   const cost = (m: MercenaryState) => recruitInfo(tables, state, m.id).cost;
   const home = (m: MercenaryState) => (m.profile.hometown === state.baseCityId ? 0 : 1);
   switch (sortId) {
+    case 'capDesc':
+      return (a, b) => b.growth.cap - a.growth.cap || b.level - a.level;
     case 'levelAsc':
       return (a, b) => a.level - b.level;
     case 'name':

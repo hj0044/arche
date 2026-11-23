@@ -1,178 +1,184 @@
+/**
+ * 하루 결과(시안 Result, 지시서 017). 구역 순서: header · events · report · levelup · upkeep · actions.
+ * 사건은 종류마다 색 띠가 있는 카드로, 복귀 보고는 결과 배너(누르면 전투 재생)와 보고 카드로 보인다.
+ */
 import { tables } from '../../data';
 import type { DayEvent } from '../../engine/game';
-import { AppShell } from '../AppShell';
-import { StatusSummary } from '../StatusSummary';
-import { BulkLevelUp } from '../BulkLevelUp';
+import { levelUpAll } from '../../engine/game';
 import { levelUpCandidates } from '../../engine/status';
-import { Panel } from '../components';
-import { cityName, factionName, josa, loyaltyTierName, materialName, num, omenText, outcomeName, severityName } from '../format';
+import { VICTORY_BANNER } from '../art/fallback';
+import { Art, Avatar, Card, Icon, LogoRow, Screen, type IconName } from '../components';
+import { factionName, josa, loyaltyTierName, materialName, num, outcomeName, severityName } from '../format';
 import type { Ctx } from '../nav';
+
+interface EventCard {
+  key: string;
+  color: string;
+  icon: IconName;
+  title: string;
+  text: string;
+}
 
 export function DayResult({ ctx, events }: { ctx: Ctx; events: DayEvent[] }) {
   const s = ctx.game.state;
   const name = (id: string) => s.mercenaries.find((m) => m.id === id)?.name ?? id;
-  const returned = events.flatMap((e) => (e.type === 'returned' ? [s.reports.find((r) => r.expeditionId === e.expeditionId)!] : []));
-  const recovered = events.flatMap((e) => (e.type === 'recovered' ? [e.mercId] : []));
-  const expired = events.flatMap((e) => (e.type === 'riftExpired' ? [e.name] : []));
-  const spawned = events.flatMap((e) => (e.type === 'riftSpawned' ? [s.rifts.find((r) => r.id === e.riftId)] : [])).filter((r) => r !== undefined);
-  const upkeep = events.find((e) => e.type === 'upkeep');
-  const preempted = events.flatMap((e) => (e.type === 'preempted' ? [e] : []));
-  const departed = events.flatMap((e) => (e.type === 'departed' ? [e.mercId] : []));
-  const refused = events.flatMap((e) => (e.type === 'refused' ? [e.mercId] : []));
-  const built = events.flatMap((e) => (e.type === 'facilityBuilt' ? [e] : []));
-  const trained = events.flatMap((e) => (e.type === 'trained' ? [e] : []));
-  const unassigned = events.flatMap((e) => (e.type === 'unassigned' ? [e] : []));
   const facName = (id: string) => tables.facilities.facilities.find((f) => f.id === id)?.name ?? id;
-  const poached = events.flatMap((e) => (e.type === 'poached' ? [e] : []));
-  const tierChanges = events.flatMap((e) => (e.type === 'loyaltyTier' && !departed.includes(e.mercId) ? [e] : []));
-  // 오늘 경험치를 받은 용병(복귀·훈련) 가운데 레벨업할 수 있게 된 용병. 파견 중이면 제외.
-  const gainedIds = [...returned.flatMap((r) => r.expGains.map((g) => g.mercId)), ...events.flatMap((e) => (e.type === 'trained' ? [e.mercId] : []))];
-  const levelUps = levelUpCandidates(tables, s, gainedIds);
-  const quiet = !preempted.length && !built.length && !trained.length && !unassigned.length && !poached.length && !departed.length && !refused.length && !tierChanges.length && !returned.length && !recovered.length && !expired.length && !spawned.length;
+  const returned = events.flatMap((e) => (e.type === 'returned' ? [s.reports.find((r) => r.expeditionId === e.expeditionId)!] : []));
+  const upkeep = events.find((e) => e.type === 'upkeep');
+
+  // ── 사건 카드(종류마다 색)
+  const cards: EventCard[] = [];
+  for (const e of events) {
+    if (e.type === 'preempted') {
+      const who = e.factionId ? `${factionName(e.factionId)}` : '라이벌 세력';
+      cards.push({ key: `p${e.riftId}`, color: 'var(--c-bad)', icon: 'rift', title: '선점당함', text: `${who}${josa(who, '이', '가')} '${e.name}'${josa(e.name, '을', '를')} 선점했습니다.` });
+    }
+    if (e.type === 'departed') cards.push({ key: `d${e.mercId}`, color: 'var(--c-bad)', icon: 'heart', title: '이탈', text: `${name(e.mercId)}${josa(name(e.mercId), '이', '가')} 길드를 떠났습니다. 영입 목록에서 다시 영입할 수 있습니다.` });
+    if (e.type === 'refused') cards.push({ key: `r${e.mercId}`, color: 'var(--c-warn)', icon: 'heart', title: '파견 거부', text: `${name(e.mercId)}${josa(name(e.mercId), '이', '가')} 오늘 파견을 거부합니다.` });
+    if (e.type === 'loyaltyTier') cards.push({ key: `l${e.mercId}`, color: 'var(--c-warn)', icon: 'heart', title: '충성도 변화', text: `${name(e.mercId)} ${loyaltyTierName(e.from)} → ${loyaltyTierName(e.to)}` });
+    if (e.type === 'facilityBuilt') cards.push({ key: `f${e.facilityId}`, color: 'var(--c-info)', icon: 'plus', title: '완공', text: `${facName(e.facilityId)} Lv ${e.level}` });
+    if (e.type === 'unassigned') cards.push({ key: `u${e.mercId}`, color: 'var(--c-warn)', icon: 'plus', title: '배치 해제', text: `${name(e.mercId)}(${e.reason})` });
+    if (e.type === 'poached') cards.push({ key: `q${e.mercId}`, color: 'var(--c-info)', icon: 'users', title: '세력 이동', text: `${e.wasDeparted ? '이탈했던 ' : ''}${name(e.mercId)}${josa(name(e.mercId), '이', '가')} ${factionName(e.toFactionId)}에 합류했습니다.` });
+    if (e.type === 'upkeep' && e.unpaid > 0) cards.push({ key: 'unpaid', color: 'var(--c-bad)', icon: 'zero', title: '유지비 미납', text: `${num(e.unpaid)} 제로 (${e.unpaidMercIds.map(name).join(', ')})` });
+  }
+  const trained = events.flatMap((e) => (e.type === 'trained' ? [e] : []));
+  if (trained.length) cards.push({ key: 'trained', color: 'var(--c-ok)', icon: 'arrowUp', title: '훈련', text: trained.map((t) => `${name(t.mercId)} +${t.exp}`).join(', ') });
+  const recovered = events.flatMap((e) => (e.type === 'recovered' ? [e.mercId] : []));
+  if (recovered.length) cards.push({ key: 'recovered', color: 'var(--c-ok)', icon: 'plus', title: '회복', text: `${recovered.map(name).join(', ')} 출전 가능` });
+  const spawned = events.flatMap((e) => (e.type === 'riftSpawned' ? [s.rifts.find((r) => r.id === e.riftId)] : [])).filter((r) => r !== undefined);
+  if (spawned.length) cards.push({ key: 'spawned', color: 'var(--c-info)', icon: 'compass', title: '새 리프트', text: spawned.map((r) => r.name).join(', ') });
+  const expired = events.flatMap((e) => (e.type === 'riftExpired' ? [e.name] : []));
+  if (expired.length) cards.push({ key: 'expired', color: 'var(--c-text-sub)', icon: 'clock', title: '사라진 리프트', text: expired.join(', ') });
+
+  // ── 레벨업(오늘 경험치를 받은 계약자 기준이 아니라 지금 가능한 전원: 시안 "레벨업 가능 N명")
+  const ready = levelUpCandidates(tables, s);
+  const need = ready.reduce((a, c) => a + c.cost, 0);
+  const bulk = () => {
+    const { state, steps } = levelUpAll(tables, s);
+    if (!steps.length) return ctx.toast('아르케가 부족합니다');
+    ctx.setState(state);
+    ctx.toast(`${new Set(steps.map((x) => x.mercId)).size}명 총 ${steps.length}레벨, 아르케 −${num(steps.reduce((a, x) => a + x.cost, 0))}`);
+  };
 
   return (
-    <AppShell
-      title={`${s.day}일차`}
-      subtitle="하루가 지났습니다 · 자동 저장됨"
+    <Screen
       footer={
-        <button className="btn primary block" onClick={() => ctx.go({ name: 'home' })}>
-          길드 홈으로
-        </button>
+        <div className="foot" style={{ paddingBottom: 18 }} data-ui="Result.actions">
+          <button className="btn-act" style={{ width: 128, flex: 'none', height: 52, fontSize: 15, fontWeight: 500 }} onClick={() => ctx.go({ name: 'rifts' })}>
+            리프트 보기
+          </button>
+          <button className="btn-big" onClick={() => ctx.go({ name: 'home' })}>
+            {s.day}일차 시작
+          </button>
+        </div>
       }
     >
-      {preempted.length > 0 && (
-        <div className="small preempt-news" role="status" aria-label="라이벌 선점">
-          {preempted.map((e) => {
-            const who = e.factionId ? factionName(e.factionId) : '라이벌 세력';
-            return (
-              <span key={e.riftId}>
-                <span aria-hidden="true">⚔ </span>
-                {who}
-                {josa(who, '이', '가')} {e.factionId ? '자기 영역의 ' : ''}'{e.name}'{josa(e.name, '을', '를')} 선점했습니다
-              </span>
-            );
-          })}
+      <div className="pg top-16" data-role="page">
+        <div data-ui="Result.header">
+          <LogoRow ctx={ctx} back={{ name: 'dayResult', events }} right={<span className="logo-meta">{s.day - 1}일차 결과</span>} />
         </div>
-      )}
-      {upkeep?.type === 'upkeep' && (
-        <p className={`small ${upkeep.unpaid ? 'warn' : 'muted'}`}>
-          {upkeep.paid > 0 && `유지비 제로 −${num(upkeep.paid)}`}
-          {upkeep.paid > 0 && upkeep.unpaid > 0 && ' · '}
-          {upkeep.unpaid > 0 && `유지비 미납 ${num(upkeep.unpaid)} (${upkeep.unpaidMercIds.map(name).join(', ')})`}
-        </p>
-      )}
-      {quiet && <p className="muted">조용한 하루였습니다.</p>}
-      <StatusSummary ctx={ctx} />
-      {levelUps.length > 0 && (
-        <Panel title="레벨업 가능">
-          <ul className="rows">
-            {levelUps.map((c) => (
-              <li key={c.mercId}>
-                <button className="row-item row-button" onClick={() => ctx.go({ name: 'merc', mercId: c.mercId })}>
-                  <span className="strong">{name(c.mercId)}</span>
-                  {c.affordable ? (
-                    <span className="pill ok">레벨업 (아르케 {num(c.cost)}) ›</span>
-                  ) : (
-                    <span className="pill bad">
-                      필요 아르케 {num(c.cost)}, 부족 {num(c.shortfall)}
-                    </span>
-                  )}
-                </button>
-              </li>
-            ))}
-          </ul>
-          <BulkLevelUp ctx={ctx} />
-        </Panel>
-      )}
-      {(built.length > 0 || trained.length > 0 || unassigned.length > 0) && (
-        <Panel title="거점">
-          {built.map((b) => (
-            <p key={b.facilityId} className="ok small">
-              🔨 {facName(b.facilityId)} Lv{b.level} 완공
-            </p>
+        <div className="col" style={{ gap: 10 }} data-ui="Result.events">
+          {cards.map((c) => (
+            <div key={c.key} className="event-card" style={{ ['--ev' as string]: c.color }}>
+              <span className="event-icon">
+                <Icon name={c.icon} />
+              </span>
+              <span className="col" style={{ gap: 2, minWidth: 0 }}>
+                <span className="event-title">{c.title}</span>
+                <span className="event-text">{c.text}</span>
+              </span>
+            </div>
           ))}
-          {trained.length > 0 && (
-            <p className="small">
-              훈련 경험치: {trained.map((t) => `${name(t.mercId)} +${t.exp}`).join(', ')}
-            </p>
-          )}
-          {unassigned.length > 0 && (
-            <p className="warn small">배치 해제: {unassigned.map((u) => `${name(u.mercId)}(${u.reason})`).join(', ')}</p>
-          )}
-        </Panel>
-      )}
-      {poached.length > 0 && (
-        <p className="small poach-news" role="status">
-          <span aria-hidden="true">⇄ </span>
-          {poached.map((e) => `${e.wasDeparted ? '이탈했던 ' : ''}${name(e.mercId)}이(가) ${factionName(e.toFactionId)}에 합류`).join(' · ')}
-        </p>
-      )}
-      {(departed.length > 0 || refused.length > 0 || tierChanges.length > 0) && (
-        <Panel title="충성도">
-          {departed.length > 0 && (
-            <p className="bad small">
-              ⚠ {departed.map(name).join(', ')}이(가) 길드를 떠나 무소속이 됐습니다. 영입 목록에서 다시 영입할 수 있습니다.
-            </p>
-          )}
-          {refused.length > 0 && <p className="warn small">오늘 파견 거부: {refused.map(name).join(', ')}</p>}
-          {tierChanges.length > 0 && (
-            <p className="small">
-              {tierChanges.map((c) => `${name(c.mercId)} ${loyaltyTierName(c.from)} → ${loyaltyTierName(c.to)}`).join(', ')}
-            </p>
-          )}
-        </Panel>
-      )}
-      {returned.map((r) => (
-        <Panel
-          key={r.expeditionId}
-          title={
-            <>
-              {r.rift.name} <span className={`pill outcome-${r.outcome}`}>{outcomeName[r.outcome]}</span>
-            </>
-          }
-        >
-          <p className="small">
-            {r.rounds}라운드 · 제로 +{num(r.reward.zero)} · 아르케 +{num(r.reward.arche)}
-            {Object.entries(r.reward.materials).map(([id, n]) => ` · ${materialName(id)} +${n}`)}
-          </p>
-          {r.rift.omen && <p className="omen-text small">◈ 징조 표식이 있던 리프트였다. {omenText(r.rift.omen.textId)}</p>}
-          {r.stabilized && <p className="small ok">항로를 안정화했습니다. 이제 마감 없이 다시 공략할 수 있습니다.</p>}
-          <p className="small muted">경험치: {r.expGains.map((g) => `${name(g.mercId)} +${g.exp}`).join(', ')}</p>
-          {r.injuries.length > 0 && (
-            <p className="small warn">부상: {r.injuries.map((i) => `${name(i.unitId)} ${severityName(i.severity)} ${i.days}일`).join(', ')}</p>
-          )}
-          <button
-            className="btn block"
-            onClick={() => ctx.go({ name: 'replay', expeditionId: r.expeditionId, back: { name: 'dayResult', events } })}
-          >
-            전투 보기
-          </button>
-        </Panel>
-      ))}
-      {recovered.length > 0 && (
-        <Panel title="회복">
-          <p className="small">{recovered.map(name).join(', ')}이(가) 부상에서 회복했습니다.</p>
-        </Panel>
-      )}
-      {spawned.length > 0 && (
-        <Panel title="새 리프트">
-          <ul className="rows">
-            {spawned.map((r) => (
-              <li key={r.id}>
-                <button className="row-item row-button" onClick={() => ctx.go({ name: 'rifts', cityId: r.cityId })}>
-                  <span>{r.name}</span>
-                  <span className="muted small">{cityName(r.cityId)}</span>
+        </div>
+        {returned.length > 0 && (
+          <div className="col" style={{ gap: 10 }} data-ui="Result.report">
+            {returned.map((r) => (
+              <div key={r.expeditionId} className="col" style={{ gap: 10 }}>
+                <button
+                  className={`outcome-banner outcome-${r.outcome}`}
+                  aria-label={`${outcomeName[r.outcome]} · 전투 보기`}
+                  disabled={!r.events}
+                  onClick={() => ctx.go({ name: 'replay', expeditionId: r.expeditionId, back: { name: 'dayResult', events } })}
+                >
+                  <Art kind="banner" id="victory" fallback={VICTORY_BANNER} fill />
+                  <span className="outcome-label">{outcomeName[r.outcome]}</span>
                 </button>
-              </li>
+                <Card style={{ padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <div className="row between">
+                    <div className="col" style={{ minWidth: 0 }}>
+                      <span className="t13 dim">복귀 보고</span>
+                      <span style={{ fontSize: 16, fontWeight: 500 }} className="ellipsis">
+                        {r.rift.name}
+                      </span>
+                    </div>
+                    <span className="avatars">
+                      {r.party.map((p) => {
+                        const m = s.mercenaries.find((x) => x.id === p.mercId)!;
+                        return <Avatar key={p.mercId} id={m.id} element={m.element} role={m.role} large />;
+                      })}
+                    </span>
+                  </div>
+                  <div className="row" style={{ gap: 8 }}>
+                    <Gain icon="zero" label="제로" value={r.reward.zero} />
+                    <Gain icon="arche" label="아르케" value={r.reward.arche} />
+                    <Gain
+                      icon="material"
+                      label={Object.keys(r.reward.materials).length === 1 ? materialName(Object.keys(r.reward.materials)[0]) : '고유 재료'}
+                      value={Object.values(r.reward.materials).reduce((a, n) => a + n, 0)}
+                    />
+                  </div>
+                  <div className="row between t13 dim">
+                    <span>
+                      파티 {r.party.length}명
+                      {r.injuries.length > 0 &&
+                        ` · ${Object.entries(r.injuries.reduce<Record<string, number>>((a, i) => ({ ...a, [i.severity]: (a[i.severity] ?? 0) + 1 }), {}))
+                          .map(([sev, n]) => `${severityName(sev)} ${n}명`)
+                          .join(' · ')}`}
+                    </span>
+                    {r.injuries[0] && (
+                      <span>
+                        {name(r.injuries[0].unitId)} {s.mercenaries.find((m) => m.id === r.injuries[0].unitId)?.injury?.recoverDay ?? r.day + r.injuries[0].days + 1}일차부터 출전
+                      </span>
+                    )}
+                  </div>
+                </Card>
+              </div>
             ))}
-          </ul>
-        </Panel>
-      )}
-      {expired.length > 0 && (
-        <Panel title="사라진 리프트">
-          <p className="small muted">{expired.join(', ')}</p>
-        </Panel>
-      )}
-    </AppShell>
+          </div>
+        )}
+        {ready.length > 0 && (
+          <Card data-ui="Result.levelup" className="levelup-card">
+            <div className="col" style={{ minWidth: 0 }}>
+              <span style={{ fontSize: 16, fontWeight: 500 }}>레벨업 가능 {ready.length}명</span>
+              <span className="t13 dim">
+                필요 아르케 {num(need)} · 보유 {num(s.resources.arche)}
+              </span>
+            </div>
+            <button className="btn-big" style={{ width: 128, height: 44, fontSize: 15, flex: 'none' }} onClick={bulk}>
+              일괄 레벨업
+            </button>
+          </Card>
+        )}
+        <div className="row between t13 dim" style={{ padding: '0 4px' }} data-ui="Result.upkeep">
+          <span>오늘 유지비 -{num(upkeep?.type === 'upkeep' ? upkeep.paid : 0)} 제로</span>
+          <span>
+            남은 제로 <b style={{ color: 'var(--c-text)' }}>{num(s.resources.zero)}</b>
+          </span>
+        </div>
+      </div>
+      <div className="grow" />
+    </Screen>
+  );
+}
+
+function Gain({ icon, label, value }: { icon: IconName; label: string; value: number }) {
+  return (
+    <div className="gain">
+      <Icon name={icon} />
+      <div className="col">
+        <span className="sub">{label}</span>
+        <span style={{ fontSize: 16, fontWeight: 700 }}>+{num(value)}</span>
+      </div>
+    </div>
   );
 }

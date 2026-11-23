@@ -1,10 +1,11 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { loadUiFixture } from '../app/fixture';
 import { tables } from '../data';
 import { advanceDayWithAutosave } from '../app/session';
-import type { GameState } from '../engine/game';
+import type { DayEvent, GameState } from '../engine/game';
 import { Toast } from './components';
 import type { Ctx, Game, Route } from './nav';
-import { saves } from './saves';
+import { saves } from '../app/saves';
 import { BattleReplay } from './screens/BattleReplay';
 import { Base } from './screens/Base';
 import { DayResult } from './screens/DayResult';
@@ -13,8 +14,9 @@ import { MercDetail } from './screens/MercDetail';
 import { MercList } from './screens/MercList';
 import { NewGame } from './screens/NewGame';
 import { PartyBuilder } from './screens/PartyBuilder';
-import { RiftList } from './screens/RiftList';
+import { Content } from './screens/Content';
 import { SaveSlots } from './screens/SaveSlots';
+import { Settings } from './screens/Settings';
 import { Title } from './screens/Title';
 
 export function App() {
@@ -40,6 +42,21 @@ export function App() {
     },
     [go],
   );
+
+  // 개발 전용: ?fixture=ui면 UI 픽스처로 바로 시작하고 screen 파라미터의 화면을 연다(지시서 017 A-2)
+  useEffect(() => {
+    if (!import.meta.env.DEV) return;
+    let alive = true;
+    loadUiFixture().then((fx) => {
+      if (!alive || !fx) return;
+      const st = fx.dayResult?.state ?? fx.state;
+      setGame({ slotId: fx.slotId, state: st });
+      setRoute(fixtureRoute(fx.screen, fx.state, fx.dayResult?.events));
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   const toastEl = toastMsg && <Toast message={toastMsg} onClose={() => setToastMsg(null)} />;
 
@@ -85,7 +102,7 @@ export function App() {
       screen = <GuildHome ctx={ctx} />;
       break;
     case 'rifts':
-      screen = <RiftList ctx={ctx} cityId={route.cityId} />;
+      screen = <Content ctx={ctx} cityId={route.cityId} sub={route.sub} />;
       break;
     case 'party':
       screen = <PartyBuilder ctx={ctx} riftId={route.riftId} />;
@@ -100,7 +117,7 @@ export function App() {
       screen = <Base ctx={ctx} />;
       break;
     case 'saves':
-      screen = <SaveSlots ctx={ctx} onLoad={startGame} toast={toast} />;
+      screen = <Settings ctx={ctx} back={route.back} onLoad={startGame} onNewGame={() => go({ name: 'newGame' })} />;
       break;
     case 'dayResult':
       screen = <DayResult ctx={ctx} events={route.events} />;
@@ -115,4 +132,34 @@ export function App() {
       {toastEl}
     </>
   );
+}
+
+/** 픽스처 화면 이름 → 경로(개발 전용) */
+function fixtureRoute(screen: string, s: GameState, events?: DayEvent[]): Route {
+  const guild = s.mercenaries.filter((m) => m.affiliation.kind === 'guild' && !m.isProtagonist);
+  const baseRifts = s.rifts.filter((r) => r.cityId === s.baseCityId);
+  switch (screen) {
+    case 'rifts':
+      return { name: 'rifts', sub: 'rifts' };
+    case 'tower':
+    case 'boss':
+    case 'recruit':
+      return { name: 'rifts', sub: screen };
+    case 'party':
+      return { name: 'party', riftId: (baseRifts[2] ?? baseRifts[0]).id };
+    case 'dayResult':
+      return { name: 'dayResult', events: events ?? [] };
+    case 'mercs':
+      return { name: 'mercs' };
+    case 'merc':
+      return { name: 'merc', mercId: guild[0].id };
+    case 'replay':
+      return { name: 'replay', expeditionId: s.reports.at(-1)?.expeditionId ?? '', back: { name: 'home' } };
+    case 'base':
+      return { name: 'base' };
+    case 'saves':
+      return { name: 'saves' };
+    default:
+      return { name: 'home' };
+  }
 }

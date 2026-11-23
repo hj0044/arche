@@ -486,6 +486,8 @@ export interface OmenRow { id: string; text: string }
 export interface UiTable {
   storageWarnRatio: number;
   replay: { stepMs: number; speeds: number[] };
+  deviceSettings: { replaySpeed: number; sound: boolean; confirmImportant: boolean };
+  lockedFacilities: { id: string; name: string; status: string; note: string }[];
   recentReportsOnHome: number;
   toastMs: number;
   /** 마감이 이 일수 이하로 남으면 경고 색 */
@@ -498,6 +500,8 @@ export interface UiTable {
   mercSort: { guild: { id: string; name: string }[]; recruit: { id: string; name: string }[] };
   /** 용병 화면 상태 필터 칩 */
   mercStatusFilters: { id: string; name: string }[];
+  /** 계약자 화면 빠른 필터 칩(지시서 017 시안: 대기·부상·충성 낮음). id는 mercStatuses의 상태 */
+  mercQuickFilters: { id: string; name: string }[];
   /** 리프트 화면 정렬 항목(지시서 013). 비교 방법은 id로 화면 코드가 정한다. 첫 항목이 기본 */
   riftSort: { id: string; name: string }[];
   /** "공략 가능"으로 세는 위험도 단계 id(combat-power.json riskTiers, 지금은 접전 이상). 위험도 범위의 나쁜 쪽 끝으로 판정 */
@@ -506,6 +510,10 @@ export interface UiTable {
   riftEagerRiskCount: number;
   /** 용병 상세 충성도에서 처음 보이는 최근 기록 줄 수(나머지는 펼치기, 지시서 014) */
   loyaltyLogPreview: number;
+  /** 성장 한계 구간(지시서 017): min 이상이면 그 구간(큰 것부터 판정). 색은 theme.css --cap-tier-N */
+  capTiers: { id: string; name: string; min: number }[];
+  /** 그림 슬롯(지시서 017): 경로 규칙과 비율 */
+  art: { basePath: string; extensions: string[]; ratios: Record<string, [number, number]>; idRatios: Record<string, [number, number]> };
 }
 
 export const cities: readonly CityRow[] = citiesJson as CityRow[];
@@ -527,7 +535,7 @@ export const tables: GameTables = {
   roster: rosterJson as RosterRow[],
   travel: travelJson,
   backgrounds: backgroundsJson,
-  ui: uiJson,
+  ui: uiJson as unknown as UiTable,
   growthSpeeds: growthSpeedsJson,
   worlds: worldsJson,
   races: racesJson,

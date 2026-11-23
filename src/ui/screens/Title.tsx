@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import type { GameState } from '../../engine/game';
-import type { SlotSummary } from '../../storage/saveService';
+import type { SlotSummary } from '../../app/saves';
 import { AppShell } from '../AppShell';
 import { cityName, formatDateTime, term } from '../format';
-import { saves } from '../saves';
-import { parseSave } from '../../storage/saveFile';
+import { saves } from '../../app/saves';
+import { parseSave } from '../../app/saves';
 
 interface TitleProps {
   onNew: () => void;

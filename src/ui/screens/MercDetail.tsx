@@ -1,7 +1,11 @@
+/**
+ * 계약자 상세(시안 MercDetail, 지시서 017). 구역 순서: header · identity · coreStats · subStats · traits · actions.
+ * 시안에 자리가 없는 프로필·스킬(이름 영역), 충성도 기록·급료 보너스(충성도 칸), 훈련 배치(훈련 버튼)는 바텀 시트로 흡수했다.
+ */
 import { useState } from 'react';
 import { getRole, getSkill, tables } from '../../data';
 import {
-  canLevelUp,
+
   expToNextLevel,
   GameError,
   isOnExpedition,
@@ -21,12 +25,13 @@ import {
   unassignFromFacility,
 } from '../../engine/game';
 import { trainingAccess } from '../../engine/status';
-import { AppShell } from '../AppShell';
-import { Bar, ConfirmDialog, ElementTag, LoyaltyBadge, Panel, RoleTag } from '../components';
+import { Gauge, Portrait, Sheet, StatRow, TraitRow } from '../components';
+import { Icon } from '../components';
 import { loyaltyDisplay, loyaltyTier, tendencyOf } from '../../engine/loyalty';
 import { allyAuraRows, computeEffectiveStats, getTrait } from '../../engine/stats';
 import { assignedFacility, getFacility } from '../../engine/facilities';
-import { injuryText, loyaltyReasonName, backgroundShort, cityName, factionName, growthSpeedName, num, tierName, worldName, statsLabel, term, statValue, traitName, traitCategoryName } from '../format';
+import { injuryText, loyaltyReasonName, backgroundShort, cityName, factionName, growthSpeedName, num, tierName, worldName, statsLabel, term, statValue, traitName, traitCategoryName, roleName, elementName } from '../format';
+import { statBarMax } from '../mercInfo';
 import type { Ctx } from '../nav';
 
 const SKILL_DESC: Record<string, string> = {
@@ -40,18 +45,20 @@ const SKILL_DESC: Record<string, string> = {
 
 export function MercDetail({ ctx, mercId }: { ctx: Ctx; mercId: string }) {
   const s = ctx.game.state;
-  const [confirm, setConfirm] = useState(false);
+  const [sheet, setSheet] = useState<null | 'profile' | 'loyalty' | 'training' | 'recruit'>(null);
   const [logOpen, setLogOpen] = useState(false);
   const m = s.mercenaries.find((x) => x.id === mercId);
   if (!m) return null;
   const unit = mercToUnit(tables, m);
   // 최종 스탯 계산 한 곳(stats.ts): 전투 시작 상황, 체력 가득, 기본 열
   const finalStats = computeEffectiveStats(tables, unit, { round: 1, hpRatio: 1, row: getRole(tables, m.role).defaultRow, allyAuras: allyAuraRows(tables, unit) });
-  // 특성 슬롯: 슬롯 수 = 데이터의 해금 레벨 중 성장 한계 이하인 것, 목록이 짧으면 빈 슬롯
+  // 특성 슬롯: 해금 레벨이 성장 한계 이하이고 데이터에 특성이 있는 칸
   const ids = mercTraitIds(tables, m);
   const traitSlots = tables.traits.slotUnlockLevels
     .map((level, slot) => ({ slot, level, id: ids[slot], unlocked: m.level >= level && !!ids[slot] }))
     .filter((x) => x.id && x.level <= m.growth.cap);
+  const unlockedCount = traitSlots.filter((t) => t.unlocked).length;
+  const nextSlot = traitSlots.find((t) => !t.unlocked);
   const need = expToNextLevel(tables, m.level, m.growth.speed);
   const cost = levelUpCost(tables, m.level);
   const capped = m.level >= m.growth.cap;
@@ -61,6 +68,7 @@ export function MercDetail({ ctx, mercId }: { ctx: Ctx; mercId: string }) {
   const outlook = recruitUpkeepOutlook(tables, s, m.id);
   const tendency = tendencyOf(tables, m.profile.background);
   const speed = tables.growthSpeeds.find((g) => g.id === m.growth.speed);
+  const training = isGuild && !m.isProtagonist ? trainingAccess(tables, s, m.id) : null;
 
   const run = (fn: () => void) => {
     try {
@@ -72,194 +80,301 @@ export function MercDetail({ ctx, mercId }: { ctx: Ctx; mercId: string }) {
 
   const status = m.injury
     ? injuryText(m.injury)
-    : isOnExpedition(s, m.id)
+    : onExpedition
       ? '파견 중'
       : assignedFacility(s.facilities, m.id)
         ? `${getFacility(tables, assignedFacility(s.facilities, m.id)!).name} 배치 중`
         : isGuild
-        ? '길드 · 대기'
-        : m.affiliation.kind === 'faction'
-          ? factionName(m.affiliation.factionId)
+          ? '대기'
           : '';
+  const affiliation = isGuild ? s.guildName : m.affiliation.kind === 'faction' ? factionName(m.affiliation.factionId) : '무소속';
+  const idLine = [m.profile.hometown ? cityName(m.profile.hometown) : null, affiliation, backgroundShort(m.profile.background)].filter(Boolean).join(' · ');
 
   const unlockText =
     info.unlock &&
-    (info.unlock.type === 'totalVictories'
-      ? `리프트 공략 성공 ${info.unlock.count}회`
-      : `${tierName(info.unlock.tier)} 공략 성공 ${info.unlock.count}회`);
+    (info.unlock.type === 'totalVictories' ? `리프트 공략 성공 ${info.unlock.count}회` : `${tierName(info.unlock.tier)} 공략 성공 ${info.unlock.count}회`);
 
-  let footer = null;
-  if (isGuild) {
-    footer = (
-      <button
-        className="btn primary block"
-        disabled={!canLevelUp(tables, s, m.id)}
-        onClick={() =>
-          run(() => {
-            ctx.setState(levelUp(tables, s, m.id));
-            const fresh = newTraitsOnLevelUp(tables, m, m.level, m.level + 1);
-            ctx.toast(`${m.name} Lv${m.level + 1}${fresh.length ? ` · 새 특성: ${fresh.map(traitName).join(', ')}` : ''}`);
-          })
-        }
-      >
-        {onExpedition
-          ? LEVEL_UP_BLOCKED_ON_EXPEDITION
-          : capped
-          ? '성장 한계에 도달'
-          : m.exp < need
-            ? `레벨업: 경험치 ${m.exp}/${need}`
-            : `레벨업 (아르케 ${num(cost)}${s.resources.arche < cost ? ' 부족' : ''})`}
-      </button>
-    );
-  } else if (info.eligible) {
-    footer = (
-      <button className="btn primary block" disabled={!info.unlocked || s.resources.zero < info.cost} onClick={() => setConfirm(true)}>
-        {!info.unlocked
-          ? `잠김: ${unlockText} (${info.progress?.current}/${info.progress?.required})`
-          : `영입 (제로 ${num(info.cost)}${s.resources.zero < info.cost ? ' 부족' : ''})`}
-      </button>
-    );
-  }
+  const stat = (id: 'hp' | 'spd' | 'pAtk' | 'eAtk' | 'pDef' | 'eDef') => ({
+    name: tables.stats.stats.find((x) => x.id === id)!.name,
+    value: statValue(id, finalStats[id]),
+    ratio: Math.min(1, finalStats[id] / statBarMax(tables, id, m.level)),
+    color: `var(--stat-${id})`,
+  });
+  const sub = (id: 'crit' | 'critDmg' | 'eva') => {
+    const v = finalStats[id];
+    // 시안은 치명타 피해율도 %로 쓴다(×1.5 → 150%)
+    return { name: tables.stats.stats.find((x) => x.id === id)!.name, value: id === 'critDmg' ? `${Math.round(v * 100)}%` : statValue(id, v) };
+  };
+  const tier = m.loyalty ? loyaltyTier(tables, m.loyalty.value) : null;
+
+  const levelLabel = onExpedition
+    ? LEVEL_UP_BLOCKED_ON_EXPEDITION
+    : capped
+      ? '성장 한계에 도달'
+      : m.exp < need
+        ? `레벨업 (경험치 ${num(m.exp)}/${num(need)})`
+        : `레벨업 (아르케 ${num(cost)})`;
+  const doLevelUp = () =>
+    run(() => {
+      if (s.resources.arche < cost && m.exp >= need && !capped && !onExpedition) return ctx.toast(`아르케가 부족합니다 (필요 ${num(cost)})`);
+      ctx.setState(levelUp(tables, s, m.id));
+      const fresh = newTraitsOnLevelUp(tables, m, m.level, m.level + 1);
+      ctx.toast(`${m.name} Lv${m.level + 1}${fresh.length ? ` · 새 특성: ${fresh.map(traitName).join(', ')}` : ''}`);
+    });
 
   return (
-    <AppShell title={m.name} subtitle={status} onBack={() => ctx.go({ name: 'mercs' })} footer={footer}>
-      <Panel>
-        <div className="tags">
-          <ElementTag id={m.element} />
-          <RoleTag id={m.role} />
-          {m.isProtagonist && <span className="pill small">주인공</span>}
-        </div>
-        <div className="kv">
-          <span>레벨</span>
-          <span className="strong">{m.level}</span>
-          <span>성장 한계</span>
-          <span className="strong">{m.growth.cap}</span>
-          <span>성장 속도</span>
-          <span>
-            {growthSpeedName(m.growth.speed)} <span className="muted small">(필요 경험치 ×{speed?.expToNextMultiplier})</span>
-          </span>
-          <span>최초 레벨</span>
-          <span>{m.initialLevel}</span>
-          {upkeepPerDay(tables, m) > 0 && (
-            <>
-              <span>하루 유지비</span>
-              <span>제로 {num(upkeepPerDay(tables, m))}</span>
-            </>
-          )}
-        </div>
-        {isGuild && (
-          <>
-            <div className="small muted">
-              경험치 {m.exp} / {need}
-            </div>
-            <Bar value={m.exp} max={need} kind="exp" />
-          </>
-        )}
-        {m.unpaidUpkeep && (
-          <p className="small warn">
-            유지비 미납 {m.unpaidUpkeep.days}일 · 제로 {num(m.unpaidUpkeep.zero)}
-          </p>
-        )}
-      </Panel>
-
-      {isGuild && m.loyalty && (
-        <Panel title="충성도" action={<LoyaltyBadge value={m.loyalty.value} />}>
-          <div className="small">
-            <span className="strong">{loyaltyDisplay(m.loyalty.value)}</span>
-            <span className="muted"> / {tables.loyalty.range[1]}</span>
-            {(() => {
-              const tier = loyaltyTier(tables, m.loyalty!.value);
-              return tier.statBonus !== 0 ? (
-                <span className={tier.statBonus > 0 ? 'ok' : 'warn'}>
-                  {' '}
-                  · 공격·방어 {tier.statBonus > 0 ? '+' : ''}
-                  {Math.round(tier.statBonus * 100)}%
+    <div className="scr" data-screen="merc">
+      <main className="scr-body shell-body">
+        <div className="md-hero">
+          <Portrait id={m.id} element={m.element} role={m.role} fill />
+          <div className="md-hero-shade" />
+          <button className="md-back" aria-label="뒤로" data-ui="MercDetail.header" onClick={() => ctx.go({ name: 'mercs' })}>
+            <Icon name="back" />
+          </button>
+          <button className="md-id" data-ui="MercDetail.identity" aria-label={`${m.name} 프로필·스킬`} onClick={() => setSheet('profile')}>
+            <span className="col" style={{ gap: 3, minWidth: 0 }}>
+              <span className="row" style={{ gap: 6 }}>
+                <span className="md-chip" style={{ ['--chip' as string]: 'var(--c-info)' }}>
+                  {roleName(m.role)}
                 </span>
-              ) : null;
-            })()}
+                <span className="md-chip" data-el={m.element} style={{ ['--chip' as string]: 'var(--el)' }}>
+                  {elementName(m.element)}
+                </span>
+                <span className="md-chip" style={{ ['--chip' as string]: 'var(--c-gold)' }}>
+                  성장 한계 {m.growth.cap}
+                </span>
+              </span>
+              <span className="md-name">{m.name}</span>
+              <span className="ellipsis" style={{ fontSize: 12, color: 'var(--c-text-banner)' }}>
+                {idLine}
+              </span>
+            </span>
+            <span className="md-lv">
+              {m.level}
+              <span>/{m.growth.cap}</span>
+            </span>
+          </button>
+        </div>
+        <div className="col" style={{ padding: '8px 16px 0', gap: 6 }} data-role="page">
+          <Gauge ratio={capped ? 1 : m.exp / need} size="h6" color="linear-gradient(90deg, var(--c-ok), var(--c-gold))" />
+          <div className="col" style={{ gap: 6 }} data-ui="MercDetail.coreStats">
+            <StatRow items={[stat('hp'), stat('spd')]} />
+            <StatRow items={[stat('pAtk'), stat('eAtk')]} />
+            <StatRow items={[stat('pDef'), stat('eDef')]} />
           </div>
-          <Bar value={m.loyalty.value} max={tables.loyalty.range[1]} />
-          {loyaltyTier(tables, m.loyalty.value).warn && (
-            <p className="warn small" role="status">
-              {loyaltyTier(tables, m.loyalty.value).refuseChance > 0
+          <div className="row" style={{ gap: 6, alignItems: 'stretch' }} data-ui="MercDetail.subStats">
+            {(['crit', 'critDmg', 'eva'] as const).map((id) => {
+              const x = sub(id);
+              return (
+                <div key={id} className="stat-sm">
+                  <span>{x.name}</span>
+                  <b>{x.value}</b>
+                </div>
+              );
+            })}
+            <button className="md-sub-btn" aria-label="충성도 자세히" disabled={!m.loyalty} onClick={() => setSheet('loyalty')}>
+              <span className="stat-sm" style={{ display: 'flex' }}>
+                <span>충성도</span>
+                <b style={tier?.warn ? { color: 'var(--c-warn)' } : undefined}>{tier ? tier.name : '—'}</b>
+              </span>
+            </button>
+          </div>
+          <div className="col" style={{ gap: 6 }} data-ui="MercDetail.traits">
+            <div className="row between" style={{ alignItems: 'baseline', marginTop: 2 }}>
+              <span style={{ fontSize: 16, fontWeight: 500 }}>특성</span>
+              <span className="sub">
+                {unlockedCount} / {traitSlots.length} 해금{nextSlot ? ` · 다음 Lv ${nextSlot.level}` : ''}
+              </span>
+            </div>
+            {traitSlots.map((t) => {
+              const tr = getTrait(tables, t.id);
+              return (
+                <TraitRow
+                  key={t.slot}
+                  category={tr.category}
+                  kindName={traitCategoryName[tr.category] ?? tr.category}
+                  name={tr.name}
+                  description={tr.description}
+                  level={t.level}
+                  locked={!t.unlocked}
+                />
+              );
+            })}
+          </div>
+        </div>
+        <div className="grow" />
+      </main>
+      <div className="foot" style={{ paddingTop: 0, paddingBottom: 12 }} data-ui="MercDetail.actions">
+        {isGuild ? (
+          <>
+            <button className="btn-act" style={{ width: '30%', flex: 'none', fontSize: 15, fontWeight: 500 }} disabled={!training} onClick={() => setSheet('training')}>
+              훈련
+            </button>
+            <button className="btn-big" style={{ height: 48, fontSize: 15 }} disabled={onExpedition || capped || m.exp < need} onClick={doLevelUp}>
+              {levelLabel}
+            </button>
+          </>
+        ) : info.eligible ? (
+          <button className="btn-big" style={{ height: 48, fontSize: 15 }} disabled={!info.unlocked || s.resources.zero < info.cost} onClick={() => setSheet('recruit')}>
+            {!info.unlocked ? `잠김: ${unlockText} (${info.progress?.current}/${info.progress?.required})` : `영입 (제로 ${num(info.cost)})`}
+          </button>
+        ) : null}
+      </div>
+
+      {sheet === 'profile' && (
+        <Sheet title={`${m.name} 프로필`} onClose={() => setSheet(null)}>
+          <dl className="kv-list">
+            {status && <Kv k="상태" v={status} />}
+            {m.isProtagonist && <Kv k="구분" v="주인공" />}
+            {m.profile.age !== undefined && <Kv k="나이" v={`${m.profile.age}세`} />}
+            {m.profile.gender && <Kv k="성별" v={m.profile.gender} />}
+            {m.profile.hometown && <Kv k="고향" v={cityName(m.profile.hometown)} />}
+            <Kv k="배경" v={backgroundShort(m.profile.background)} />
+            {!m.isProtagonist && tendency && <Kv k="계약 성향" v={`${tendency.name}형 · ${tendency.description}`} />}
+            <Kv k="세계" v={worldName(m.profile.world)} />
+            <Kv k="성장 속도" v={`${growthSpeedName(m.growth.speed)} (필요 경험치 ×${speed?.expToNextMultiplier})`} />
+            <Kv k="최초 레벨" v={`${m.initialLevel}`} />
+            {isGuild && <Kv k="경험치" v={`${num(m.exp)} / ${num(need)}`} />}
+            {upkeepPerDay(tables, m) > 0 && <Kv k="하루 유지비" v={`제로 ${num(upkeepPerDay(tables, m))}`} />}
+            {m.unpaidUpkeep && <Kv k="유지비 미납" v={`${m.unpaidUpkeep.days}일 · 제로 ${num(m.unpaidUpkeep.zero)}`} />}
+            {!isGuild && info.eligible && unlockText && <Kv k="영입 조건" v={`${unlockText} (${info.progress?.current}/${info.progress?.required})`} />}
+          </dl>
+          <span className="sec-title" style={{ fontSize: 15 }}>
+            스킬
+          </span>
+          <ul className="col" style={{ gap: 6, margin: 0, padding: 0, listStyle: 'none' }}>
+            {unit.skills.map((id, i) => {
+              const sk = getSkill(tables, id);
+              return (
+                <li key={id} className="col" style={{ gap: 1 }}>
+                  <span className="t14 m">
+                    {sk.name} <span className="sub">{i === 0 ? '기본 공격' : `쿨다운 ${sk.cooldown}`}</span>
+                  </span>
+                  <span className="sub">
+                    {SKILL_DESC[sk.target]}
+                    {sk.power ? ` · 위력 ${sk.power}${sk.hits ? `×${sk.hits}` : ''}` : ''}
+                    {sk.kind === 'taunt' ? ` · 도발 ${sk.duration}라운드` : ''}
+                    {sk.kind === 'buff' ? ` · ${statsLabel(sk.stats)} +${Math.round((sk.amount ?? 0) * 100)}% ${sk.duration}라운드` : ''}
+                    {sk.kind === 'heal' ? ' · 회복' : ''}
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+          <p className="sub" style={{ margin: 0 }}>
+            스킬 속성은 {term.merc} 속성을 따릅니다. 능력치는 레벨·충성도와 항상 켜진 특성을 반영한 값이고, 조건이 붙은 특성은 전투 중에만 더해집니다.
+          </p>
+          <button className="btn-act" onClick={() => setSheet(null)}>
+            닫기
+          </button>
+        </Sheet>
+      )}
+
+      {sheet === 'loyalty' && m.loyalty && tier && (
+        <Sheet title={`충성도 · ${tier.name}`} onClose={() => setSheet(null)}>
+          <div className="row between t14">
+            <span>
+              <b>{loyaltyDisplay(m.loyalty.value)}</b>
+              <span className="dim"> / {tables.loyalty.range[1]}</span>
+            </span>
+            {tier.statBonus !== 0 && (
+              <span style={{ color: tier.statBonus > 0 ? 'var(--c-ok)' : 'var(--c-warn)' }}>
+                공격·방어 {tier.statBonus > 0 ? '+' : ''}
+                {Math.round(tier.statBonus * 100)}%
+              </span>
+            )}
+          </div>
+          <Gauge ratio={m.loyalty.value / tables.loyalty.range[1]} color={tier.warn ? 'var(--c-warn)' : 'var(--c-ok)'} />
+          {tier.warn && (
+            <p className="t13" style={{ margin: 0, color: 'var(--c-warn)' }} role="status">
+              {tier.refuseChance > 0
                 ? `충성도가 위험합니다. 파견을 거부할 수 있고, ${tables.loyalty.departure.afterConsecutiveDays}일 넘게 이어지면 길드를 떠날 수 있습니다.`
                 : '충성도가 낮아 전투 능력이 줄었습니다.'}
             </p>
           )}
-          <button
-            className="btn block"
-            disabled={m.loyalty.bonusDay === s.day || s.resources.zero < salaryBonusCost(tables, m)}
-            onClick={() =>
-              run(() => {
-                ctx.setState(paySalaryBonus(tables, s, m.id));
-                ctx.toast(`${m.name}에게 급료 보너스를 줬습니다.`);
-              })
-            }
-          >
-            {m.loyalty.bonusDay === s.day
-              ? '오늘 급료 보너스를 줬습니다'
-              : `급료 보너스 (제로 ${num(salaryBonusCost(tables, m))}${s.resources.zero < salaryBonusCost(tables, m) ? ' 부족' : ''})`}
-          </button>
-          {m.loyalty.refusedOnDay === s.day && <p className="bad small">오늘은 파견을 거부했습니다.</p>}
-          {m.loyalty.restStreak > 0 && (
-            <p className={`small ${m.loyalty.restStreak > tables.loyalty.restMaxDays ? 'warn' : 'muted'}`}>
-              대기 {m.loyalty.restStreak}일
-              {m.loyalty.restStreak > tables.loyalty.restMaxDays
-                ? ` · ⚠ 대기 하락 중(출전 없이 ${tables.loyalty.restMaxDays}일을 넘김)`
-                : ` · 쉬는 날 상승(${tables.loyalty.restMaxDays}일까지)`}
+          {m.loyalty.refusedOnDay === s.day && (
+            <p className="t13" style={{ margin: 0, color: 'var(--c-bad)' }}>
+              오늘은 파견을 거부했습니다.
             </p>
           )}
-          {m.loyalty.recent.length > 0 && (() => {
-            // 최신 기록 몇 줄만 보이고 나머지는 펼쳐서 본다(지시서 014).
-            const all = [...m.loyalty!.recent].reverse();
-            const shown = logOpen ? all : all.slice(0, tables.ui.loyaltyLogPreview);
-            return (
-              <>
-                <ul className="loyalty-log" aria-label="최근 충성도 기록">
-                  {shown.map((r, i) => (
-                    <li key={i} className="small">
-                      <span className="muted">{r.day}일차</span> {loyaltyReasonName[r.reason] ?? r.reason}{' '}
-                      <span className={r.delta >= 0 ? 'ok' : 'warn'}>
-                        {r.delta >= 0 ? '+' : ''}
-                        {r.delta}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-                {all.length > tables.ui.loyaltyLogPreview && (
-                  <button className="link more-toggle" aria-expanded={logOpen} onClick={() => setLogOpen(!logOpen)}>
-                    {logOpen ? '기록 접기 ▴' : `기록 ${all.length - tables.ui.loyaltyLogPreview}줄 더 보기 ▾`}
-                  </button>
-                )}
-              </>
-            );
-          })()}
-        </Panel>
+          {m.loyalty.restStreak > 0 && (
+            <p className="sub" style={{ margin: 0, color: m.loyalty.restStreak > tables.loyalty.restMaxDays ? 'var(--c-warn)' : undefined }}>
+              대기 {m.loyalty.restStreak}일
+              {m.loyalty.restStreak > tables.loyalty.restMaxDays ? ` · 대기 하락 중(출전 없이 ${tables.loyalty.restMaxDays}일을 넘김)` : ` · 쉬는 날 상승(${tables.loyalty.restMaxDays}일까지)`}
+            </p>
+          )}
+          {m.loyalty.recent.length > 0 &&
+            (() => {
+              const all = [...m.loyalty!.recent].reverse();
+              const shown = logOpen ? all : all.slice(0, tables.ui.loyaltyLogPreview);
+              return (
+                <>
+                  <ul className="col" style={{ gap: 2, margin: 0, padding: 0, listStyle: 'none' }} aria-label="최근 충성도 기록">
+                    {shown.map((r, i) => (
+                      <li key={i} className="t13">
+                        <span className="dim">{r.day}일차</span> {loyaltyReasonName[r.reason] ?? r.reason}{' '}
+                        <span style={{ color: r.delta >= 0 ? 'var(--c-ok)' : 'var(--c-warn)' }}>
+                          {r.delta >= 0 ? '+' : ''}
+                          {r.delta}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                  {all.length > tables.ui.loyaltyLogPreview && (
+                    <button className="btn-act" aria-expanded={logOpen} onClick={() => setLogOpen(!logOpen)}>
+                      {logOpen ? '기록 접기' : `기록 ${all.length - tables.ui.loyaltyLogPreview}줄 더 보기`}
+                    </button>
+                  )}
+                </>
+              );
+            })()}
+          {isGuild && (
+            <button
+              className="btn-act primary"
+              disabled={m.loyalty.bonusDay === s.day || s.resources.zero < salaryBonusCost(tables, m)}
+              onClick={() =>
+                run(() => {
+                  ctx.setState(paySalaryBonus(tables, s, m.id));
+                  ctx.toast(`${m.name}에게 급료 보너스를 줬습니다.`);
+                })
+              }
+            >
+              {m.loyalty.bonusDay === s.day
+                ? '오늘 급료 보너스를 줬습니다'
+                : `급료 보너스 (제로 ${num(salaryBonusCost(tables, m))}${s.resources.zero < salaryBonusCost(tables, m) ? ' 부족' : ''})`}
+            </button>
+          )}
+          <button className="btn-act" onClick={() => setSheet(null)}>
+            닫기
+          </button>
+        </Sheet>
       )}
 
-      {isGuild && !m.isProtagonist && (() => {
-        const t = trainingAccess(tables, s, m.id);
-        if (!t.facilityId) return null;
-        const fname = getFacility(tables, t.facilityId).name;
+      {sheet === 'training' && training && (() => {
+        const t = training;
+        const fname = t.facilityId ? getFacility(tables, t.facilityId).name : '훈련소';
         return (
-          <Panel title={fname} action={t.built ? <span className="muted small">칸 {t.used}/{t.slots}</span> : undefined}>
-            {!t.built ? (
+          <Sheet title={t.built ? `${fname} · 칸 ${t.used}/${t.slots}` : fname} onClose={() => setSheet(null)}>
+            {!t.facilityId || !t.built ? (
               <>
-                <p className="small muted">거점에서 {fname}를 건설하면 배치할 수 있습니다.</p>
-                <button className="btn block" onClick={() => ctx.go({ name: 'base' })}>
-                  거점으로 ›
+                <p className="t14 dim" style={{ margin: 0 }}>
+                  거점에서 {fname}를 건설하면 배치할 수 있습니다.
+                </p>
+                <button className="btn-act primary" onClick={() => ctx.go({ name: 'base' })}>
+                  거점으로
                 </button>
               </>
             ) : t.assigned ? (
               <>
-                <p className="small">
+                <p className="t14" style={{ margin: 0 }}>
                   배치 중 · 하루 경험치 +{num(t.expPerDay)} · 배치 중에는 파견할 수 없습니다.
                 </p>
                 <button
-                  className="btn block"
+                  className="btn-act primary"
                   onClick={() =>
                     run(() => {
                       ctx.setState(unassignFromFacility(s, t.facilityId!, m.id));
+                      setSheet(null);
                       ctx.toast(`${m.name} ${fname} 배치 해제`);
                     })
                   }
@@ -269,154 +384,67 @@ export function MercDetail({ ctx, mercId }: { ctx: Ctx; mercId: string }) {
               </>
             ) : (
               <>
+                {t.reason && (
+                  <p className="t14 dim" style={{ margin: 0 }}>
+                    배치할 수 없음 · {t.reason}
+                  </p>
+                )}
                 <button
-                  className="btn block"
+                  className="btn-act primary"
                   disabled={!!t.reason}
                   onClick={() =>
                     run(() => {
                       ctx.setState(assignToFacility(tables, s, t.facilityId!, m.id));
+                      setSheet(null);
                       ctx.toast(`${m.name} ${fname}에 배치`);
                     })
                   }
                 >
-                  {t.reason ? `${fname}에 배치할 수 없음 · ${t.reason}` : `${fname}에 배치 (하루 경험치 +${num(t.expPerDay)})`}
+                  {fname}에 배치 (하루 경험치 +{num(t.expPerDay)})
                 </button>
               </>
             )}
-          </Panel>
+            <button className="btn-act" onClick={() => setSheet(null)}>
+              닫기
+            </button>
+          </Sheet>
         );
       })()}
 
-
-      <Panel title="프로필">
-        <div className="kv">
-          {m.profile.age !== undefined && (
-            <>
-              <span>나이</span>
-              <span>{m.profile.age}세</span>
-            </>
-          )}
-          {m.profile.gender && (
-            <>
-              <span>성별</span>
-              <span>{m.profile.gender}</span>
-            </>
-          )}
-          {m.profile.hometown && (
-            <>
-              <span>고향</span>
-              <span>{cityName(m.profile.hometown)}</span>
-            </>
-          )}
-          <span>배경</span>
-          <span>{backgroundShort(m.profile.background)}</span>
-          {!m.isProtagonist && tendency && (
-            <>
-              <span>계약 성향</span>
-              <span>
-                {tendency.name}형 <span className="muted small">· {tendency.description}</span>
-              </span>
-            </>
-          )}
-          <span>세계</span>
-          <span>{worldName(m.profile.world)}</span>
-          {!isGuild && m.affiliation.kind === 'faction' && (
-            <>
-              <span>소속</span>
-              <span>{factionName(m.affiliation.factionId)}</span>
-            </>
-          )}
-        </div>
-        {!isGuild && info.eligible && unlockText && (
-          <p className={`small ${info.unlocked ? 'ok' : 'muted'}`}>
-            영입 조건: {unlockText} ({info.progress?.current}/{info.progress?.required})
-          </p>
-        )}
-      </Panel>
-
-      <Panel title="능력치">
-        {/* 최종 스탯(지시서 016): 레벨·충성도·항상 켜진 특성까지 반영. 전투 중 조건부 특성은 빠진 값 */}
-        <div className="kv">
-          {tables.stats.stats.map((st) => (
-            <span key={st.id} className="contents">
-              <span>{st.name}</span>
-              <span className="strong">{statValue(st.id, finalStats[st.id])}</span>
-            </span>
-          ))}
-        </div>
-        <p className="hint">레벨·충성도와 항상 켜진 특성을 반영한 값입니다. 조건이 붙은 특성은 전투 중에만 더해집니다.</p>
-      </Panel>
-
-      {traitSlots.length > 0 && (
-        <Panel title="특성">
-          <ul className="trait-list">
-            {traitSlots.map((t) => (
-              <li key={t.slot} className={t.unlocked ? '' : 'locked'}>
-                <div className="strong small">
-                  {t.unlocked ? traitName(t.id) : `Lv ${t.level} 해금`}
-                  {t.unlocked && <span className="muted tiny"> · {traitCategoryName[getTrait(tables, t.id).category]}</span>}
-                </div>
-                {t.unlocked && <div className="muted small">{getTrait(tables, t.id).description}</div>}
-              </li>
-            ))}
-          </ul>
-        </Panel>
+      {sheet === 'recruit' && (
+        <Sheet title={`${m.name} 영입`} onClose={() => setSheet(null)}>
+          <dl className="kv-list">
+            <Kv k="영입비" v={`제로 ${num(outlook.cost)}`} />
+            <Kv k="남는 제로" v={num(outlook.zeroAfter)} />
+            <Kv k="길드 하루 유지비" v={`${num(outlook.dailyUpkeepBefore)} → ${num(outlook.dailyUpkeepAfter)}`} />
+            <Kv k="수입 없이 버틸 일수" v={Number.isFinite(outlook.daysAffordable) ? `${outlook.daysAffordable}일` : '제한 없음'} warn={outlook.daysAffordable < tables.ui.upkeepWarnDays} />
+          </dl>
+          <button
+            className="btn-act primary"
+            onClick={() => {
+              setSheet(null);
+              run(() => {
+                ctx.setState(recruit(tables, s, m.id));
+                ctx.toast(`${m.name}이(가) 길드에 합류했습니다.`);
+              });
+            }}
+          >
+            영입
+          </button>
+          <button className="btn-act" onClick={() => setSheet(null)}>
+            취소
+          </button>
+        </Sheet>
       )}
-      <Panel title="스킬">
-        <ul className="rows">
-          {unit.skills.map((id, i) => {
-            const sk = getSkill(tables, id);
-            return (
-              <li key={id} className="row-item">
-                <div>
-                  <div className="strong">
-                    {sk.name} <span className="muted small">{i === 0 ? '기본 공격' : `쿨다운 ${sk.cooldown}`}</span>
-                  </div>
-                  <div className="muted small">
-                    {SKILL_DESC[sk.target]}
-                    {sk.power ? ` · 위력 ${sk.power}${sk.hits ? `×${sk.hits}` : ''}` : ''}
-                    {sk.kind === 'taunt' ? ` · 도발 ${sk.duration}라운드` : ''}
-                    {sk.kind === 'buff' ? ` · ${statsLabel(sk.stats)} +${Math.round((sk.amount ?? 0) * 100)}% ${sk.duration}라운드` : ''}
-                    {sk.kind === 'heal' ? ' · 회복' : ''}
-                  </div>
-                </div>
-              </li>
-            );
-          })}
-        </ul>
-        <p className="hint">스킬 속성은 {term.merc} 속성을 따릅니다.</p>
-      </Panel>
+    </div>
+  );
+}
 
-      {confirm && (
-        <ConfirmDialog
-          title={`${m.name} 영입`}
-          message={
-            <div className="kv">
-              <span>영입비</span>
-              <span className="strong">제로 {num(outlook.cost)}</span>
-              <span>남는 제로</span>
-              <span>{num(outlook.zeroAfter)}</span>
-              <span>길드 하루 유지비</span>
-              <span>
-                {num(outlook.dailyUpkeepBefore)} → <span className="strong">{num(outlook.dailyUpkeepAfter)}</span>
-              </span>
-              <span>수입 없이 버틸 일수</span>
-              <span className={outlook.daysAffordable < tables.ui.upkeepWarnDays ? 'warn strong' : 'strong'}>
-                {Number.isFinite(outlook.daysAffordable) ? `${outlook.daysAffordable}일` : '제한 없음'}
-              </span>
-            </div>
-          }
-          confirmLabel="영입"
-          onCancel={() => setConfirm(false)}
-          onConfirm={() => {
-            setConfirm(false);
-            run(() => {
-              ctx.setState(recruit(tables, s, m.id));
-              ctx.toast(`${m.name}이(가) 길드에 합류했습니다.`);
-            });
-          }}
-        />
-      )}
-    </AppShell>
+function Kv({ k, v, warn }: { k: string; v: string; warn?: boolean }) {
+  return (
+    <>
+      <dt>{k}</dt>
+      <dd style={warn ? { color: 'var(--c-warn)' } : undefined}>{v}</dd>
+    </>
   );
 }

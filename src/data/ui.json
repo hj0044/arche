@@ -5,7 +5,7 @@
     "speeds": [
       1,
       2,
-      4
+      3
     ]
   },
   "recentReportsOnHome": 3,
@@ -15,6 +15,10 @@
   "lowAvailableWarn": 3,
   "mercSort": {
     "guild": [
+      {
+        "id": "capDesc",
+        "name": "한계순"
+      },
       {
         "id": "levelDesc",
         "name": "레벨 높은 순"
@@ -113,5 +117,114 @@
     "fair"
   ],
   "riftEagerRiskCount": 6,
-  "loyaltyLogPreview": 2
+  "loyaltyLogPreview": 2,
+  "capTiers": [
+    {
+      "id": "cap1",
+      "name": "~40",
+      "min": 0
+    },
+    {
+      "id": "cap2",
+      "name": "45",
+      "min": 45
+    },
+    {
+      "id": "cap3",
+      "name": "50",
+      "min": 50
+    },
+    {
+      "id": "cap4",
+      "name": "55~60",
+      "min": 55
+    },
+    {
+      "id": "cap5",
+      "name": "65~",
+      "min": 65
+    }
+  ],
+  "art": {
+    "_note": "그림 슬롯(지시서 017 4항). 파일 경로 = /<basePath>/<kind>/<id>.<확장자>, 확장자는 순서대로 시도하고 모두 없으면 대체 그림. 비율은 시안에서 읽은 값(가로:세로)",
+    "basePath": "art",
+    "extensions": [
+      "webp",
+      "png",
+      "svg"
+    ],
+    "ratios": {
+      "portrait": [
+        1,
+        1
+      ],
+      "banner": [
+        350,
+        52
+      ],
+      "emblem": [
+        1,
+        1
+      ],
+      "boss": [
+        350,
+        110
+      ],
+      "icon": [
+        1,
+        1
+      ],
+      "monster": [
+        1,
+        1
+      ]
+    },
+    "idRatios": {
+      "banner/guild": [
+        350,
+        84
+      ],
+      "banner/hq": [
+        350,
+        96
+      ],
+      "banner/victory": [
+        350,
+        104
+      ],
+      "banner/battlefield": [
+        390,
+        520
+      ]
+    }
+  },
+  "mercQuickFilters": [
+    {
+      "id": "available",
+      "name": "대기"
+    },
+    {
+      "id": "injured",
+      "name": "부상"
+    },
+    {
+      "id": "lowLoyalty",
+      "name": "충성 낮음"
+    }
+  ],
+  "deviceSettings": {
+    "_note": "기기 설정 기본값(지시서 017). 세이브에 넣지 않고 브라우저에 저장한다. sound는 값만 저장(소리 미구현).",
+    "replaySpeed": 1,
+    "sound": true,
+    "confirmImportant": true
+  },
+  "lockedFacilities": [
+    {
+      "_note": "거점 화면의 '곧 열림' 카드(시안 Base). 실제 시설이 아니라 안내 카드다.",
+      "id": "workshop",
+      "name": "정제소·공방",
+      "status": "곧 열림",
+      "note": "재료 용도가 정해지면 열려요"
+    }
+  ]
 }
