@@ -506,6 +506,8 @@ export interface UiTable {
   riftEagerRiskCount: number;
   /** 용병 상세 충성도에서 처음 보이는 최근 기록 줄 수(나머지는 펼치기, 지시서 014) */
   loyaltyLogPreview: number;
+  /** 성장 한계 구간(지시서 017): min 이상이면 그 구간(큰 것부터 판정). 색은 theme.css --cap-tier-N */
+  capTiers: { id: string; name: string; min: number }[];
 }
 
 export const cities: readonly CityRow[] = citiesJson as CityRow[];

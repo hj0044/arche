@@ -1,0 +1,118 @@
+/*
+ * 디자인 토큰(지시서 017 B). UI 1차 시안(docs/design/ui/README.md "디자인 값")의 값을 한 곳에 둔다.
+ * 화면 CSS와 SVG는 이 변수만 쓴다(색 리터럴은 이 파일과 src/ui/art/fallback/에만 허용).
+ * 구간 경계(성장 한계·위험도)는 수치라 데이터(ui.json, combat-power.json)에 있고, 여기에는 구간 id → 색만 둔다.
+ */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
+
+:root {
+  /* 기본 색 */
+  --c-page: #05070B; /* 화면 바깥(넓은 화면의 여백) */
+  --c-bg: #0E1118;
+  --c-bg-deep: #0B0E14; /* 하단 탭바 */
+  --c-bg-dark: #10141F; /* 배너 그림자·리프트 장면 아래 */
+  --c-panel: #161B27;
+  --c-panel-2: #1E2535;
+  --c-line: #2E3750;
+  --c-line-dim: #3A4560;
+  --c-gold: #E8B04A;
+  --c-gold-ink: #1A1405; /* 금색 버튼 위 글자 */
+  --c-gold-dark: #8A5F10;
+  --c-text: #ECEFF6;
+  --c-text-sub: #A9B2C7;
+  --c-text-dim: #8A93A8;
+  --c-text-faint: #6C7790;
+  --c-text-banner: #C9D1E3; /* 배너 위 보조 글자 */
+  --c-text-strong: #D3D8E6;
+
+  /* 상태 색(시안: 대기 초록, 파견 금색, 훈련 파랑, 부상 주황, 위험 빨강) */
+  --c-ok: #5CC9A0;
+  --c-info: #6FA8FF;
+  --c-warn: #F29B5B;
+  --c-bad: #F0706F;
+
+  /* 위험도 5구간(combat-power.json riskTiers id) */
+  --risk-crush: #3FCF8E;
+  --risk-safe: #9ED65A;
+  --risk-fair: #E6CF4A;
+  --risk-risky: #F29B5B;
+  --risk-hopeless: #F0706F;
+
+  /* 속성(elements.json id). 화염·냉기·대지·공허(어둠)는 시안 값. 바람·전격·빛은 시안에 없어 기존 앱 값(기록) */
+  --el-fire: #E8643C;
+  --el-frost: #5EB6F0;
+  --el-earth: #C79A55;
+  --el-void: #9B7BE8;
+  --el-wind: #7AD37A;
+  --el-lightning: #F5D547;
+  --el-light: #F3ECC2;
+
+  /* 성장 한계 구간 테두리(ui.json capTiers id) */
+  --cap-tier-1: #3A4560;
+  --cap-tier-2: #5CC9A0;
+  --cap-tier-3: #6FA8FF;
+  --cap-tier-4: #B58AF0;
+  --cap-tier-5: #E8B04A;
+
+  /* 특성 종류(traits.json category) */
+  --trait-common: #8FA3C8;
+  --trait-role: #6FA8FF;
+  --trait-background: #5CC9A0;
+  --trait-unique: #E8B04A;
+  --trait-element: #E8643C;
+  --trait-race: #B58AF0;
+
+  /* 반투명 그림자(배너 글자 받침) */
+  --c-scrim: rgba(14, 17, 24, 0.82);
+  --c-scrim-0: rgba(14, 17, 24, 0);
+
+  /* 모서리·간격·크기 */
+  --r-card: 14px;
+  --r-chip: 12px;
+  --r-btn: 10px;
+  --r-pill: 999px;
+  --sp-1: 8px;
+  --sp-2: 12px;
+  --sp-3: 16px;
+  --sp-4: 20px;
+  --pad-x: 20px;
+  --logo-row: 44px;
+  --tab-bar: 64px;
+  --touch: 44px;
+
+  /* 글꼴 */
+  --font: 'Noto Sans KR', system-ui, sans-serif;
+  --fs-title: 20px;
+  --fs-card-title: 16px;
+  --fs-body: 14px;
+  --fs-sub: 12px;
+  --fs-big: 28px;
+}
+
+/* 구간 id → 색: 부품은 data-*로 이어 붙인다 */
+[data-risk='crush'] { --risk: var(--risk-crush); }
+[data-risk='safe'] { --risk: var(--risk-safe); }
+[data-risk='fair'] { --risk: var(--risk-fair); }
+[data-risk='risky'] { --risk: var(--risk-risky); }
+[data-risk='hopeless'] { --risk: var(--risk-hopeless); }
+
+[data-el='fire'] { --el: var(--el-fire); }
+[data-el='frost'] { --el: var(--el-frost); }
+[data-el='earth'] { --el: var(--el-earth); }
+[data-el='void'] { --el: var(--el-void); }
+[data-el='wind'] { --el: var(--el-wind); }
+[data-el='lightning'] { --el: var(--el-lightning); }
+[data-el='light'] { --el: var(--el-light); }
+
+[data-cap='cap1'] { --cap: var(--cap-tier-1); }
+[data-cap='cap2'] { --cap: var(--cap-tier-2); }
+[data-cap='cap3'] { --cap: var(--cap-tier-3); }
+[data-cap='cap4'] { --cap: var(--cap-tier-4); }
+[data-cap='cap5'] { --cap: var(--cap-tier-5); }
+
+[data-trait='common'] { --trait: var(--trait-common); }
+[data-trait='role'] { --trait: var(--trait-role); }
+[data-trait='background'] { --trait: var(--trait-background); }
+[data-trait='unique'] { --trait: var(--trait-unique); }
+[data-trait='element'] { --trait: var(--trait-element); }
+[data-trait='race'] { --trait: var(--trait-race); }

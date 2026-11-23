@@ -5,7 +5,7 @@
     "speeds": [
       1,
       2,
-      4
+      3
     ]
   },
   "recentReportsOnHome": 3,
@@ -113,5 +113,32 @@
     "fair"
   ],
   "riftEagerRiskCount": 6,
-  "loyaltyLogPreview": 2
+  "loyaltyLogPreview": 2,
+  "capTiers": [
+    {
+      "id": "cap1",
+      "name": "~40",
+      "min": 0
+    },
+    {
+      "id": "cap2",
+      "name": "45",
+      "min": 45
+    },
+    {
+      "id": "cap3",
+      "name": "50",
+      "min": 50
+    },
+    {
+      "id": "cap4",
+      "name": "55~60",
+      "min": 55
+    },
+    {
+      "id": "cap5",
+      "name": "65~",
+      "min": 65
+    }
+  ]
 }
