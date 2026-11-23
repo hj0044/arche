@@ -256,3 +256,37 @@ html, body, #root { margin: 0; height: 100%; background: var(--c-page); }
 .kv-list { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; margin: 0; font-size: 13px; }
 .kv-list > dt { color: var(--c-text-sub); }
 .kv-list > dd { margin: 0; }
+
+/* ── 전투 재생(시안 Battle) ──────────────────────── */
+.bt-top { padding: 12px var(--pad-x) 6px; display: flex; align-items: center; justify-content: space-between; min-height: 44px; gap: 8px; }
+.bt-title { font-size: 15px; font-weight: 700; }
+.bt-btn { height: 40px; min-width: 44px; padding: 0 12px; border-radius: var(--r-btn); background: var(--c-panel); border: 1px solid var(--c-line-dim); color: var(--c-text); font-size: 14px; display: flex; align-items: center; justify-content: center; }
+.bt-btn.gold { color: var(--c-gold); font-weight: 700; }
+.bt-hit { height: 44px; min-width: 44px; display: flex; align-items: center; }
+.bt-hit:disabled { opacity: 0.45; }
+.bt-field { position: relative; height: 520px; flex: none; overflow: hidden; }
+.bt-side { position: absolute; left: 0; right: 0; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.bt-side.top { top: 14px; }
+.bt-side.bottom { bottom: 12px; }
+.bt-row { display: flex; justify-content: center; }
+.bt-unit { position: relative; width: 68px; flex: none; }
+.bt-unit.down { opacity: 0.4; }
+.bt-face { position: relative; width: 68px; height: 68px; border-radius: 12px; overflow: hidden; border: 1px solid var(--c-line); }
+.bt-face.acting { border: 2px solid var(--c-gold); box-shadow: 0 0 12px color-mix(in srgb, var(--c-gold) 70%, transparent); }
+.bt-lv { position: absolute; left: 3px; top: 3px; font-size: 11px; font-weight: 700; background: color-mix(in srgb, var(--c-bg) 82%, transparent); border-radius: 4px; padding: 0 4px; }
+.bt-num { position: absolute; left: 50%; top: -10px; transform: translateX(-50%); font-size: 18px; font-weight: 700; color: var(--c-dmg); text-shadow: 0 1px 3px var(--c-page); white-space: nowrap; }
+.bt-num.heal { color: var(--c-ok); }
+.bt-hp { height: 6px; margin-top: 3px; border-radius: 3px; background: var(--c-line); overflow: hidden; }
+.bt-hp > i { display: block; height: 100%; border-radius: 3px; background: var(--c-ok); }
+.bt-unit[data-side='enemy'] .bt-hp > i { background: var(--c-bad); }
+.bt-name { font-size: 12px; text-align: center; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bt-banner { position: absolute; left: 50%; top: 238px; transform: translateX(-50%); display: flex; align-items: center; gap: 8px; background: color-mix(in srgb, var(--c-bg) 90%, transparent); border: 1px solid var(--c-gold); border-radius: 999px; padding: 6px 14px; white-space: nowrap; max-width: calc(100% - 32px); }
+.bt-banner-name { font-size: 14px; font-weight: 700; color: var(--c-gold); overflow: hidden; text-overflow: ellipsis; }
+.bt-adv { font-size: 12px; font-weight: 700; border-radius: 6px; padding: 2px 8px; flex: none; }
+.bt-adv.good { color: var(--c-ok); background: color-mix(in srgb, var(--c-ok) 18%, transparent); }
+.bt-adv.bad { color: var(--c-bad); background: color-mix(in srgb, var(--c-bad) 18%, transparent); }
+.bt-log { width: 100%; text-align: left; background: var(--c-panel); border: 1px solid var(--c-line); border-radius: 12px; padding: 8px 12px; display: flex; flex-direction: column; gap: 3px; font-size: 13px; color: var(--c-text); }
+.bt-log > span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bt-log .dim { color: var(--c-text-sub); }
+.dmg { color: var(--c-dmg); }
+.bt-full-log { margin: 0; padding: 0; list-style: none; max-height: 50vh; overflow: auto; font-size: 13px; display: flex; flex-direction: column; gap: 3px; }

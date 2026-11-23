@@ -26,5 +26,9 @@
   "MercDetail": {
     "mismatchRatio": 0.0399,
     "refRetakeMismatch": 0.0062
+  },
+  "Battle": {
+    "mismatchRatio": 0.0593,
+    "refRetakeMismatch": 0.0076
   }
 }

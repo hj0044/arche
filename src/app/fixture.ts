@@ -3,6 +3,7 @@
 import { tables } from '../data';
 import { advanceDay, type DayEvent, type GameState } from '../engine/game';
 import { isUiFixture, parseSave, saves, UI_FIXTURE_SLOT } from './saves';
+import { defaultSettings, deviceSettings, memorySettingsStore } from './settings';
 
 export interface FixtureStart {
   slotId: string;
@@ -15,6 +16,8 @@ export interface FixtureStart {
 
 export async function loadUiFixture(): Promise<FixtureStart | null> {
   if (!import.meta.env.DEV || !isUiFixture()) return null;
+  // 기기 설정은 브라우저 값을 건드리지 않게 메모리로, 시안처럼 재생 속도 2x
+  deviceSettings.useStore(memorySettingsStore({ ...defaultSettings(), replaySpeed: 2 }));
   const json = (await import('../ui/fixtures/ui-mock.json')).default;
   const file = parseSave(json, saves.semantic);
   await saves.saveManual(UI_FIXTURE_SLOT, file.state, { overwrite: true });

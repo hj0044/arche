@@ -32,6 +32,7 @@
   --c-info: #6FA8FF;
   --c-warn: #F29B5B;
   --c-bad: #F0706F;
+  --c-dmg: #FF8A7A; /* 전투 피해 숫자(시안 Battle) */
 
   /* 위험도 5구간(combat-power.json riskTiers id) */
   --risk-crush: #3FCF8E;

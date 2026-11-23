@@ -486,6 +486,7 @@ export interface OmenRow { id: string; text: string }
 export interface UiTable {
   storageWarnRatio: number;
   replay: { stepMs: number; speeds: number[] };
+  deviceSettings: { replaySpeed: number; sound: boolean; confirmImportant: boolean };
   recentReportsOnHome: number;
   toastMs: number;
   /** 마감이 이 일수 이하로 남으면 경고 색 */

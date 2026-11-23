@@ -5,7 +5,7 @@
 import { useState, type CSSProperties } from 'react';
 import { tables } from '../../data';
 
-export type ArtKind = 'portrait' | 'banner' | 'emblem' | 'boss' | 'icon';
+export type ArtKind = 'portrait' | 'monster' | 'banner' | 'emblem' | 'boss' | 'icon';
 
 /** 실패한 경로는 기억해 다시 요청하지 않는다 */
 const missing = new Set<string>();

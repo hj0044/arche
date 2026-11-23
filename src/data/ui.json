@@ -173,6 +173,10 @@
       "icon": [
         1,
         1
+      ],
+      "monster": [
+        1,
+        1
       ]
     },
     "idRatios": {
@@ -207,5 +211,11 @@
       "id": "lowLoyalty",
       "name": "충성 낮음"
     }
-  ]
+  ],
+  "deviceSettings": {
+    "_note": "기기 설정 기본값(지시서 017). 세이브에 넣지 않고 브라우저에 저장한다. sound는 값만 저장(소리 미구현).",
+    "replaySpeed": 1,
+    "sound": true,
+    "confirmImportant": true
+  }
 }
