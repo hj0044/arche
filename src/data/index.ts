@@ -256,6 +256,8 @@ export interface BackgroundRow { id: string; name: string; shortName: string; fo
 export interface CombatTable {
   party: { maxSize: number; maxPerRow: number };
   maxRounds: number;
+  /** 행동 순서 흔들림 비율(지시서 018). 0이면 없음 */
+  speedJitter: number;
   element: { advantage: number; disadvantage: number; neutral: number };
   composition: { groups: string[]; bonusPerPresentGroup: number; penaltyPerMissingGroup: number; appliesToSides: Side[] };
   offRow: { damageDealtMultiplier: number; damageTakenMultiplier: number };
@@ -385,6 +387,7 @@ export interface CombatPowerTable {
   /** 계약자 baseStats 전투력 예산: 같은 역할 기본값 전투력 대비 비율 범위 */
   budget: Range;
   simulations: number;
+  detailSimulations: number;
   /** minWinRate가 큰 것부터 판정. 단계 수는 데이터로 늘리고 줄인다. */
   riskTiers: { id: string; name: string; minWinRate: number; /** 화면 5칸 막대 단계(1이 가장 좋음) */ step: number }[];
 }

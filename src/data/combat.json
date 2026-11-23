@@ -4,6 +4,8 @@
     "maxPerRow": 5
   },
   "maxRounds": 15,
+  "speedJitter": 0,
+  "_speedJitterNote": "지시서 018 5번: 라운드 시작 행동 순서를 정할 때 유닛마다 속도에 ±speedJitter 비율의 난수를 곱한다(실제 스탯은 그대로). 전용 난수 흐름 시드:init에서 라운드마다 유닛 수만큼 늘 같은 개수를 뽑는다. 0이면 흔들림 없음(이전과 같은 결과). 설계서에 없는 규칙(open-questions).",
   "element": {
     "advantage": 1.3,
     "disadvantage": 0.75,

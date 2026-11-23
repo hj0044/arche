@@ -23,6 +23,7 @@
     "economy-sweep": "tsx scripts/economy-sweep.ts",
     "rift-stats": "tsx scripts/rift-stats.ts",
     "difficulty-stats": "tsx scripts/difficulty-stats.ts",
+    "variance-sweep": "tsx scripts/variance-sweep.ts",
     "ui:shots": "tsx scripts/ui-shots.ts",
     "ui:check": "playwright test --config tests/ui/playwright.config.ts",
     "make-ui-fixture": "tsx scripts/make-ui-fixture.ts"

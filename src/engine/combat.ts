@@ -9,7 +9,7 @@ import {
   type StatId,
 } from '../data';
 import { createRng, type Rng } from './rng';
-import { allyAuraRows, computeEffectiveStats, levelScale, traitMultiplier, type StatContext } from './stats';
+import { allyAuraRows, battleStartStats, computeEffectiveStats, levelScale, traitMultiplier, type StatContext } from './stats';
 import type { Unit } from './unit';
 
 export interface CombatSlot {
@@ -169,6 +169,8 @@ export function resolveCombat(tables: GameTables, input: CombatInput): CombatRes
   const rng = createRng(input.seed);
   // 공격 판정 전용 난수 흐름: 공격 하나마다 피해 변동 → 회피 → 치명타 순으로 값과 상관없이 늘 세 번 뽑는다(지시서 016).
   const hitRng = createRng(`${input.seed}:hit`);
+  // 행동 순서 흔들림 전용 흐름(지시서 018): 라운드마다 전체 유닛 수만큼(쓰러진 유닛 포함) 늘 같은 개수를 뽑는다.
+  const initRng = createRng(`${input.seed}:init`);
   const cfg = tables.combat;
   let round = 0;
 
@@ -201,10 +203,13 @@ export function resolveCombat(tables: GameTables, input: CombatInput): CombatRes
     ...extra,
   });
   const eff = (c: Combatant, extra: Partial<StatContext> = {}) => computeEffectiveStats(tables, c.unit, ctxOf(c, extra));
-  // 최대 체력은 전투 시작 상황(체력 가득, 1라운드, 열, 아군 효과)으로 정한다.
-  for (const c of all) {
-    c.maxHp = eff(c, { hpRatio: 1, round: 1 }).hp;
-    c.hp = c.maxHp;
+  // 최대 체력은 전투 시작 상황(체력 가득, 1라운드, 열, 아군 효과)으로 정한다. 파티 전투력과 같은 함수(지시서 018).
+  for (const side of ['ally', 'enemy'] as const) {
+    const members = all.filter((c) => c.side === side);
+    battleStartStats(tables, members).forEach((st, i) => {
+      members[i].maxHp = st.hp;
+      members[i].hp = st.hp;
+    });
   }
 
   const comp: Record<Side, number> = { ally: 1, enemy: 1 };
@@ -379,7 +384,8 @@ export function resolveCombat(tables: GameTables, input: CombatInput): CombatRes
     const tiebreak = new Map(all.map((c) => [c.key, rng.next()]));
     const rowRank = (c: Combatant) => (c.row === 'front' ? 0 : 1);
     // 라운드 시작의 속도(특성: battleStart·roundStack 등 반영)
-    const speed = new Map(all.map((c) => [c.key, eff(c).spd * buffMultiplier(c, 'spd')]));
+    const jitter = cfg.speedJitter;
+    const speed = new Map(all.map((c) => [c.key, eff(c).spd * buffMultiplier(c, 'spd') * (1 + jitter * (2 * initRng.next() - 1))]));
     const order = all
       .filter((c) => !c.downed)
       .sort(

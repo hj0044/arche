@@ -64,6 +64,7 @@
 - 한 단계는 `effects` 배열이다. 효과 하나는 `{ trigger, condition?, effect }`.
   - trigger: `always`, `battleStart`(선택 `rounds`: 지속 라운드 수), `firstAction`, `hpBelow`(`threshold`), `roundStack`(`perRound`, `max`).
   - condition: `advantage`(속성 상성 유리), `enemyElement`(속성 id), `row`(`front`|`back`).
+  - 구현에서 더함(지시서 018 기록): trigger `fromRound`(`round`: 그 라운드부터, 끈기), condition `disadvantage`(상대 공격이 나에게 상성 유리, 적응력).
   - effect: `{ kind, stat?, value, scope }`. kind는 `statMul`, `statAdd`, `damageMul`, `damageTakenMul`, `healMul`. scope는 `self` | `allies`(allies는 `always`/`battleStart`에만 허용).
 - 알 수 없는 trigger/condition/kind는 **데이터 검증에서 실패**한다(조용히 무시하지 않는다). 새 특성은 행 추가만으로 늘어야 한다.
 - 폭주 방지 상한: 특성으로 인한 스탯 배율 합 상한, 치명타율·회피율·피해 감소 상한을 `traits.json`의 `caps`에 둔다.
@@ -72,7 +73,7 @@
 
 **시작 규칙(구현자가 따르되 데이터로)**: 슬롯1 공통 → 슬롯2 역할 → 슬롯3 배경 → 슬롯4 고유 → 슬롯5 속성 → 슬롯6 종족 → 슬롯7 공통(상위). 아래 표는 이 규칙대로 채우는 초안이다.
 
-**강화 대비(이번엔 구현하지 않음)**: 세이브에 용병별 `traitRanks: { [특성 id]: 단계 }`(없으면 1단계)를 둔다. `ranks`에 단계가 더 있으면 그 효과를 쓴다. 강화 화면·비용은 만들지 않는다. 세이브는 버전 7로 올린다(옛 세이브 무시).
+**강화 대비(이번엔 구현하지 않음)**: 세이브에 용병별 `traitRanks: { [특성 id]: 단계 }`(없으면 1단계)를 둔다. `ranks`에 단계가 더 있으면 그 효과를 쓴다. 강화 화면·비용은 만들지 않는다. 세이브는 버전 8로 올린다(옛 세이브 무시. 015가 7을 먼저 써서 8, 지시서 018에서 고침).
 
 **특성 초안 표** (효과 수치 모두 임시값, `value`는 설명의 수):
 
@@ -152,7 +153,7 @@ m01 철벽·균형 / m02 저격·기동 / m03 치유강·균형 / m04 마력·�
 - 전투: 물리 스킬은 물리방어, 에너지 스킬은 에너지방어를 쓴다. 치유는 회피·치명타 대상이 아니다. 치명타 피해율과 상한이 적용된다.
 - 특성: 슬롯 해금 레벨에서 효과가 켜진다. `hpBelow`·`firstAction`·`roundStack`·`battleStart`(지속 라운드)·`advantage`·`allies` 범위의 동작. 상한이 지켜진다.
 - 최종 스탯 계산 한 곳: 전투와 전투력, 위험도가 같은 값을 쓴다.
-- 세이브: 버전 7, `traitRanks` 직렬화·복원, 옛 버전은 "지원하지 않는 세이브".
+- 세이브: 버전 8, `traitRanks` 직렬화·복원, 옛 버전은 "지원하지 않는 세이브".
 - 용어: `josa`, 용어 표를 바꾸면 화면 문구가 따라간다.
 
 ## 하지 않는 것
