@@ -10,5 +10,9 @@
   "Recruit": {
     "mismatchRatio": 0.1483,
     "refRetakeMismatch": 0.0079
+  },
+  "Party": {
+    "mismatchRatio": 0.0533,
+    "refRetakeMismatch": 0.0309
   }
 }

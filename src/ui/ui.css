@@ -127,7 +127,7 @@ html, body, #root { margin: 0; height: 100%; background: var(--c-page); }
 
 /* ── 계약자 카드(시안 Merc: 81px, 초상 58px, 테두리 2px 구간색) ── */
 .merc-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
-.mcard { position: relative; border-radius: var(--r-btn); overflow: hidden; background: var(--c-panel); border: 2px solid var(--cap, var(--c-line-dim)); min-height: 44px; }
+.mcard { width: 100%; display: block; text-align: left; position: relative; border-radius: var(--r-btn); overflow: hidden; background: var(--c-panel); border: 2px solid var(--cap, var(--c-line-dim)); min-height: 44px; }
 .mcard[data-cap='cap3'] { box-shadow: 0 0 6px color-mix(in srgb, var(--cap) 35%, transparent); }
 .mcard[data-cap='cap4'] { box-shadow: 0 0 8px color-mix(in srgb, var(--cap) 50%, transparent); }
 .mcard[data-cap='cap5'] { box-shadow: 0 0 10px color-mix(in srgb, var(--cap) 65%, transparent); }
@@ -143,16 +143,24 @@ html, body, #root { margin: 0; height: 100%; background: var(--c-page); }
 .mcard-role { font-size: 12px; color: var(--c-text-sub); }
 .mcard-state { font-size: 11px; white-space: nowrap; }
 .mcard.off { opacity: 0.55; }
+.mcard.compact { border-width: 1px; border-color: var(--c-line); box-shadow: none; }
+.mcard.compact .mcard-art { height: 52px; }
+.mcard.compact .mcard-info { gap: 1px; }
+.mcard.compact .mcard-role { font-size: 11px; }
+.mcard.compact.picked { border-color: var(--c-gold); }
 .legend { display: flex; justify-content: space-between; }
 .legend > span { display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--c-text-sub); }
 .legend i { width: 10px; height: 10px; border-radius: 3px; border: 2px solid var(--cap); display: inline-block; }
 
 /* ── 파티 슬롯 ────────────────────────────────────── */
 .slots { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
-.slot { height: 84px; border-radius: var(--r-chip); overflow: hidden; position: relative; border: 1px solid var(--c-gold); background: var(--c-panel); }
-.slot.empty { border: 1px dashed var(--c-line-dim); background: transparent; display: flex; align-items: center; justify-content: center; color: var(--c-text-faint); font-size: 22px; }
-.slot-lv { position: absolute; left: 3px; top: 3px; font-size: 12px; font-weight: 700; background: var(--c-scrim); border-radius: 4px; padding: 0 4px; }
-.slot-name { position: absolute; left: 0; right: 0; bottom: 0; padding: 2px 0 4px; text-align: center; font-size: 13px; font-weight: 700; background: linear-gradient(180deg, var(--c-scrim-0), var(--c-scrim)); }
+.slot { height: 84px; border-radius: var(--r-chip); overflow: hidden; position: relative; border: 1px solid var(--c-gold); background: var(--c-panel-2); display: flex; flex-direction: column; }
+.slot.empty { border: 1px dashed var(--c-line-dim); background: transparent; align-items: center; justify-content: center; color: var(--c-text-faint); font-size: 22px; }
+.slot-art { height: 56px; position: relative; flex: none; display: block; }
+.slot-lv { position: absolute; left: 3px; top: 3px; font-size: 12px; font-weight: 700; background: var(--c-scrim); border-radius: 5px; padding: 0 4px; }
+.slot-info { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 0; }
+.slot-name { font-size: 13px; font-weight: 500; white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; padding: 0 2px; }
+.slot-role { font-size: 12px; color: var(--c-text-sub); white-space: nowrap; }
 
 /* ── 스탯 상자(시안 MercDetail) ───────────────────── */
 .stat-row { display: flex; gap: 6px; }
@@ -206,3 +214,8 @@ html, body, #root { margin: 0; height: 100%; background: var(--c-page); }
 .card.recruit-card.ready { border-color: var(--c-gold); }
 .card.recruit-card.locked { opacity: 0.6; }
 .recruit-art { width: 86px; height: 96px; position: relative; flex: none; display: block; }
+
+/* ── 파티 편성(시안 Party) ────────────────────────── */
+.rift-icon { width: 52px; height: 52px; border-radius: var(--r-chip); background: var(--c-panel-2); border: 1px solid var(--trait-common); display: flex; align-items: center; justify-content: center; flex: none; }
+.comp-chip { font-size: 12px; font-weight: 500; color: var(--c-ok); background: color-mix(in srgb, var(--c-ok) 16%, transparent); border-radius: 6px; padding: 3px 8px; flex: none; }
+.picked-wrap > .mcard { border-color: var(--c-gold); }

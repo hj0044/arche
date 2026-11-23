@@ -123,7 +123,10 @@ export function MercCard({
   stateClass,
   off,
   onClick,
+  compact,
 }: {
+  /** 파티 후보처럼 작게(초상 52, 막대 없음) */
+  compact?: boolean;
   id: string;
   name: string;
   element: string;
@@ -143,7 +146,7 @@ export function MercCard({
 }) {
   const tier = cap !== undefined ? capTier(cap) : undefined;
   return (
-    <button className={`mcard ${off ? 'off' : ''}`} data-cap={tier?.id} data-el={element} onClick={onClick} aria-label={`${name} Lv${level}${cap ? `/${cap}` : ''} ${state}`}>
+    <button className={`mcard ${off ? 'off' : ''} ${compact ? 'compact' : ''}`} data-cap={tier?.id} data-el={element} onClick={onClick} aria-label={`${name} Lv${level}${cap ? `/${cap}` : ''} ${state}`}>
       <div className="mcard-art">
         <Portrait id={id} element={element} role={role} fill />
         <span className="mcard-lv">
@@ -168,20 +171,37 @@ export function MercCard({
   );
 }
 
-/** 파티 슬롯(+ 또는 계약자) */
-export function Slot({ filled, onClick, label }: { filled?: { id: string; name: string; element: string; role: string; level: number }; onClick: () => void; label: string }) {
+/** 파티 슬롯(+ 또는 계약자: 초상 56 · 이름 · 역할) */
+export function Slot({ filled, onClick, label }: { filled?: { id: string; name: string; element: string; role: string; level: number; roleName: string }; onClick: () => void; label: string }) {
   return (
     <button className={`slot ${filled ? '' : 'empty'}`} data-role="slot" onClick={onClick} aria-label={label}>
       {filled ? (
         <>
-          <Portrait id={filled.id} element={filled.element} role={filled.role} fill />
-          <span className="slot-lv">{filled.level}</span>
-          <span className="slot-name">{filled.name}</span>
+          <span className="slot-art">
+            <Portrait id={filled.id} element={filled.element} role={filled.role} fill />
+            <span className="slot-lv">{filled.level}</span>
+          </span>
+          <span className="slot-info">
+            <span className="slot-name">{filled.name}</span>
+            <span className="slot-role">{filled.roleName}</span>
+          </span>
         </>
       ) : (
         <span aria-hidden="true">+</span>
       )}
     </button>
+  );
+}
+
+/** 바텀 시트(시안에 없는 기존 기능을 흡수하는 확인·선택 상자) */
+export function Sheet({ title, children, onClose }: { title: ReactNode; children: ReactNode; onClose: () => void }) {
+  return (
+    <div className="sheet-backdrop" role="dialog" aria-modal="true" aria-label={typeof title === 'string' ? title : undefined} onClick={onClose}>
+      <div className="sheet" onClick={(e) => e.stopPropagation()}>
+        <h2>{title}</h2>
+        {children}
+      </div>
+    </div>
   );
 }
 
