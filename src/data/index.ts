@@ -487,6 +487,7 @@ export interface UiTable {
   storageWarnRatio: number;
   replay: { stepMs: number; speeds: number[] };
   deviceSettings: { replaySpeed: number; sound: boolean; confirmImportant: boolean };
+  lockedFacilities: { id: string; name: string; status: string; note: string }[];
   recentReportsOnHome: number;
   toastMs: number;
   /** 마감이 이 일수 이하로 남으면 경고 색 */

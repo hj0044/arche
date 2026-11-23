@@ -217,5 +217,14 @@
     "replaySpeed": 1,
     "sound": true,
     "confirmImportant": true
-  }
+  },
+  "lockedFacilities": [
+    {
+      "_note": "거점 화면의 '곧 열림' 카드(시안 Base). 실제 시설이 아니라 안내 카드다.",
+      "id": "workshop",
+      "name": "정제소·공방",
+      "status": "곧 열림",
+      "note": "재료 용도가 정해지면 열려요"
+    }
+  ]
 }

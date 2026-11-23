@@ -30,5 +30,9 @@
   "Battle": {
     "mismatchRatio": 0.0593,
     "refRetakeMismatch": 0.0076
+  },
+  "Base": {
+    "mismatchRatio": 0.0275,
+    "refRetakeMismatch": 0.01
   }
 }

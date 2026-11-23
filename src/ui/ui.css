@@ -290,3 +290,22 @@ html, body, #root { margin: 0; height: 100%; background: var(--c-page); }
 .bt-log .dim { color: var(--c-text-sub); }
 .dmg { color: var(--c-dmg); }
 .bt-full-log { margin: 0; padding: 0; list-style: none; max-height: 50vh; overflow: auto; font-size: 13px; display: flex; flex-direction: column; gap: 3px; }
+
+/* ── 거점(시안 Base) ─────────────────────────────── */
+.pg.px20 { padding-left: 20px; padding-right: 20px; }
+.base-job { width: 100%; text-align: left; padding: 8px 14px; display: flex; flex-direction: column; gap: 6px; border-color: var(--c-info); }
+.fac-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.fac-grid + .fac-grid { margin-top: 0; }
+.fac-card { text-align: left; border-radius: var(--r-card); background: var(--c-panel); border: 1px solid var(--c-line); padding: 10px; display: flex; flex-direction: column; gap: 6px; color: var(--c-text); min-width: 0; }
+.fac-icon { width: 100%; height: 76px; border-radius: 12px; background: var(--c-panel-2); border: 1px solid var(--c-line); flex: none; display: flex; align-items: center; justify-content: center; }
+.fac-icon-in { position: relative; width: 56px; height: 56px; }
+.fac-lv { font-size: 12px; font-weight: 700; color: var(--c-gold); background: color-mix(in srgb, var(--c-gold) 14%, transparent); border-radius: 6px; padding: 0 8px; flex: none; }
+.fac-desc { font-size: 12px; color: var(--c-text-sub); min-height: 32px; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.fac-act { height: 36px; border-radius: var(--r-btn); border: 1px solid var(--c-line-dim); background: var(--c-panel-2); font-size: 13px; font-weight: 500; display: flex; align-items: center; justify-content: center; }
+.fac-act.busy { color: var(--c-info); }
+.base-train { width: 100%; text-align: left; padding: 10px 14px; display: flex; flex-direction: column; gap: 8px; }
+.train-avatar { display: flex; flex: none; }
+.train-avatar .avatar { display: block; width: 30px; height: 30px; border: 2px solid var(--c-info); }
+.assign-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; max-height: 50vh; overflow: auto; }
+.assign-list > li { display: flex; align-items: center; gap: 10px; min-height: 48px; border-top: 1px solid var(--c-line); padding-top: 4px; }
+.contents { display: contents; }
