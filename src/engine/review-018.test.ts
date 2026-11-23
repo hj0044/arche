@@ -84,3 +84,25 @@ describe('018 1-3: 치명타 피해율 최종 상한', () => {
     expect(max).toBeCloseTo(1.75, 5);
   });
 });
+
+describe('018 3: 위험도 상세 평가', () => {
+  it('detail이면 detailSimulations(96)번, 기본은 simulations(12)번으로 승률을 잰다', async () => {
+    const { simulatedWinRate, estimatedEnemies } = await import('./combatPower');
+    expect(tables.combatPower.simulations).toBe(12);
+    expect(tables.combatPower.detailSimulations).toBe(96);
+    const party = [generic('warrior', 12, 'w'), generic('healer', 12, 'h')];
+    const save = newGame(tables, { seed: 'days', guildName: 'x', baseCityId: 'seoul', protagonist: { mode: 'opener', name: 'p', element: 'fire', role: 'warrior', background: 'survivor' } });
+    const reward = { zero: [0, 0] as [number, number], arche: [0, 0] as [number, number], materials: {} };
+    const visible: VisibleRift = {
+      riftId: 'detail', grade: 'mid', tier: 'gate', scouting: scoutingRow(tables, save.facilities),
+      level: [14, 14], count: [2, 2], monsterIds: ['rift_caller'], monsterCounts: { rift_caller: 2 },
+      elements: ['void'], deadline: null, victoryReward: reward, retreatReward: reward, omenHidden: true, blurred: false,
+    };
+    const enemies = estimatedEnemies(tables, visible, 14, 2);
+    const w96 = simulatedWinRate(tables, party, enemies, 'detail', 96);
+    const { riskTierOf } = await import('./combatPower');
+    expect(estimateRisk(tables, party, visible, { detail: true }).worst.id).toBe(riskTierOf(tables, w96).id);
+    const w12 = simulatedWinRate(tables, party, enemies, 'detail');
+    expect(estimateRisk(tables, party, visible).worst.id).toBe(riskTierOf(tables, w12).id);
+  });
+});

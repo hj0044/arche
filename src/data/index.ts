@@ -385,6 +385,7 @@ export interface CombatPowerTable {
   /** 계약자 baseStats 전투력 예산: 같은 역할 기본값 전투력 대비 비율 범위 */
   budget: Range;
   simulations: number;
+  detailSimulations: number;
   /** minWinRate가 큰 것부터 판정. 단계 수는 데이터로 늘리고 줄인다. */
   riskTiers: { id: string; name: string; minWinRate: number; /** 화면 5칸 막대 단계(1이 가장 좋음) */ step: number }[];
 }
