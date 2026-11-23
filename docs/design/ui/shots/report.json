@@ -12,7 +12,7 @@
     "refRetakeMismatch": 0.0079
   },
   "Party": {
-    "mismatchRatio": 0.0533,
+    "mismatchRatio": 0.0531,
     "refRetakeMismatch": 0.0309
   },
   "Result": {
@@ -38,5 +38,13 @@
   "Settings": {
     "mismatchRatio": 0.0427,
     "refRetakeMismatch": 0.0186
+  },
+  "Tower": {
+    "mismatchRatio": 0.0769,
+    "refRetakeMismatch": 0.0184
+  },
+  "Boss": {
+    "mismatchRatio": 0.0785,
+    "refRetakeMismatch": 0.0026
   }
 }
