@@ -219,3 +219,17 @@ html, body, #root { margin: 0; height: 100%; background: var(--c-page); }
 .rift-icon { width: 52px; height: 52px; border-radius: var(--r-chip); background: var(--c-panel-2); border: 1px solid var(--trait-common); display: flex; align-items: center; justify-content: center; flex: none; }
 .comp-chip { font-size: 12px; font-weight: 500; color: var(--c-ok); background: color-mix(in srgb, var(--c-ok) 16%, transparent); border-radius: 6px; padding: 3px 8px; flex: none; }
 .picked-wrap > .mcard { border-color: var(--c-gold); }
+
+/* ── 하루 결과(시안 Result) ──────────────────────── */
+.event-card { background: color-mix(in srgb, var(--ev) 12%, transparent); border: 1px solid var(--ev); border-radius: var(--r-chip); padding: 10px 14px; display: flex; align-items: center; gap: 12px; }
+.event-icon { width: 44px; height: 44px; border-radius: var(--r-chip); background: var(--c-panel-2); border: 1px solid var(--trait-common); display: flex; align-items: center; justify-content: center; flex: none; color: var(--trait-common); }
+.event-title { font-size: 13px; font-weight: 700; color: var(--ev); }
+.event-text { font-size: 14px; line-height: 1.45; }
+.outcome-banner { position: relative; height: 104px; border-radius: var(--r-card); overflow: hidden; border: 1px solid var(--c-gold); background: var(--c-panel); display: block; width: 100%; }
+.outcome-label { position: absolute; left: 0; right: 0; bottom: 8px; text-align: center; font-size: 20px; font-weight: 700; letter-spacing: 4px; color: var(--c-gold); }
+.outcome-banner.outcome-defeat { border-color: var(--c-bad); }
+.outcome-banner.outcome-defeat .outcome-label { color: var(--c-bad); }
+.outcome-banner.outcome-retreat { border-color: var(--c-warn); }
+.outcome-banner.outcome-retreat .outcome-label { color: var(--c-warn); }
+.gain { flex: 1; background: var(--c-panel-2); border-radius: var(--r-btn); padding: 8px 10px; display: flex; align-items: center; gap: 8px; }
+.card.levelup-card { padding: 10px 14px; border-color: var(--c-gold); display: flex; justify-content: space-between; align-items: center; gap: 8px; }

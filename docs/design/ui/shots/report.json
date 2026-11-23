@@ -14,5 +14,9 @@
   "Party": {
     "mismatchRatio": 0.0533,
     "refRetakeMismatch": 0.0309
+  },
+  "Result": {
+    "mismatchRatio": 0.0853,
+    "refRetakeMismatch": 0.0264
   }
 }
