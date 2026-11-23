@@ -228,7 +228,7 @@ export function TraitRow({ category, kindName, name, description, level, locked 
     return (
       <div className="trait locked">
         <Icon name="lock" />
-        <span className="t14 grow">{kindName} 특성</span>
+        <span className="t13 grow dim">{kindName} 특성</span>
         <span className="trait-lv">Lv {level} 해금</span>
       </div>
     );
@@ -237,7 +237,7 @@ export function TraitRow({ category, kindName, name, description, level, locked 
       <span className="trait-kind">{kindName}</span>
       <div className="col grow" style={{ minWidth: 0 }}>
         <span className="t14 m">{name}</span>
-        <span className="sub">{description}</span>
+        <span className="trait-desc">{description}</span>
       </div>
       <span className="trait-lv">Lv {level}</span>
     </div>

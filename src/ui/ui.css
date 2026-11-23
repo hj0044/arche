@@ -171,11 +171,13 @@ html, body, #root { margin: 0; height: 100%; background: var(--c-page); }
 .stat-sm > span { font-size: 11px; color: var(--c-text-sub); white-space: nowrap; }
 .stat-sm > b { font-size: 14px; }
 
-/* ── 특성 행 ──────────────────────────────────────── */
-.trait { background: var(--c-panel); border: 1px solid var(--c-line); border-left: 4px solid var(--trait); border-radius: var(--r-chip); padding: 8px 12px; display: flex; align-items: center; gap: 10px; min-height: 52px; }
-.trait-kind { flex: none; font-size: 12px; font-weight: 700; color: var(--trait); background: color-mix(in srgb, var(--trait) 18%, transparent); border-radius: 6px; padding: 2px 8px; }
-.trait-lv { flex: none; font-size: 12px; color: var(--c-text-sub); }
-.trait.locked { border: 1px dashed var(--c-line-dim); background: transparent; color: var(--c-text-faint); }
+/* ── 특성 행(시안 MercDetail: 모서리 10, 여백 6/10, 최소 높이 44) ── */
+.trait { background: var(--c-panel); border: 1px solid var(--c-line); border-left: 4px solid var(--trait); border-radius: var(--r-btn); padding: 6px 10px; display: flex; align-items: center; gap: 10px; min-height: 44px; }
+.trait-kind { flex: none; font-size: 11px; font-weight: 700; color: var(--trait); background: color-mix(in srgb, var(--trait) 16%, transparent); border-radius: 6px; padding: 2px 6px; }
+.trait-lv { flex: none; font-size: 11px; color: var(--c-text-sub); }
+.trait-desc { font-size: 12px; color: var(--c-text-sub); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.trait.locked { border: 1px dashed var(--c-line-dim); background: var(--c-panel); opacity: 0.7; color: var(--c-text-faint); }
+.trait.locked .trait-lv { font-size: 12px; }
 
 /* ── 설정 줄·세그먼트·토글 ───────────────────────── */
 .set-row { min-height: 52px; display: flex; align-items: center; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--c-line); padding: 4px 0; }
@@ -239,3 +241,18 @@ html, body, #root { margin: 0; height: 100%; background: var(--c-page); }
 .search-box input { flex: 1; min-width: 0; height: 40px; border: 0; background: none; color: var(--c-text); font: inherit; font-size: 14px; outline: none; }
 .search-box input::placeholder { color: var(--c-text-sub); }
 .sort-box { flex: none; width: 96px; height: 44px; background: var(--c-panel); border: 1px solid var(--c-line); border-radius: var(--r-chip); color: var(--c-text); font: inherit; font-size: 14px; text-align: center; appearance: none; padding: 0 8px; }
+
+/* ── 계약자 상세(시안 MercDetail) ────────────────── */
+.md-hero { position: relative; height: 178px; border-bottom: 2px solid var(--c-gold); flex: none; overflow: hidden; }
+.md-hero-shade { position: absolute; inset: 0; background: linear-gradient(180deg, color-mix(in srgb, var(--c-bg) 55%, transparent) 0%, transparent 30%, color-mix(in srgb, var(--c-bg) 92%, transparent) 100%); }
+.md-back { position: absolute; left: 8px; top: 12px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; color: var(--c-text); background: color-mix(in srgb, var(--c-bg) 60%, transparent); border-radius: var(--r-chip); }
+.md-id { position: absolute; left: 16px; right: 16px; bottom: 8px; display: flex; justify-content: space-between; align-items: flex-end; text-align: left; }
+.md-chip { font-size: 12px; font-weight: 700; color: var(--chip); background: color-mix(in srgb, var(--chip) 18%, transparent); border-radius: 6px; padding: 2px 8px; }
+.md-name { font-size: 24px; font-weight: 700; text-shadow: 0 1px 4px var(--c-page); }
+.md-lv { font-size: 30px; font-weight: 700; line-height: 1; }
+.md-lv > span { font-size: 14px; color: var(--c-text-sub); font-weight: 400; }
+.md-sub-btn { flex: 1; display: block; }
+.md-sub-btn > .stat-sm { height: 100%; }
+.kv-list { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; margin: 0; font-size: 13px; }
+.kv-list > dt { color: var(--c-text-sub); }
+.kv-list > dd { margin: 0; }

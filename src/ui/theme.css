@@ -56,6 +56,13 @@
   --cap-tier-4: #B58AF0;
   --cap-tier-5: #E8B04A;
 
+  /* 계약자 상세 스탯 막대(시안 MercDetail) */
+  --stat-hp: var(--c-ok);
+  --stat-spd: var(--risk-fair);
+  --stat-pAtk: var(--c-bad);
+  --stat-eAtk: #B58AF0;
+  --stat-pDef: var(--c-info);
+  --stat-eDef: var(--el-frost);
   /* 특성 종류(traits.json category) */
   --trait-common: #8FA3C8;
   --trait-role: #6FA8FF;
