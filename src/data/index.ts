@@ -292,7 +292,7 @@ export interface CombatPowerTable {
   statWeights: Stats;
   simulations: number;
   /** minWinRate가 큰 것부터 판정. 단계 수는 데이터로 늘리고 줄인다. */
-  riskTiers: { id: string; name: string; minWinRate: number }[];
+  riskTiers: { id: string; name: string; minWinRate: number; /** 화면 5칸 막대 단계(1이 가장 좋음) */ step: number }[];
 }
 
 /** 시설 효과 정의. type별 처리기(engine/facilities.ts)가 나머지 값을 해석한다. */
@@ -406,7 +406,7 @@ export interface UiTable {
   mercStatusFilters: { id: string; name: string }[];
   /** 리프트 화면 정렬 항목(지시서 013). 비교 방법은 id로 화면 코드가 정한다. 첫 항목이 기본 */
   riftSort: { id: string; name: string }[];
-  /** "공략 가능"으로 세는 위험도 단계 id(combat-power.json riskTiers). 위험도 범위의 나쁜 쪽 끝으로 판정 */
+  /** "공략 가능"으로 세는 위험도 단계 id(combat-power.json riskTiers, 지금은 접전 이상). 위험도 범위의 나쁜 쪽 끝으로 판정 */
   riftPlayableRiskTiers: string[];
   /** 리프트 목록을 열 때 바로 계산하는 위험도 카드 수(나머지는 한가할 때) */
   riftEagerRiskCount: number;

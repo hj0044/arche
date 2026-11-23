@@ -18,17 +18,16 @@ const seedPool = ['days', 'audit-20261120', 'audit-2', 'audit-3', 'audit-4', 'au
 const seeds = Array.from({ length: Number(seedCountArg) }, (_, i) => seedPool[i] ?? `audit-${i + 1}`);
 const t: GameTables = base;
 
-/** 측정 구간(지시서 015 3항). 승률 하한이 큰 것부터 */
-const BANDS = [
-  { id: 'safe', name: '안전(≥90)', min: 0.9 },
-  { id: 'fairHi', name: '해볼 만 상(75~90)', min: 0.75 },
-  { id: 'fairLo', name: '해볼 만 하(60~75)', min: 0.6 },
-  { id: 'risky', name: '위험(25~60)', min: 0.25 },
-  { id: 'hopeless', name: '무리(<25)', min: -1 },
-] as const;
-type BandId = (typeof BANDS)[number]['id'];
+/** 측정 구간 = 위험도 5구간(combat-power.json riskTiers, 지시서 015 0항). 승률 하한이 큰 것부터 */
+const BANDS = [...t.combatPower.riskTiers]
+  .sort((a, b) => b.minWinRate - a.minWinRate)
+  .map((x, i, all) => ({ id: x.id, name: `${x.name}(${i === all.length - 1 ? `<${Math.round(all[i - 1].minWinRate * 100)}` : `≥${Math.round(x.minWinRate * 100)}`})`, min: i === all.length - 1 ? -1 : x.minWinRate }));
+type BandId = string;
 const bandOf = (w: number): BandId => BANDS.find((b) => w >= b.min)!.id;
-const isFair = (b: BandId) => b === 'fairHi' || b === 'fairLo';
+/** 목표 구간: 접전 또는 우세(승률 50~90). 압도 바로 아래부터 접전까지 */
+const TARGET_IDS = ['safe', 'fair'];
+const isFair = (b: BandId) => TARGET_IDS.includes(b);
+const targetName = TARGET_IDS.map((id) => t.combatPower.riskTiers.find((x) => x.id === id)?.name ?? id).reverse().join(' 또는 ');
 
 function winRate(s: GameState, r: Rift): number | null {
   const party = autoParty(t, s, r);
@@ -38,7 +37,7 @@ function winRate(s: GameState, r: Rift): number | null {
 }
 
 let decisionDays = 0;
-/** 가용 인원별: [파견을 정할 수 있는 날, 해볼 만 있는 날] */
+/** 가용 인원별: [파견을 정할 수 있는 날, 목표 구간 있는 날] */
 const bySize = new Map<string, [number, number]>();
 const sizeKey = (n: number) => (n >= 5 ? '5명 이상' : n >= 3 ? '3~4명' : '1~2명');
 let fairDays = 0;
@@ -92,11 +91,11 @@ for (const seed of seeds) {
 
 const pct = (a: number, b: number) => (b ? `${((a / b) * 100).toFixed(1)}%` : '-');
 console.log(`자동 플레이 ${days}일 × 시드 ${seeds.length}개 · 파견을 정할 수 있는 날 ${decisionDays}일 · 평가한 리프트 ${riftsEvaluated}개\n`);
-console.log(`해볼 만(60~90) 있는 날: ${fairDays}/${decisionDays} = ${pct(fairDays, decisionDays)} (목표 80% 이상)\n`);
+console.log(`${targetName}(50~90) 있는 날: ${fairDays}/${decisionDays} = ${pct(fairDays, decisionDays)} (목표 80% 이상)\n`);
 console.log('| 구간 | 목록에 있는 날 | 목록 안 비율(리프트 수) | 실제 선택률 |');
 console.log('|---|---|---|---|');
 for (const b of BANDS) console.log(`| ${b.name} | ${pct(bandDays.get(b.id)!, decisionDays)} | ${pct(bandRifts.get(b.id)!, riftsEvaluated)} | ${pct(chosen.get(b.id)!, dispatches)} |`);
-console.log(`\n등급별 구간(리프트 수): ${[...byTier].map(([tier, m]) => `${t.riftTiers.find((x) => x.id === tier)?.name ?? tier} ${BANDS.map((b) => m.get(b.id)).join('/')}`).join(' · ')} (안전/상/하/위험/무리)`);
-console.log(`가용 인원별 해볼 만 있는 날: ${['1~2명', '3~4명', '5명 이상'].map((k) => { const [n, f] = bySize.get(k) ?? [0, 0]; return `${k} ${f}/${n}(${pct(f, n)})`; }).join(' · ')}`);
+console.log(`\n등급별 구간(리프트 수): ${[...byTier].map(([tier, m]) => `${t.riftTiers.find((x) => x.id === tier)?.name ?? tier} ${BANDS.map((b) => m.get(b.id)).join('/')}`).join(' · ')} (${BANDS.map((b) => b.name.replace(/\(.*\)/, '')).join('/')})`);
+console.log(`가용 인원별 ${targetName} 있는 날: ${['1~2명', '3~4명', '5명 이상'].map((k) => { const [n, f] = bySize.get(k) ?? [0, 0]; return `${k} ${f}/${n}(${pct(f, n)})`; }).join(' · ')}`);
 console.log(`부상으로 출전 못 한 용병·일: ${injuredMercDays} (시드당 ${(injuredMercDays / seeds.length).toFixed(1)})`);
 console.log(`파견 ${dispatches}회`);

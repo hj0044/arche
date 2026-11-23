@@ -6,7 +6,7 @@ import { assignedFacility, getFacility, visibleRift } from '../../engine/facilit
 import { compositionMultiplier, elementMultiplier } from '../../engine/combat';
 import { dispatch, unassignFromFacility, expPerMemberAt, GameError, guildUpkeepPerDay, mercToUnit, shareOf, isAvailable, isOnExpedition, refusedToday, type PartyMember } from '../../engine/game';
 import { AppShell } from '../AppShell';
-import { ElementTag, RoleTag } from '../components';
+import { ElementTag, RoleTag, RiskLabel } from '../components';
 import { elementName, num, pct, rowName } from '../format';
 import type { Ctx } from '../nav';
 import { RiftCard } from './RiftList';
@@ -112,12 +112,8 @@ export function PartyBuilder({ ctx, riftId }: { ctx: Ctx; riftId: string }) {
         {/* 첫 화면 우선: 위험도, 복귀일, 한 명당 경험치. 나머지는 "자세히"로 펼친다. */}
         <div className="summary-grid">
           <span className="muted small">예상 위험도</span>
-          <span className={risk && party.length ? `risk risk-${risk.estimate.worst.id}` : 'muted'}>
-            {!risk || party.length === 0
-              ? '용병을 넣으면 보입니다'
-              : risk.estimate.best.id === risk.estimate.worst.id
-                ? risk.estimate.best.name
-                : `${risk.estimate.best.name} ~ ${risk.estimate.worst.name}`}
+          <span className={risk && party.length ? '' : 'muted'}>
+            {!risk || party.length === 0 ? '용병을 넣으면 보입니다' : <RiskLabel best={risk.estimate.best} worst={risk.estimate.worst} />}
             {risk && party.length > 0 && risk.estimate.estimated && <span className="muted small"> (추정)</span>}
           </span>
           <span className="muted small">복귀 예정</span>

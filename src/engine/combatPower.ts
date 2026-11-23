@@ -47,6 +47,8 @@ export interface RiskTierRow {
   id: string;
   name: string;
   minWinRate: number;
+  /** 화면 5칸 막대 단계(1이 가장 좋음) */
+  step: number;
 }
 
 export function riskTierOf(tables: GameTables, winRate: number): RiskTierRow {

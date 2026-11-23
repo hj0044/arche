@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { tables } from '../data';
 import { loyaltyDisplay, loyaltyTier } from '../engine/loyalty';
+import type { RiskTierRow } from '../engine/combatPower';
 import { elementName, roleName } from './format';
 
 export function ElementTag({ id }: { id: string }) {
@@ -148,5 +149,25 @@ export function ChipRow<T extends { id: string; name: string; badge?: ReactNode;
         ))}
       </div>
     </>
+  );
+}
+
+/**
+ * 위험도 라벨(지시서 015, UI 1차 시안). 색만으로 구분하지 않도록 이름 옆에 5칸 막대를 둔다.
+ * 막대는 신호 세기처럼 좋을수록 많이 켜진다(압도 5칸 … 무모 1칸). 범위면 나쁜 쪽 끝의 색·막대에 "좋은~나쁜" 글자.
+ */
+export function RiskLabel({ best, worst }: { best: RiskTierRow; worst: RiskTierRow }) {
+  const total = tables.combatPower.riskTiers.length;
+  const lit = total + 1 - worst.step;
+  const text = best.id === worst.id ? worst.name : `${best.name}~${worst.name}`;
+  return (
+    <span className={`risk-label risk-${worst.id}`} aria-label={`위험도 ${text}`}>
+      <span className="risk-bars" aria-hidden="true">
+        {Array.from({ length: total }, (_, i) => (
+          <span key={i} className={i < lit ? 'on' : ''} style={{ height: `${4 + i * 2}px` }} />
+        ))}
+      </span>
+      {text}
+    </span>
   );
 }

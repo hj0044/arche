@@ -5,7 +5,7 @@ import { riftVariant, type Rift } from '../../engine/rift';
 import { riftAutoRisk, type RiftAutoRisk } from '../../engine/status';
 import { AppShell } from '../AppShell';
 import type { GameState } from '../../engine/game';
-import { ChipRow, ElementTag, OmenBadge } from '../components';
+import { ChipRow, ElementTag, OmenBadge, RiskLabel } from '../components';
 import { cityName, gradeName, materialName, monsterName, num, omenText, territoryLabel, tierName } from '../format';
 import { expeditionDays, latestDeparture, zeroPerDay } from '../riftInfo';
 import { citySummary, cityChips, daysLeft, filterAndSortRifts, isUrgent, needsAllRisks, type RiftListOptions, type RiskLookup } from '../riftFilter';
@@ -27,9 +27,6 @@ const variantLabel = (r: Rift) => riftVariant(tables, r)?.label;
 
 /** 일차 범위 글자(같으면 한 값) */
 const dayRange = (r: ValueRange) => (r[0] === r[1] ? `${r[0]}` : `${r[0]}~${r[1]}`);
-
-/** 위험도 범위 글자 */
-const riskText = (r: RiftAutoRisk) => (r.estimate.best.id === r.estimate.worst.id ? r.estimate.best.name : `${r.estimate.best.name}~${r.estimate.worst.name}`);
 
 /** 범위 표시: 같은 두 값이면 한 값 */
 const rng = (r: ValueRange, unit = '') => (r[0] === r[1] ? `${num(r[0])}${unit}` : `${num(r[0])}~${num(r[1])}${unit}`);
@@ -100,11 +97,7 @@ export function RiftCard({
           ) : (
             <>
               <span className="muted">자동 편성 위험도 </span>
-              <span className={`risk risk-${autoRisk.estimate.worst.id}`}>
-                {autoRisk.estimate.best.id === autoRisk.estimate.worst.id
-                  ? autoRisk.estimate.best.name
-                  : `${autoRisk.estimate.best.name} ~ ${autoRisk.estimate.worst.name}`}
-              </span>
+              <RiskLabel best={autoRisk.estimate.best} worst={autoRisk.estimate.worst} />
               <span className="muted">
                 {' '}
                 ({autoRisk.partySize}명{autoRisk.estimate.estimated ? ', 추정' : ''})
@@ -185,7 +178,7 @@ export function RiftRow({ rift, s, risk, onClick }: { rift: Rift; s: GameState; 
           ) : risk === null ? (
             <span className="muted">출전 인원 없음</span>
           ) : (
-            <span className={`risk risk-${risk.estimate.worst.id}`}>{riskText(risk)}</span>
+            <RiskLabel best={risk.estimate.best} worst={risk.estimate.worst} />
           )}
         </span>
         <span className="rift-row-reward">
@@ -309,7 +302,7 @@ export function RiftList({ ctx, cityId }: { ctx: Ctx; cityId?: string }) {
         <span className={sum.urgent ? 'bad strong' : ''}>마감 임박 {sum.urgent}</span>
         <span aria-hidden="true">·</span>
         <span>
-          공략 가능({playableNames.join('~')}) <span className="strong">{sum.playable}</span>
+          공략 가능({playableNames.length > 1 ? `${playableNames[0]}~${playableNames.at(-1)}` : playableNames[0]}) <span className="strong">{sum.playable}</span>
           {sum.pending && <span className="muted">+</span>}
         </span>
       </div>

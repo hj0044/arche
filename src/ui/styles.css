@@ -252,10 +252,17 @@ button.rift-main:active:not(:disabled) { background: var(--surface-2); }
 .poach-news { margin: 0; padding: 8px 12px; border-radius: 10px; background: var(--surface-2); border-left: 3px solid var(--accent); }
 .assign-block { display: flex; flex-direction: column; gap: 6px; border-top: 1px solid var(--border); padding-top: 8px; }
 .risk { font-weight: 600; }
-.risk-safe { color: var(--ok); }
-.risk-fair { color: var(--text); }
-.risk-risky { color: var(--warn); }
-.risk-hopeless { color: var(--bad); }
+/* 위험도 5구간(지시서 015, UI 1차 시안 색). 이름과 색은 combat-power.json riskTiers id를 따른다 */
+:root { --risk-crush: #3FCF8E; --risk-safe: #9ED65A; --risk-fair: #E6CF4A; --risk-risky: #F29B5B; --risk-hopeless: #F0706F; }
+.risk-crush { --risk-color: var(--risk-crush); color: var(--risk-crush); }
+.risk-safe { --risk-color: var(--risk-safe); color: var(--risk-safe); }
+.risk-fair { --risk-color: var(--risk-fair); color: var(--risk-fair); }
+.risk-risky { --risk-color: var(--risk-risky); color: var(--risk-risky); }
+.risk-hopeless { --risk-color: var(--risk-hopeless); color: var(--risk-hopeless); }
+.risk-label { display: inline-flex; align-items: center; gap: 6px; padding: 2px 9px; border-radius: 999px; font-weight: 700; font-size: 0.8125rem; white-space: nowrap; background: color-mix(in srgb, var(--risk-color) 16%, transparent); }
+.risk-bars { display: inline-flex; align-items: flex-end; gap: 2px; }
+.risk-bars span { width: 3px; border-radius: 1px; background: color-mix(in srgb, var(--risk-color) 25%, transparent); }
+.risk-bars span.on { background: var(--risk-color); }
 
 /* 일괄 레벨업 */
 .bulk-levelup { gap: 6px; }
