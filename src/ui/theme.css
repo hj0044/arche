@@ -24,6 +24,8 @@
   --c-text-faint: #6C7790;
   --c-text-banner: #C9D1E3; /* 배너 위 보조 글자 */
   --c-text-strong: #D3D8E6;
+  --c-arche-light: #9CC4FF; /* 아르케 아이콘 윗면 */
+  --c-material-light: #E0B878; /* 고유 재료 아이콘 윗면·개수 글자 */
 
   /* 상태 색(시안: 대기 초록, 파견 금색, 훈련 파랑, 부상 주황, 위험 빨강) */
   --c-ok: #5CC9A0;

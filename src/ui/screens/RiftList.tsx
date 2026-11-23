@@ -5,7 +5,7 @@ import { riftVariant, type Rift } from '../../engine/rift';
 import { riftAutoRisk, type RiftAutoRisk } from '../../engine/status';
 import { AppShell } from '../AppShell';
 import type { GameState } from '../../engine/game';
-import { ChipRow, ElementTag, OmenBadge, RiskLabel } from '../components';
+import { LegacyChipRow as ChipRow, ElementTag, OmenBadge, RiskLabel } from '../components';
 import { cityName, gradeName, materialName, monsterName, num, omenText, territoryLabel, tierName } from '../format';
 import { expeditionDays, latestDeparture, zeroPerDay } from '../riftInfo';
 import { citySummary, cityChips, daysLeft, filterAndSortRifts, isUrgent, needsAllRisks, type RiftListOptions, type RiskLookup } from '../riftFilter';

@@ -5,7 +5,7 @@ import { assignedFacility, getFacility } from '../../engine/facilities';
 import { guildStatusSummary, trainingAccess } from '../../engine/status';
 import { AppShell } from '../AppShell';
 import { BulkLevelUp } from '../BulkLevelUp';
-import { Bar, ChipRow, ElementTag, LoyaltyBadge, RoleTag, Segmented } from '../components';
+import { Bar, LegacyChipRow as ChipRow, ElementTag, LoyaltyBadge, RoleTag, Segmented } from '../components';
 import { cityName, factionName, growthSpeedName, injuryText, num, term, josa } from '../format';
 import { MainTabs } from '../MainTabs';
 import { filterAndSort, filterChips, type MercListOptions } from '../mercFilter';

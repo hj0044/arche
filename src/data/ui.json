@@ -140,5 +140,54 @@
       "name": "65~",
       "min": 65
     }
-  ]
+  ],
+  "art": {
+    "_note": "그림 슬롯(지시서 017 4항). 파일 경로 = /<basePath>/<kind>/<id>.<확장자>, 확장자는 순서대로 시도하고 모두 없으면 대체 그림. 비율은 시안에서 읽은 값(가로:세로)",
+    "basePath": "art",
+    "extensions": [
+      "webp",
+      "png",
+      "svg"
+    ],
+    "ratios": {
+      "portrait": [
+        1,
+        1
+      ],
+      "banner": [
+        350,
+        52
+      ],
+      "emblem": [
+        1,
+        1
+      ],
+      "boss": [
+        350,
+        110
+      ],
+      "icon": [
+        1,
+        1
+      ]
+    },
+    "idRatios": {
+      "banner/guild": [
+        350,
+        84
+      ],
+      "banner/hq": [
+        350,
+        96
+      ],
+      "banner/victory": [
+        350,
+        104
+      ],
+      "banner/battlefield": [
+        390,
+        520
+      ]
+    }
+  }
 }

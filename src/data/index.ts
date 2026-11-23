@@ -508,6 +508,8 @@ export interface UiTable {
   loyaltyLogPreview: number;
   /** 성장 한계 구간(지시서 017): min 이상이면 그 구간(큰 것부터 판정). 색은 theme.css --cap-tier-N */
   capTiers: { id: string; name: string; min: number }[];
+  /** 그림 슬롯(지시서 017): 경로 규칙과 비율 */
+  art: { basePath: string; extensions: string[]; ratios: Record<string, [number, number]>; idRatios: Record<string, [number, number]> };
 }
 
 export const cities: readonly CityRow[] = citiesJson as CityRow[];
@@ -529,7 +531,7 @@ export const tables: GameTables = {
   roster: rosterJson as RosterRow[],
   travel: travelJson,
   backgrounds: backgroundsJson,
-  ui: uiJson,
+  ui: uiJson as unknown as UiTable,
   growthSpeeds: growthSpeedsJson,
   worlds: worldsJson,
   races: racesJson,
