@@ -4,7 +4,7 @@ import { GameError, newGame, pickCandidateToLeave, type GameState, type Protagon
 import { newSlotId } from '../../storage/saveService';
 import { AppShell } from '../AppShell';
 import { ElementTag, RoleTag, Segmented } from '../components';
-import { backgroundName, elementName, roleName } from '../format';
+import { backgroundName, elementName, roleName, term } from '../format';
 import { saves } from '../saves';
 
 interface NewGameProps {
@@ -131,7 +131,7 @@ export function NewGame({ onBack, onStart }: NewGameProps) {
           </select>
         </section>
         <section className="field">
-          <label>시작 용병</label>
+          <label>시작 {term.merc}</label>
           <ul className="rows">
             {tables.roster
               .filter((r) => r.startingCandidate && (mode === 'guildMaster' || r.id !== leaving))

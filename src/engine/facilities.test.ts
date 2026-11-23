@@ -151,8 +151,8 @@ describe('건설·강화', () => {
 });
 
 describe('의무실', () => {
-  it('치유사 감소와 합산하고 최소 1일을 지킨다', () => {
-    const party = [mercToUnit(tables, getMerc(gm(), 'm01')), mercToUnit(tables, getMerc(gm(), 'm03'))]; // m03 치유사
+  it('사제 감소와 합산하고 최소 1일을 지킨다', () => {
+    const party = [mercToUnit(tables, getMerc(gm(), 'm01')), mercToUnit(tables, getMerc(gm(), 'm03'))]; // m03 사제
     for (let seed = 0; seed < 100; seed++) {
       const base = rollInjuries(tables, party.slice(0, 1), ['m01'], 'defeat', createRng(seed))[0];
       const both = rollInjuries(tables, party, ['m01'], 'defeat', createRng(seed), 2)[0];

@@ -161,3 +161,20 @@ describe('세이브 v6(리프트 영역 세력)', () => {
     expect(() => parseSave(cur, { ...tables, limits: saveLimits })).toThrow(SaveFormatError);
   });
 });
+
+describe('세이브 v8(특성 단계)', () => {
+  it('traitRanks를 저장하고 불러오면 그대로 돌아오고 의미 검증을 통과한다', () => {
+    const s = playedState();
+    const withRanks = { ...s, mercenaries: s.mercenaries.map((m) => (m.id === 'm01' ? { ...m, traitRanks: { sturdy: 1 } } : m)) };
+    const up = parseSave(serializeSave(createSaveFile(withRanks, 'manual')), { ...tables, limits: saveLimits });
+    expect(SAVE_VERSION).toBe(8);
+    expect(up.state.mercenaries.find((m) => m.id === 'm01')?.traitRanks).toEqual({ sturdy: 1 });
+  });
+  it('없는 특성이나 범위 밖 단계는 거절한다', () => {
+    const s = playedState();
+    const bad = (traitRanks: Record<string, number>) =>
+      serializeSave(createSaveFile({ ...s, mercenaries: s.mercenaries.map((m) => (m.id === 'm01' ? { ...m, traitRanks } : m)) }, 'manual'));
+    expect(() => parseSave(bad({ nope: 1 }), { ...tables, limits: saveLimits })).toThrow(SaveFormatError);
+    expect(() => parseSave(bad({ sturdy: 9 }), { ...tables, limits: saveLimits })).toThrow(SaveFormatError);
+  });
+});

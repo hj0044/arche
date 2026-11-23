@@ -1,0 +1,2037 @@
+{
+ "_note": "특성(지시서 016 [제안], 효과 수치는 모두 임시값). 한 단계 = effects 배열, 효과 하나 = { trigger, condition?, effect }. trigger: always, battleStart(rounds), firstAction, hpBelow(threshold), roundStack(perRound, max: 값은 min(라운드 × perRound, max)이고 effect.value는 쓰지 않음), fromRound(round). condition: advantage(내 공격이 상성 유리), disadvantage(상대 공격이 나에게 상성 유리), enemyElement(element: 상대 속성), row(row). effect.kind: statMul, statAdd, damageMul, damageTakenMul, healMul. scope: self | allies(allies는 always·battleStart만). hpBelow의 healMul은 치유받는 대상의 체력으로 판정한다.",
+ "slotUnlockLevels": [
+  5,
+  15,
+  25,
+  35,
+  45,
+  55,
+  65
+ ],
+ "caps": {
+  "_note": "특성으로 인한 상한. statMulMax: 스탯 하나에 더해지는 statMul 합의 최대. damageMulMax·healMulMax: 피해·치유 배율 합의 최대. damageTakenMulMin: 받는 피해 배율 합의 최소(음수, 피해 감소 상한)",
+  "statMulMax": 0.5,
+  "damageMulMax": 0.6,
+  "healMulMax": 0.6,
+  "damageTakenMulMin": -0.4
+ },
+ "traits": [
+  {
+   "id": "sturdy",
+   "name": "강건함",
+   "category": "common",
+   "description": "체력 +6%",
+   "allowed": {},
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "self",
+        "stat": "hp",
+        "value": 0.06
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "honed",
+   "name": "연마된 솜씨",
+   "category": "common",
+   "description": "물리공격 +5%",
+   "allowed": {},
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "self",
+        "stat": "pAtk",
+        "value": 0.05
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "focus",
+   "name": "집중력",
+   "category": "common",
+   "description": "에너지공격 +5%",
+   "allowed": {},
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "self",
+        "stat": "eAtk",
+        "value": 0.05
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "trained_body",
+   "name": "단련된 몸",
+   "category": "common",
+   "description": "물리방어·에너지방어 +4%",
+   "allowed": {},
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "self",
+        "stat": "pDef",
+        "value": 0.04
+       }
+      },
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "self",
+        "stat": "eDef",
+        "value": 0.04
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "agile",
+   "name": "민첩",
+   "category": "common",
+   "description": "속도 +5%, 회피율 +2%p",
+   "allowed": {},
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "self",
+        "stat": "spd",
+        "value": 0.05
+       }
+      },
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statAdd",
+        "scope": "self",
+        "stat": "eva",
+        "value": 0.02
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "sense",
+   "name": "감각",
+   "category": "common",
+   "description": "치명타율 +3%p",
+   "allowed": {},
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statAdd",
+        "scope": "self",
+        "stat": "crit",
+        "value": 0.03
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "bulwark",
+   "name": "버팀목",
+   "category": "role",
+   "description": "체력 40% 이하에서 물리방어·에너지방어 +30%",
+   "allowed": {
+    "roles": [
+     "shield"
+    ]
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "hpBelow",
+        "threshold": 0.4
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "self",
+        "stat": "pDef",
+        "value": 0.3
+       }
+      },
+      {
+       "trigger": {
+        "type": "hpBelow",
+        "threshold": 0.4
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "self",
+        "stat": "eDef",
+        "value": 0.3
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "fighting_spirit",
+   "name": "투지",
+   "category": "role",
+   "description": "라운드마다 물리공격 +4%, 최대 +20%",
+   "allowed": {
+    "roles": [
+     "warrior"
+    ]
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "roundStack",
+        "perRound": 0.04,
+        "max": 0.2
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "self",
+        "stat": "pAtk"
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "first_shot",
+   "name": "선제 사격",
+   "category": "role",
+   "description": "첫 행동 피해 +25%",
+   "allowed": {
+    "roles": [
+     "archer"
+    ]
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "firstAction"
+       },
+       "effect": {
+        "kind": "damageMul",
+        "scope": "self",
+        "value": 0.25
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "resonance",
+   "name": "공명",
+   "category": "role",
+   "description": "속성 상성 유리 시 피해 +10%",
+   "allowed": {
+    "roles": [
+     "mage"
+    ]
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "damageMul",
+        "scope": "self",
+        "value": 0.1
+       },
+       "condition": {
+        "type": "advantage"
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "first_aid",
+   "name": "응급 처치",
+   "category": "role",
+   "description": "체력 30% 이하 아군에게 치유량 +30%",
+   "allowed": {
+    "roles": [
+     "healer"
+    ]
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "hpBelow",
+        "threshold": 0.3
+       },
+       "effect": {
+        "kind": "healMul",
+        "scope": "self",
+        "value": 0.3
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "tactical_command",
+   "name": "전술 지휘",
+   "category": "role",
+   "description": "아군 전원 속도 +3% (전투 시작 2라운드)",
+   "allowed": {
+    "roles": [
+     "commander"
+    ]
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "battleStart",
+        "rounds": 2
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "allies",
+        "stat": "spd",
+        "value": 0.03
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "survival_instinct",
+   "name": "생존 본능",
+   "category": "background",
+   "description": "체력 30% 이하에서 회피율 +10%p",
+   "allowed": {
+    "backgrounds": [
+     "survivor"
+    ]
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "hpBelow",
+        "threshold": 0.3
+       },
+       "effect": {
+        "kind": "statAdd",
+        "scope": "self",
+        "stat": "eva",
+        "value": 0.1
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "protocol",
+   "name": "규정 숙지",
+   "category": "background",
+   "description": "전투 시작 2라운드간 속도 +10%",
+   "allowed": {
+    "backgrounds": [
+     "agent"
+    ]
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "battleStart",
+        "rounds": 2
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "self",
+        "stat": "spd",
+        "value": 0.1
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "gear_support",
+   "name": "장비 지원",
+   "category": "background",
+   "description": "물리방어·에너지방어 +5%",
+   "allowed": {
+    "backgrounds": [
+     "corporate"
+    ]
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "self",
+        "stat": "pDef",
+        "value": 0.05
+       }
+      },
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "self",
+        "stat": "eDef",
+        "value": 0.05
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "perseverance",
+   "name": "끈기",
+   "category": "background",
+   "description": "8라운드 이후 피해 +10%",
+   "allowed": {
+    "backgrounds": [
+     "citizen"
+    ]
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "fromRound",
+        "round": 8
+       },
+       "effect": {
+        "kind": "damageMul",
+        "scope": "self",
+        "value": 0.1
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "tactical_training",
+   "name": "전술 훈련",
+   "category": "background",
+   "description": "전열에서 물리방어 +8%",
+   "allowed": {
+    "backgrounds": [
+     "soldier"
+    ]
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "self",
+        "stat": "pDef",
+        "value": 0.08
+       },
+       "condition": {
+        "type": "row",
+        "row": "front"
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "arche_insight",
+   "name": "아르케 이해",
+   "category": "background",
+   "description": "에너지공격 +6%, 치유량 +6%",
+   "allowed": {
+    "backgrounds": [
+     "researcher"
+    ]
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "self",
+        "stat": "eAtk",
+        "value": 0.06
+       }
+      },
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "healMul",
+        "scope": "self",
+        "value": 0.06
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "odd_jobs",
+   "name": "잡다한 경험",
+   "category": "background",
+   "description": "속도 +5%, 회피율 +3%p",
+   "allowed": {
+    "backgrounds": [
+     "wanderer"
+    ]
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "self",
+        "stat": "spd",
+        "value": 0.05
+       }
+      },
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statAdd",
+        "scope": "self",
+        "stat": "eva",
+        "value": 0.03
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "heir_will",
+   "name": "계승의 의지",
+   "category": "background",
+   "description": "체력 +5%, 치명타 피해율 +10%p",
+   "allowed": {
+    "backgrounds": [
+     "heir"
+    ]
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "self",
+        "stat": "hp",
+        "value": 0.05
+       }
+      },
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statAdd",
+        "scope": "self",
+        "stat": "critDmg",
+        "value": 0.1
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "company_discipline",
+   "name": "용병단의 규율",
+   "category": "background",
+   "description": "물리공격 +4%, 체력 +4%",
+   "allowed": {
+    "backgrounds": [
+     "mercenary_company"
+    ]
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "self",
+        "stat": "pAtk",
+        "value": 0.04
+       }
+      },
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "self",
+        "stat": "hp",
+        "value": 0.04
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "adaptability",
+   "name": "적응력",
+   "category": "background",
+   "description": "속성 상성 불리 시 받는 피해 −8%",
+   "allowed": {
+    "backgrounds": [
+     "freelancer"
+    ]
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "damageTakenMul",
+        "scope": "self",
+        "value": -0.08
+       },
+       "condition": {
+        "type": "disadvantage"
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "human_will",
+   "name": "인간의 의지",
+   "category": "race",
+   "description": "체력 25% 이하에서 물리공격·에너지공격 +10%",
+   "allowed": {
+    "races": [
+     "human"
+    ]
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "hpBelow",
+        "threshold": 0.25
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "self",
+        "stat": "pAtk",
+        "value": 0.1
+       }
+      },
+      {
+       "trigger": {
+        "type": "hpBelow",
+        "threshold": 0.25
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "self",
+        "stat": "eAtk",
+        "value": 0.1
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "affinity_fire",
+   "name": "속성 친화: 화염",
+   "category": "element",
+   "description": "속성 상성 유리 시 피해 +8%",
+   "allowed": {
+    "elements": [
+     "fire"
+    ]
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "damageMul",
+        "scope": "self",
+        "value": 0.08
+       },
+       "condition": {
+        "type": "advantage"
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "affinity_wind",
+   "name": "속성 친화: 바람",
+   "category": "element",
+   "description": "속성 상성 유리 시 피해 +8%",
+   "allowed": {
+    "elements": [
+     "wind"
+    ]
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "damageMul",
+        "scope": "self",
+        "value": 0.08
+       },
+       "condition": {
+        "type": "advantage"
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "affinity_earth",
+   "name": "속성 친화: 대지",
+   "category": "element",
+   "description": "속성 상성 유리 시 피해 +8%",
+   "allowed": {
+    "elements": [
+     "earth"
+    ]
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "damageMul",
+        "scope": "self",
+        "value": 0.08
+       },
+       "condition": {
+        "type": "advantage"
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "affinity_lightning",
+   "name": "속성 친화: 전격",
+   "category": "element",
+   "description": "속성 상성 유리 시 피해 +8%",
+   "allowed": {
+    "elements": [
+     "lightning"
+    ]
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "damageMul",
+        "scope": "self",
+        "value": 0.08
+       },
+       "condition": {
+        "type": "advantage"
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "affinity_frost",
+   "name": "속성 친화: 냉기",
+   "category": "element",
+   "description": "속성 상성 유리 시 피해 +8%",
+   "allowed": {
+    "elements": [
+     "frost"
+    ]
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "damageMul",
+        "scope": "self",
+        "value": 0.08
+       },
+       "condition": {
+        "type": "advantage"
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "affinity_light",
+   "name": "속성 친화: 빛",
+   "category": "element",
+   "description": "속성 상성 유리 시 피해 +8%",
+   "allowed": {
+    "elements": [
+     "light"
+    ]
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "damageMul",
+        "scope": "self",
+        "value": 0.08
+       },
+       "condition": {
+        "type": "advantage"
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "affinity_void",
+   "name": "속성 친화: 어둠",
+   "category": "element",
+   "description": "속성 상성 유리 시 피해 +8%",
+   "allowed": {
+    "elements": [
+     "void"
+    ]
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "damageMul",
+        "scope": "self",
+        "value": 0.08
+       },
+       "condition": {
+        "type": "advantage"
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "unique_m01",
+   "name": "불굴의 방패",
+   "category": "unique",
+   "description": "체력 30% 이하에서 받는 피해 −15%",
+   "allowed": {
+    "owner": "m01"
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "hpBelow",
+        "threshold": 0.3
+       },
+       "effect": {
+        "kind": "damageTakenMul",
+        "scope": "self",
+        "value": -0.15
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "unique_m02",
+   "name": "일격 필살",
+   "category": "unique",
+   "description": "치명타 피해율 +25%p",
+   "allowed": {
+    "owner": "m02"
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statAdd",
+        "scope": "self",
+        "stat": "critDmg",
+        "value": 0.25
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "unique_m03",
+   "name": "봉합 기술",
+   "category": "unique",
+   "description": "치유량 +12%",
+   "allowed": {
+    "owner": "m03"
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "healMul",
+        "scope": "self",
+        "value": 0.12
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "unique_m04",
+   "name": "폭풍의 눈",
+   "category": "unique",
+   "description": "속도 +8%, 첫 행동 피해 +10%",
+   "allowed": {
+    "owner": "m04"
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "self",
+        "stat": "spd",
+        "value": 0.08
+       }
+      },
+      {
+       "trigger": {
+        "type": "firstAction"
+       },
+       "effect": {
+        "kind": "damageMul",
+        "scope": "self",
+        "value": 0.1
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "unique_m05",
+   "name": "지켜내는 자",
+   "category": "unique",
+   "description": "전열에서 체력 +10%",
+   "allowed": {
+    "owner": "m05"
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "self",
+        "stat": "hp",
+        "value": 0.1
+       },
+       "condition": {
+        "type": "row",
+        "row": "front"
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "unique_m06",
+   "name": "번개 같은 일격",
+   "category": "unique",
+   "description": "전투 시작 2라운드간 속도 +15%",
+   "allowed": {
+    "owner": "m06"
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "battleStart",
+        "rounds": 2
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "self",
+        "stat": "spd",
+        "value": 0.15
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "unique_m07",
+   "name": "냉정한 지휘",
+   "category": "unique",
+   "description": "아군 전원 물리방어 +5%",
+   "allowed": {
+    "owner": "m07"
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "allies",
+        "stat": "pDef",
+        "value": 0.05
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "unique_m08",
+   "name": "정밀 사격",
+   "category": "unique",
+   "description": "치명타율 +8%p",
+   "allowed": {
+    "owner": "m08"
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statAdd",
+        "scope": "self",
+        "stat": "crit",
+        "value": 0.08
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "unique_m09",
+   "name": "응급 대응",
+   "category": "unique",
+   "description": "체력 50% 이하 아군에게 치유량 +20%",
+   "allowed": {
+    "owner": "m09"
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "hpBelow",
+        "threshold": 0.5
+       },
+       "effect": {
+        "kind": "healMul",
+        "scope": "self",
+        "value": 0.2
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "unique_m10",
+   "name": "아르케 공명",
+   "category": "unique",
+   "description": "에너지공격 +8%, 라운드마다 +2% (최대 +10%)",
+   "allowed": {
+    "owner": "m10"
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "self",
+        "stat": "eAtk",
+        "value": 0.08
+       }
+      },
+      {
+       "trigger": {
+        "type": "roundStack",
+        "perRound": 0.02,
+        "max": 0.1
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "self",
+        "stat": "eAtk"
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "unique_m11",
+   "name": "기업 장비",
+   "category": "unique",
+   "description": "물리방어 +12%",
+   "allowed": {
+    "owner": "m11"
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "self",
+        "stat": "pDef",
+        "value": 0.12
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "unique_m12",
+   "name": "폭주",
+   "category": "unique",
+   "description": "라운드마다 물리공격 +6%, 최대 +30%",
+   "allowed": {
+    "owner": "m12"
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "roundStack",
+        "perRound": 0.06,
+        "max": 0.3
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "self",
+        "stat": "pAtk"
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "unique_m13",
+   "name": "효율 사격",
+   "category": "unique",
+   "description": "속도 +8%, 치명타율 +4%p",
+   "allowed": {
+    "owner": "m13"
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "self",
+        "stat": "spd",
+        "value": 0.08
+       }
+      },
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statAdd",
+        "scope": "self",
+        "stat": "crit",
+        "value": 0.04
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "unique_m14",
+   "name": "서리의 결정",
+   "category": "unique",
+   "description": "상성 유리 시 에너지공격 +10%",
+   "allowed": {
+    "owner": "m14"
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "self",
+        "stat": "eAtk",
+        "value": 0.1
+       },
+       "condition": {
+        "type": "advantage"
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "unique_m15",
+   "name": "자금 지원",
+   "category": "unique",
+   "description": "전투 시작 2라운드간 아군 전원 물리공격 +4%",
+   "allowed": {
+    "owner": "m15"
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "battleStart",
+        "rounds": 2
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "allies",
+        "stat": "pAtk",
+        "value": 0.04
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "unique_m16",
+   "name": "용병의 근성",
+   "category": "unique",
+   "description": "체력 40% 이하에서 물리공격 +15%",
+   "allowed": {
+    "owner": "m16"
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "hpBelow",
+        "threshold": 0.4
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "self",
+        "stat": "pAtk",
+        "value": 0.15
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "unique_m17",
+   "name": "단단한 방어",
+   "category": "unique",
+   "description": "물리방어 +8%, 체력 +5%",
+   "allowed": {
+    "owner": "m17"
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "self",
+        "stat": "pDef",
+        "value": 0.08
+       }
+      },
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "self",
+        "stat": "hp",
+        "value": 0.05
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "unique_m18",
+   "name": "장기전의 명사수",
+   "category": "unique",
+   "description": "라운드마다 치명타율 +2%p (최대 +10%p)",
+   "allowed": {
+    "owner": "m18"
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "roundStack",
+        "perRound": 0.02,
+        "max": 0.1
+       },
+       "effect": {
+        "kind": "statAdd",
+        "scope": "self",
+        "stat": "crit"
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "unique_m19",
+   "name": "야전 치유",
+   "category": "unique",
+   "description": "치유량 +8%, 속도 +4%",
+   "allowed": {
+    "owner": "m19"
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "healMul",
+        "scope": "self",
+        "value": 0.08
+       }
+      },
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "self",
+        "stat": "spd",
+        "value": 0.04
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "unique_m20",
+   "name": "노련한 지휘",
+   "category": "unique",
+   "description": "아군 전원 속도 +4%",
+   "allowed": {
+    "owner": "m20"
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "allies",
+        "stat": "spd",
+        "value": 0.04
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "unique_m21",
+   "name": "질주 돌격",
+   "category": "unique",
+   "description": "첫 행동 피해 +20%",
+   "allowed": {
+    "owner": "m21"
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "firstAction"
+       },
+       "effect": {
+        "kind": "damageMul",
+        "scope": "self",
+        "value": 0.2
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "unique_m22",
+   "name": "기동 방패",
+   "category": "unique",
+   "description": "속도 +10%, 회피율 +4%p",
+   "allowed": {
+    "owner": "m22"
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "self",
+        "stat": "spd",
+        "value": 0.1
+       }
+      },
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statAdd",
+        "scope": "self",
+        "stat": "eva",
+        "value": 0.04
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "unique_m23",
+   "name": "얼음 같은 눈",
+   "category": "unique",
+   "description": "치명타율 +6%p",
+   "allowed": {
+    "owner": "m23"
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statAdd",
+        "scope": "self",
+        "stat": "crit",
+        "value": 0.06
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "unique_m24",
+   "name": "화력 집중",
+   "category": "unique",
+   "description": "후열에서 에너지공격 +10%",
+   "allowed": {
+    "owner": "m24"
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "self",
+        "stat": "eAtk",
+        "value": 0.1
+       },
+       "condition": {
+        "type": "row",
+        "row": "back"
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "unique_m25",
+   "name": "번개 응급",
+   "category": "unique",
+   "description": "속도 +8%, 치유량 +6%",
+   "allowed": {
+    "owner": "m25"
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "self",
+        "stat": "spd",
+        "value": 0.08
+       }
+      },
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "healMul",
+        "scope": "self",
+        "value": 0.06
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "unique_m26",
+   "name": "도시의 방위",
+   "category": "unique",
+   "description": "아군 전원 체력 +5%",
+   "allowed": {
+    "owner": "m26"
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "allies",
+        "stat": "hp",
+        "value": 0.05
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "unique_m27",
+   "name": "대지의 힘",
+   "category": "unique",
+   "description": "체력 +8%, 물리공격 +5%",
+   "allowed": {
+    "owner": "m27"
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "self",
+        "stat": "hp",
+        "value": 0.08
+       }
+      },
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "self",
+        "stat": "pAtk",
+        "value": 0.05
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "unique_m28",
+   "name": "깊은 이해",
+   "category": "unique",
+   "description": "에너지공격 +8%, 치유량 +10%",
+   "allowed": {
+    "owner": "m28"
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "self",
+        "stat": "eAtk",
+        "value": 0.08
+       }
+      },
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "healMul",
+        "scope": "self",
+        "value": 0.1
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "unique_m29",
+   "name": "공허의 이해",
+   "category": "unique",
+   "description": "어둠(공허) 속성 적에게 받는 피해 −8%",
+   "allowed": {
+    "owner": "m29"
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "damageTakenMul",
+        "scope": "self",
+        "value": -0.08
+       },
+       "condition": {
+        "type": "enemyElement",
+        "element": "void"
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "unique_m30",
+   "name": "규율의 빛",
+   "category": "unique",
+   "description": "아군 전원 에너지방어 +6%",
+   "allowed": {
+    "owner": "m30"
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "allies",
+        "stat": "eDef",
+        "value": 0.06
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  }
+ ]
+}

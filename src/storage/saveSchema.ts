@@ -29,7 +29,7 @@ const rift: Schema = {
     enemies: { arrayOf: { fields: { monsterId: 'string', grade: 'string', level: 'number', row: { oneOf: ['front', 'back'] } } } },
     reward,
   },
-  optional: { stable: 'boolean', omen: { fields: { textId: 'string' } } },
+  optional: { stable: 'boolean', omen: { fields: { textId: 'string' } }, variant: 'string' },
 };
 (rift as { fields: Record<string, Schema> }).fields.fog = {
   fields: { deadlineOffset: 'number', levelOffset: 'number', countOffset: 'number', rewardU: 'number' },
@@ -56,6 +56,7 @@ const mercenary: Schema = {
     unpaidUpkeep: { fields: { days: 'number', zero: 'number' } },
     isProtagonist: 'boolean',
     departedDay: 'number',
+    traitRanks: { record: 'number' },
     loyalty: {
       fields: {
         value: 'number',

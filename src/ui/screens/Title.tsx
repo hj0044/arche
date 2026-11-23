@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import type { GameState } from '../../engine/game';
 import type { SlotSummary } from '../../storage/saveService';
 import { AppShell } from '../AppShell';
-import { cityName, formatDateTime } from '../format';
+import { cityName, formatDateTime, term } from '../format';
 import { saves } from '../saves';
 import { parseSave } from '../../storage/saveFile';
 
@@ -30,7 +30,7 @@ export function Title({ onNew, onLoad, onOpenSaves }: TitleProps) {
   const latest = recent ? latestFile(recent) : undefined;
 
   return (
-    <AppShell title="Arche" subtitle="용병 길드 운영">
+    <AppShell title="Arche" subtitle={`${term.merc} 길드 운영`}>
       <div className="title-hero">
         <p className="title-year">2032년, 제로데이로부터 5년</p>
         <p className="muted">리프트가 열린 도시에서, 인가를 막 받은 작은 길드를 이끈다.</p>

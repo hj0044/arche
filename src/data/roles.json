@@ -1,16 +1,10 @@
 [
-  { "id": "shield",    "name": "방패",   "group": "vanguard", "defaultRow": "front", "enabled": true,
-    "skills": ["shield_strike", "shield_taunt", "shield_guard"] },
-  { "id": "warrior",   "name": "전사",   "group": "vanguard", "defaultRow": "front", "enabled": true,
-    "skills": ["warrior_slash", "warrior_heavy", "warrior_cleave"] },
-  { "id": "archer",    "name": "사수",   "group": "damage",   "defaultRow": "back",  "enabled": true,
-    "skills": ["archer_shot", "archer_aimed", "archer_double"] },
-  { "id": "mage",      "name": "술사",   "group": "damage",   "defaultRow": "back",  "enabled": true,
-    "skills": ["mage_bolt", "mage_burst", "mage_storm"] },
-  { "id": "healer",    "name": "치유사", "group": "support",  "defaultRow": "back",  "enabled": true,
-    "skills": ["healer_strike", "healer_mend", "healer_prayer"] },
-  { "id": "commander", "name": "지휘관", "group": "support",  "defaultRow": "back",  "enabled": true,
-    "skills": ["commander_strike", "commander_rally", "commander_focus"] },
-  { "id": "assassin",  "name": "암습자", "group": "mobility", "defaultRow": "front", "enabled": false, "skills": [] },
-  { "id": "disruptor", "name": "교란자", "group": "support",  "defaultRow": "back",  "enabled": false, "skills": [] }
+  {"id": "shield", "name": "수호자", "group": "vanguard", "defaultRow": "front", "enabled": true, "skills": ["shield_strike", "shield_taunt", "shield_guard"], "aliases": ["방패"]},
+  {"id": "warrior", "name": "투사", "group": "vanguard", "defaultRow": "front", "enabled": true, "skills": ["warrior_slash", "warrior_heavy", "warrior_cleave"], "aliases": ["전사"]},
+  {"id": "archer", "name": "저격수", "group": "damage", "defaultRow": "back", "enabled": true, "skills": ["archer_shot", "archer_aimed", "archer_double"], "aliases": ["사수"]},
+  {"id": "mage", "name": "마도사", "group": "damage", "defaultRow": "back", "enabled": true, "skills": ["mage_bolt", "mage_burst", "mage_storm"], "aliases": ["술사"]},
+  {"id": "healer", "name": "사제", "group": "support", "defaultRow": "back", "enabled": true, "skills": ["healer_strike", "healer_mend", "healer_prayer"], "aliases": ["치유사"]},
+  {"id": "commander", "name": "전술가", "group": "support", "defaultRow": "back", "enabled": true, "skills": ["commander_strike", "commander_rally", "commander_focus"], "aliases": ["지휘관"]},
+  {"id": "assassin", "name": "자객", "group": "mobility", "defaultRow": "front", "enabled": false, "skills": [], "aliases": ["암습자"]},
+  {"id": "disruptor", "name": "기만자", "group": "support", "defaultRow": "back", "enabled": false, "skills": [], "aliases": ["교란자"]}
 ]

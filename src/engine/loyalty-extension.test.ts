@@ -136,7 +136,7 @@ describe('무소속 용병 영입 이동', () => {
   });
 
   it('개방자 모드에서 빠진 후보도 같은 규칙을 따른다', () => {
-    const start = opener('left'); // 전사 주인공 → 강태산(m01)이 무소속
+    const start = opener('left'); // 투사 주인공 → 강태산(m01)이 무소속
     expect(getMerc(start, 'm01').affiliation).toEqual({ kind: 'faction', factionId: 'free' });
     const { s } = run(withPoach(1), start, 1);
     expect(getMerc(s, 'm01').affiliation.kind).toBe('faction');

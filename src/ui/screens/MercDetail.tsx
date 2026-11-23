@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { getSkill, tables } from '../../data';
+import { getRole, getSkill, tables } from '../../data';
 import {
   canLevelUp,
   expToNextLevel,
@@ -11,6 +11,8 @@ import {
   salaryBonusCost,
   LEVEL_UP_BLOCKED_ON_EXPEDITION,
   mercToUnit,
+  mercTraitIds,
+  newTraitsOnLevelUp,
   recruit,
   recruitInfo,
   recruitUpkeepOutlook,
@@ -22,8 +24,9 @@ import { trainingAccess } from '../../engine/status';
 import { AppShell } from '../AppShell';
 import { Bar, ConfirmDialog, ElementTag, LoyaltyBadge, Panel, RoleTag } from '../components';
 import { loyaltyDisplay, loyaltyTier, tendencyOf } from '../../engine/loyalty';
+import { allyAuraRows, computeEffectiveStats, getTrait } from '../../engine/stats';
 import { assignedFacility, getFacility } from '../../engine/facilities';
-import { loyaltyReasonName, backgroundShort, cityName, factionName, growthSpeedName, num, severityName, tierName, worldName } from '../format';
+import { injuryText, loyaltyReasonName, backgroundShort, cityName, factionName, growthSpeedName, num, tierName, worldName, statsLabel, term, statValue, traitName, traitCategoryName } from '../format';
 import type { Ctx } from '../nav';
 
 const SKILL_DESC: Record<string, string> = {
@@ -42,6 +45,13 @@ export function MercDetail({ ctx, mercId }: { ctx: Ctx; mercId: string }) {
   const m = s.mercenaries.find((x) => x.id === mercId);
   if (!m) return null;
   const unit = mercToUnit(tables, m);
+  // 최종 스탯 계산 한 곳(stats.ts): 전투 시작 상황, 체력 가득, 기본 열
+  const finalStats = computeEffectiveStats(tables, unit, { round: 1, hpRatio: 1, row: getRole(tables, m.role).defaultRow, allyAuras: allyAuraRows(tables, unit) });
+  // 특성 슬롯: 슬롯 수 = 데이터의 해금 레벨 중 성장 한계 이하인 것, 목록이 짧으면 빈 슬롯
+  const ids = mercTraitIds(tables, m);
+  const traitSlots = tables.traits.slotUnlockLevels
+    .map((level, slot) => ({ slot, level, id: ids[slot], unlocked: m.level >= level && !!ids[slot] }))
+    .filter((x) => x.id && x.level <= m.growth.cap);
   const need = expToNextLevel(tables, m.level, m.growth.speed);
   const cost = levelUpCost(tables, m.level);
   const capped = m.level >= m.growth.cap;
@@ -61,7 +71,7 @@ export function MercDetail({ ctx, mercId }: { ctx: Ctx; mercId: string }) {
   };
 
   const status = m.injury
-    ? `${severityName(m.injury.severity)} · ${m.injury.recoverDay}일차 회복`
+    ? injuryText(m.injury)
     : isOnExpedition(s, m.id)
       ? '파견 중'
       : assignedFacility(s.facilities, m.id)
@@ -87,7 +97,8 @@ export function MercDetail({ ctx, mercId }: { ctx: Ctx; mercId: string }) {
         onClick={() =>
           run(() => {
             ctx.setState(levelUp(tables, s, m.id));
-            ctx.toast(`${m.name} Lv${m.level + 1}`);
+            const fresh = newTraitsOnLevelUp(tables, m, m.level, m.level + 1);
+            ctx.toast(`${m.name} Lv${m.level + 1}${fresh.length ? ` · 새 특성: ${fresh.map(traitName).join(', ')}` : ''}`);
           })
         }
       >
@@ -324,15 +335,33 @@ export function MercDetail({ ctx, mercId }: { ctx: Ctx; mercId: string }) {
       </Panel>
 
       <Panel title="능력치">
+        {/* 최종 스탯(지시서 016): 레벨·충성도·항상 켜진 특성까지 반영. 전투 중 조건부 특성은 빠진 값 */}
         <div className="kv">
           {tables.stats.stats.map((st) => (
             <span key={st.id} className="contents">
               <span>{st.name}</span>
-              <span className="strong">{unit.stats[st.id]}</span>
+              <span className="strong">{statValue(st.id, finalStats[st.id])}</span>
             </span>
           ))}
         </div>
+        <p className="hint">레벨·충성도와 항상 켜진 특성을 반영한 값입니다. 조건이 붙은 특성은 전투 중에만 더해집니다.</p>
       </Panel>
+
+      {traitSlots.length > 0 && (
+        <Panel title="특성">
+          <ul className="trait-list">
+            {traitSlots.map((t) => (
+              <li key={t.slot} className={t.unlocked ? '' : 'locked'}>
+                <div className="strong small">
+                  {t.unlocked ? traitName(t.id) : `Lv ${t.level} 해금`}
+                  {t.unlocked && <span className="muted tiny"> · {traitCategoryName[getTrait(tables, t.id).category]}</span>}
+                </div>
+                {t.unlocked && <div className="muted small">{getTrait(tables, t.id).description}</div>}
+              </li>
+            ))}
+          </ul>
+        </Panel>
+      )}
       <Panel title="스킬">
         <ul className="rows">
           {unit.skills.map((id, i) => {
@@ -347,7 +376,7 @@ export function MercDetail({ ctx, mercId }: { ctx: Ctx; mercId: string }) {
                     {SKILL_DESC[sk.target]}
                     {sk.power ? ` · 위력 ${sk.power}${sk.hits ? `×${sk.hits}` : ''}` : ''}
                     {sk.kind === 'taunt' ? ` · 도발 ${sk.duration}라운드` : ''}
-                    {sk.kind === 'buff' ? ` · ${sk.stat === 'atk' ? '공격' : '방어'} +${Math.round((sk.amount ?? 0) * 100)}% ${sk.duration}라운드` : ''}
+                    {sk.kind === 'buff' ? ` · ${statsLabel(sk.stats)} +${Math.round((sk.amount ?? 0) * 100)}% ${sk.duration}라운드` : ''}
                     {sk.kind === 'heal' ? ' · 회복' : ''}
                   </div>
                 </div>
@@ -355,7 +384,7 @@ export function MercDetail({ ctx, mercId }: { ctx: Ctx; mercId: string }) {
             );
           })}
         </ul>
-        <p className="hint">스킬 속성은 용병 속성을 따릅니다.</p>
+        <p className="hint">스킬 속성은 {term.merc} 속성을 따릅니다.</p>
       </Panel>
 
       {confirm && (

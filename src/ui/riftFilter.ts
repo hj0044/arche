@@ -24,7 +24,7 @@ export function isUrgent(tables: GameTables, fs: FacilitiesState, rift: Rift, da
   return left !== null && left[0] <= tables.ui.deadlineWarnDays;
 }
 
-/** 공략 가능: 위험도 범위의 나쁜 쪽 끝이 ui.riftPlayableRiskTiers 안(예: 안전~해볼 만) */
+/** 공략 가능: 위험도 범위의 나쁜 쪽 끝이 ui.riftPlayableRiskTiers 안(지금은 압도~접전) */
 export function isPlayable(tables: GameTables, risk: RiftAutoRisk | null | undefined): boolean {
   return !!risk && tables.ui.riftPlayableRiskTiers.includes(risk.estimate.worst.id);
 }

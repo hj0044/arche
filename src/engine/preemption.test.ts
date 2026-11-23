@@ -148,10 +148,12 @@ describe('영역 세력', () => {
   it('기존 리프트 생성 결과(레벨·보상·흐림 등)는 변경 전과 같다(회귀, 이름 제외)', () => {
     // 해시는 지시서 013 이전 rift.ts의 generateRift로 같은 입력 120개를 만들고 이름만 뺀 값이다.
     // 영역 세력과 이름(1-2 교체)은 별도 난수 흐름이라 나머지 값은 그대로여야 한다.
+    // 015의 등급 변형은 일부러 생성 결과를 바꾸므로, 변형을 뺀 데이터로 비교한다(변형이 없으면 예전과 같아야 한다).
+    const t = { ...tables, riftTiers: tables.riftTiers.map(({ variants: _v, ...r }) => r) };
     const out: Omit<Rift, 'territoryFactionId' | 'name'>[] = [];
-    for (const c of tables.cities) {
+    for (const c of t.cities) {
       for (let i = 0; i < 40; i++) {
-        const { territoryFactionId: _t, name: _n, ...r } = generateRift(tables, c.id, 1 + i, `g${i}`, createRng(`reg:${c.id}:${i}`));
+        const { territoryFactionId: _t, name: _n, ...r } = generateRift(t, c.id, 1 + i, `g${i}`, createRng(`reg:${c.id}:${i}`));
         out.push(r);
       }
     }

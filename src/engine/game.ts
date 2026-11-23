@@ -1,8 +1,9 @@
-import { getGrowthSpeed, getRiftTier, travelDays, type GameTables, type Outcome, type Row, type UnlockRule } from '../data';
+import { getGrowthSpeed, getRiftTier, travelDays, type GameTables, type Outcome, type Row, type Stats, type UnlockRule } from '../data';
+import { activeTraits, newlyUnlockedTraits, roleBaseStats, statsAtLevel } from './stats';
 import { resolveCombat, validateParty, type CombatEvent, type CombatSlot } from './combat';
 import { rollInjuries, type Injury } from './injury';
 import { rollPreemption } from './preemption';
-import { expShare, generateRift, riftEnemySlots, riftReward, type Rift, type RiftReward } from './rift';
+import { expShare, generateRift, riftEnemySlots, riftModifiers, riftReward, type Rift, type RiftReward } from './rift';
 export { expPerMember, expPerMemberAt, expShare, riftLevel, riftReward, shareOf } from './rift';
 import { createRng } from './rng';
 import {
@@ -17,7 +18,7 @@ import {
   type FacilitiesState,
 } from './facilities';
 import { applyLoyalty, isLoyaltySimulated, loyaltyTier, newLoyalty, type LoyaltyState } from './loyalty';
-import { statsForLevel, type Affiliation, type Unit } from './unit';
+import type { Affiliation, Unit } from './unit';
 
 export class GameError extends Error {}
 
@@ -44,6 +45,8 @@ export interface MercenaryState {
   loyalty?: LoyaltyState;
   /** 충성도로 길드를 이탈한 날(무소속 이동 보호 기간 판정) */
   departedDay?: number;
+  /** 특성 단계(지시서 016, 강화 대비). 없으면 1단계 */
+  traitRanks?: Record<string, number>;
 }
 
 export interface MercProfile {
@@ -256,12 +259,24 @@ export function recruitInfo(tables: GameTables, state: GameState, mercId: string
   };
 }
 
-/** 충성도 구간의 능력 배율을 공격·방어에 적용한 스탯(전투 엔진은 만들어진 유닛만 안다) */
-export function loyaltyAdjustedStats(tables: GameTables, m: MercenaryState) {
-  const stats = statsForLevel(tables, m.role, m.level);
+/** 계약자의 기본 스탯(레벨 1): 계약자별 baseStats, 없으면(주인공 등) 역할 기본값 */
+export function mercBaseStats(tables: GameTables, m: MercenaryState): Stats {
+  return tables.roster.find((r) => r.id === m.id)?.baseStats ?? roleBaseStats(tables, m.role);
+}
+
+/** 계약자의 특성 슬롯 목록(roster.json traits, 주인공은 없음) */
+export const mercTraitIds = (tables: GameTables, m: MercenaryState): string[] => tables.roster.find((r) => r.id === m.id)?.traits ?? [];
+
+/**
+ * 레벨 성장과 충성도 배율까지 적용한 스탯(특성 전). 충성도 구간 배율은 공격·방어(물리·에너지 모두)에 곱한다.
+ */
+export function loyaltyAdjustedStats(tables: GameTables, m: MercenaryState): Stats {
+  const stats = statsAtLevel(tables, mercBaseStats(tables, m), m.level);
   if (!m.loyalty) return stats;
   const bonus = loyaltyTier(tables, m.loyalty.value).statBonus;
-  return { ...stats, atk: Math.round(stats.atk * (1 + bonus)), def: Math.round(stats.def * (1 + bonus)) };
+  const out = { ...stats };
+  for (const k of ['pAtk', 'eAtk', 'pDef', 'eDef'] as const) out[k] = Math.round(stats[k] * (1 + bonus) * 100) / 100;
+  return out;
 }
 
 export function mercToUnit(tables: GameTables, m: MercenaryState): Unit {
@@ -274,6 +289,7 @@ export function mercToUnit(tables: GameTables, m: MercenaryState): Unit {
     role: m.role,
     level: m.level,
     stats: loyaltyAdjustedStats(tables, m),
+    traits: activeTraits(tables, mercTraitIds(tables, m), m.level, m.traitRanks),
     skills: [...role.skills],
     affiliation: m.affiliation,
     ai: 'default',
@@ -432,7 +448,7 @@ export function dispatch(tables: GameTables, prev: GameState, riftId: string, pa
 export function levelUp(tables: GameTables, prev: GameState, mercId: string): GameState {
   const state = structuredClone(prev);
   const m = getMerc(state, mercId);
-  if (!isGuildMember(m)) throw new GameError('길드 용병만 키울 수 있다');
+  if (!isGuildMember(m)) throw new GameError(`길드 ${tables.terms.merc}만 키울 수 있다`);
   // 부상 중에는 레벨업할 수 있고, 파견 중에는 복귀할 때까지 할 수 없다(2026-11-20 확정).
   if (isOnExpedition(state, m.id)) throw new GameError(LEVEL_UP_BLOCKED_ON_EXPEDITION);
   if (m.level >= m.growth.cap) throw new GameError('성장 한계에 도달했다');
@@ -451,6 +467,13 @@ export interface LevelUpStep {
   from: number;
   to: number;
   cost: number;
+  /** 이 레벨업으로 새로 열린 특성 id(지시서 016) */
+  newTraits: string[];
+}
+
+/** 계약자가 from → to 레벨로 오를 때 새로 열린 특성 id */
+export function newTraitsOnLevelUp(tables: GameTables, m: MercenaryState, from: number, to: number): string[] {
+  return newlyUnlockedTraits(tables, mercTraitIds(tables, m), from, to);
 }
 
 /**
@@ -467,7 +490,7 @@ export function levelUpAll(tables: GameTables, prev: GameState): { state: GameSt
     if (!next) break;
     const cost = levelUpCost(tables, next.level);
     state = levelUp(tables, state, next.id);
-    steps.push({ mercId: next.id, from: next.level, to: next.level + 1, cost });
+    steps.push({ mercId: next.id, from: next.level, to: next.level + 1, cost, newTraits: newTraitsOnLevelUp(tables, next, next.level, next.level + 1) });
   }
   return { state, steps };
 }
@@ -546,7 +569,7 @@ export function salaryBonusCost(tables: GameTables, m: MercenaryState): number {
 export function paySalaryBonus(tables: GameTables, prev: GameState, mercId: string): GameState {
   const state = structuredClone(prev);
   const m = getMerc(state, mercId);
-  if (!isGuildMember(m) || !m.loyalty) throw new GameError('충성도가 있는 길드 용병에게만 줄 수 있다');
+  if (!isGuildMember(m) || !m.loyalty) throw new GameError(`충성도가 있는 길드 ${tables.terms.merc}에게만 줄 수 있다`);
   if (m.loyalty.bonusDay === state.day) throw new GameError('오늘은 이미 급료 보너스를 줬다');
   const cost = salaryBonusCost(tables, m);
   if (state.resources.zero < cost) throw new GameError('제로가 부족하다');
@@ -609,6 +632,7 @@ function settleExpedition(tables: GameTables, state: GameState, ex: Expedition):
     outcome,
     createRng(`${combatSeed}:injury`),
     injuryReductionDays(tables, state.facilities),
+    riftModifiers(tables, ex.rift).injuryDays,
   );
   for (const inj of injuries) {
     getMerc(state, inj.unitId).injury = { severity: inj.severity, recoverDay: state.day + inj.days + 1 };

@@ -37,9 +37,9 @@ const rifts = [
   rift('T', { cityId: 'tokyo', deadlineDay: 6 }),
 ];
 const risks = new Map<string, RiftAutoRisk | null>([
-  ['A', risk('safe')],
+  ['A', risk('crush')],
   ['B', risk('risky', 'hopeless')],
-  ['C', risk('safe', 'fair')],
+  ['C', risk('crush', 'fair')],
   ['D', null],
 ]);
 const look = (id: string) => risks.get(id);
@@ -59,17 +59,18 @@ describe('리프트 정렬·필터', () => {
     expect(ids(filterAndSortRifts(tables, s, opts({ sortId: 'reward' }), look)).slice(0, 2)).toEqual(['C', 'A']);
     expect(ids(filterAndSortRifts(tables, s, opts({ sortId: 'tier' }), look))).toEqual(['C', 'D', 'A', 'B']);
   });
-  it('등급 필터와 "해볼 만 이상만"(나쁜 쪽 끝 기준)', () => {
+  it('등급 필터와 "접전 이상만"(나쁜 쪽 끝 기준)', () => {
     expect(ids(filterAndSortRifts(tables, s, opts({ tier: 'route' }), look))).toEqual(['C', 'D']);
     expect(ids(filterAndSortRifts(tables, s, opts({ playableOnly: true }), look))).toEqual(['C', 'A']);
-    expect(isPlayable(tables, risk('safe', 'risky'))).toBe(false);
+    expect(isPlayable(tables, risk('crush', 'risky'))).toBe(false);
+    expect(isPlayable(tables, risk('fair'))).toBe(true);
     expect(isPlayable(tables, null)).toBe(false);
     expect(needsAllRisks(opts({ playableOnly: true }))).toBe(true);
     expect(needsAllRisks(opts({ sortId: 'risk' }))).toBe(true);
     expect(needsAllRisks(opts())).toBe(false);
   });
   it('정렬 항목과 공략 가능 단계는 데이터(ui.json)를 따른다', () => {
-    const t: GameTables = { ...tables, ui: { ...tables.ui, riftPlayableRiskTiers: ['safe'] } };
+    const t: GameTables = { ...tables, ui: { ...tables.ui, riftPlayableRiskTiers: ['crush'] } };
     expect(ids(filterAndSortRifts(t, s, opts({ playableOnly: true }), look))).toEqual(['A']);
     expect(tables.ui.riftSort[0].id).toBe('deadline');
   });

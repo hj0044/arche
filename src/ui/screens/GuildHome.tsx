@@ -3,7 +3,7 @@ import { guildUpkeepPerDay, isOnExpedition } from '../../engine/game';
 import { AppShell } from '../AppShell';
 import { ElementTag, LoyaltyBadge, OmenBadge, Panel, RoleTag } from '../components';
 import { loyaltyTier } from '../../engine/loyalty';
-import { cityName, materialName, num, outcomeName, severityName } from '../format';
+import { cityName, injuryText, materialName, num, outcomeName, term } from '../format';
 import { MainTabs } from '../MainTabs';
 import { StatusSummary } from '../StatusSummary';
 import { BulkLevelUp } from '../BulkLevelUp';
@@ -112,7 +112,7 @@ export function GuildHome({ ctx }: { ctx: Ctx }) {
         </Panel>
       )}
 
-      <Panel title={`용병 ${guild.length}`} action={<button className="link" onClick={() => ctx.go({ name: 'mercs' })}>전체</button>}>
+      <Panel title={`${term.merc} ${guild.length}`} action={<button className="link" onClick={() => ctx.go({ name: 'mercs' })}>전체</button>}>
         <ul className="rows">
           {guild.map((m) => (
             <li key={m.id}>
@@ -130,7 +130,7 @@ export function GuildHome({ ctx }: { ctx: Ctx }) {
                 </div>
                 {m.injury ? (
                   <span className="pill bad">
-                    {severityName(m.injury.severity)} {m.injury.recoverDay - s.day}일
+                    {injuryText(m.injury)}
                   </span>
                 ) : isOnExpedition(s, m.id) ? (
                   <span className="pill">파견 중</span>

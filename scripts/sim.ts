@@ -20,9 +20,9 @@ for (const ev of result.events) {
   } else if (ev.type === 'action') {
     const parts = ev.effects.map((e) => {
       const t = names.get(e.target);
-      if (e.kind === 'damage') return `${t} -${e.amount}${e.elementMultiplier !== 1 ? `(×${e.elementMultiplier})` : ''} → ${e.hpAfter}${e.downed ? ' 쓰러짐' : ''}`;
+      if (e.kind === 'damage') return e.evaded ? `${t} 회피` : `${t} -${e.amount}${e.crit ? ' 치명타' : ''}${e.elementMultiplier !== 1 ? `(×${e.elementMultiplier})` : ''} → ${e.hpAfter}${e.downed ? ' 쓰러짐' : ''}`;
       if (e.kind === 'heal') return `${t} +${e.amount} → ${e.hpAfter}`;
-      return `${t} ${e.status === 'taunt' ? '도발' : `${e.stat} +${(e.amount ?? 0) * 100}%`} ${e.duration}라운드`;
+      return `${t} ${e.status === 'taunt' ? '도발' : `${(e.stats ?? []).join('·')} +${(e.amount ?? 0) * 100}%`} ${e.duration}라운드`;
     });
     console.log(`  ${names.get(ev.actor)} [${getSkill(tables, ev.skillId).name}] ${parts.join(', ')}`);
   } else if (ev.type === 'end') {

@@ -66,6 +66,7 @@
   - 예상 위험도와 실제 승률 비교표: `npm run risk-check -- [실제 승률용 시드 수]`
   - 충성도 값 조합 비교표: `npm run loyalty-sweep -- [일수] [시드 수]`
   - 도시별 활성 리프트·한도 도달·선점 비율: `npm run rift-stats -- [일수] [시드 수] [--no-preempt]`
+  - 리프트 난도 분포(해볼 만 있는 날 비율 등): `npm run difficulty-stats -- [일수] [시드 수]`
   - 검수용 고정 세이브 만들기: `npm run make-audit-save -- [시드] [출력 경로]` (기본 `audit-20261120`, `/tmp/arche-audit-v2.json`)
   - 타입 검사: `npm run typecheck`
   - 빌드: `npm run build` → `dist/`

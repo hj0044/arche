@@ -6,8 +6,8 @@ import { assignedFacility, getFacility, visibleRift } from '../../engine/facilit
 import { compositionMultiplier, elementMultiplier } from '../../engine/combat';
 import { dispatch, unassignFromFacility, expPerMemberAt, GameError, guildUpkeepPerDay, mercToUnit, shareOf, isAvailable, isOnExpedition, refusedToday, type PartyMember } from '../../engine/game';
 import { AppShell } from '../AppShell';
-import { ElementTag, RoleTag } from '../components';
-import { elementName, num, pct, rowName } from '../format';
+import { ElementTag, RoleTag, RiskLabel } from '../components';
+import { elementName, num, pct, rowName, term, josa, withJosa } from '../format';
 import type { Ctx } from '../nav';
 import { RiftCard } from './RiftList';
 
@@ -47,7 +47,7 @@ export function PartyBuilder({ ctx, riftId }: { ctx: Ctx; riftId: string }) {
     refusedToday(s, m)
       ? '오늘 거부'
       : m.injury
-        ? '부상'
+        ? `${m.injury.recoverDay}일차부터 출전`
         : isOnExpedition(s, m.id)
           ? '파견 중'
           : assignedFacility(s.facilities, m.id)
@@ -102,7 +102,7 @@ export function PartyBuilder({ ctx, riftId }: { ctx: Ctx; riftId: string }) {
       onBack={() => ctx.go({ name: 'rifts', cityId: rift.cityId })}
       footer={
         <button className="btn primary block" disabled={party.length === 0} onClick={send}>
-          {party.length ? `파견 (${party.length}명 · ${returnDay}일차 복귀)` : '용병을 고르세요'}
+          {party.length ? `파견 (${party.length}명 · ${returnDay}일차 복귀)` : `${withJosa(term.merc, '을/를')} 고르세요`}
         </button>
       }
     >
@@ -112,12 +112,8 @@ export function PartyBuilder({ ctx, riftId }: { ctx: Ctx; riftId: string }) {
         {/* 첫 화면 우선: 위험도, 복귀일, 한 명당 경험치. 나머지는 "자세히"로 펼친다. */}
         <div className="summary-grid">
           <span className="muted small">예상 위험도</span>
-          <span className={risk && party.length ? `risk risk-${risk.estimate.worst.id}` : 'muted'}>
-            {!risk || party.length === 0
-              ? '용병을 넣으면 보입니다'
-              : risk.estimate.best.id === risk.estimate.worst.id
-                ? risk.estimate.best.name
-                : `${risk.estimate.best.name} ~ ${risk.estimate.worst.name}`}
+          <span className={risk && party.length ? '' : 'muted'}>
+            {!risk || party.length === 0 ? `${withJosa(term.merc, '을/를')} 넣으면 보입니다` : <RiskLabel best={risk.estimate.best} worst={risk.estimate.worst} />}
             {risk && party.length > 0 && risk.estimate.estimated && <span className="muted small"> (추정)</span>}
           </span>
           <span className="muted small">복귀 예정</span>
@@ -159,7 +155,7 @@ export function PartyBuilder({ ctx, riftId }: { ctx: Ctx; riftId: string }) {
             </span>
             <span className="muted small">도움말</span>
             <span className="small muted">
-              예상 위험도는 보이는 정보로 여러 번 모의 전투한 결과이며, 실제 전투에는 변수가 있어 보장되지 않습니다. 탭해서 넣고 빼며, 넣은 용병은 오른쪽에서
+              예상 위험도는 보이는 정보로 여러 번 모의 전투한 결과이며, 실제 전투에는 변수가 있어 보장되지 않습니다. 탭해서 넣고 빼며, 넣은 {term.merc}{josa(term.merc, '은', '는')} 오른쪽에서
               열을 고릅니다. 기본 위치가 아닌 열은 주는 피해가 줄고 받는 피해가 늡니다.
             </span>
           </div>
@@ -167,7 +163,7 @@ export function PartyBuilder({ ctx, riftId }: { ctx: Ctx; riftId: string }) {
       </section>
 
       {trainees.length > 0 && (
-        <section className="panel" aria-label="훈련 중인 용병">
+        <section className="panel" aria-label={`훈련 중인 ${term.merc}`}>
           <p className="small muted">훈련 중 {trainees.length}명은 파견할 수 없습니다. 해제하면 오늘 편성에 넣을 수 있습니다(오늘 훈련 경험치는 받지 않음).</p>
           {trainees.map((m) => {
             const fid = assignedFacility(s.facilities, m.id)!;

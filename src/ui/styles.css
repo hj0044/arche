@@ -252,10 +252,17 @@ button.rift-main:active:not(:disabled) { background: var(--surface-2); }
 .poach-news { margin: 0; padding: 8px 12px; border-radius: 10px; background: var(--surface-2); border-left: 3px solid var(--accent); }
 .assign-block { display: flex; flex-direction: column; gap: 6px; border-top: 1px solid var(--border); padding-top: 8px; }
 .risk { font-weight: 600; }
-.risk-safe { color: var(--ok); }
-.risk-fair { color: var(--text); }
-.risk-risky { color: var(--warn); }
-.risk-hopeless { color: var(--bad); }
+/* 위험도 5구간(지시서 015, UI 1차 시안 색). 이름과 색은 combat-power.json riskTiers id를 따른다 */
+:root { --risk-crush: #3FCF8E; --risk-safe: #9ED65A; --risk-fair: #E6CF4A; --risk-risky: #F29B5B; --risk-hopeless: #F0706F; }
+.risk-crush { --risk-color: var(--risk-crush); color: var(--risk-crush); }
+.risk-safe { --risk-color: var(--risk-safe); color: var(--risk-safe); }
+.risk-fair { --risk-color: var(--risk-fair); color: var(--risk-fair); }
+.risk-risky { --risk-color: var(--risk-risky); color: var(--risk-risky); }
+.risk-hopeless { --risk-color: var(--risk-hopeless); color: var(--risk-hopeless); }
+.risk-label { display: inline-flex; align-items: center; gap: 6px; padding: 2px 9px; border-radius: 999px; font-weight: 700; font-size: 0.8125rem; white-space: nowrap; background: color-mix(in srgb, var(--risk-color) 16%, transparent); }
+.risk-bars { display: inline-flex; align-items: flex-end; gap: 2px; }
+.risk-bars span { width: 3px; border-radius: 1px; background: color-mix(in srgb, var(--risk-color) 25%, transparent); }
+.risk-bars span.on { background: var(--risk-color); }
 
 /* 일괄 레벨업 */
 .bulk-levelup { gap: 6px; }
@@ -296,12 +303,16 @@ button.rift-main:active:not(:disabled) { background: var(--surface-2); }
 .rift-row.tier-route { border-left: 3px solid var(--el-void); }
 .rift-row-line { display: flex; align-items: center; gap: 6px 8px; min-width: 0; white-space: nowrap; }
 .rift-row-line.small { font-size: 0.8125rem; }
-.rift-row-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; font-weight: 600; font-size: 0.9375rem; }
-.rift-row-territory { flex-shrink: 0; max-width: 42%; overflow: hidden; text-overflow: ellipsis; color: var(--muted); font-size: 0.75rem; }
-.rift-row-reward { margin-left: auto; color: var(--muted); }
+.rift-row-name { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; font-weight: 600; font-size: 0.9375rem; }
+.rift-row-territory { flex: 1 1 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; text-align: right; color: var(--muted); font-size: 0.75rem; }
+.rift-row-reward { margin-left: auto; flex-shrink: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .home-urgent { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; min-height: 44px; padding: 0 14px; border-radius: 10px; border: 1px solid var(--border); border-left: 3px solid var(--bad); background: var(--surface); text-align: left; font-size: 0.875rem; }
 .preempt-news { margin: 0; padding: 8px 12px; border-radius: 10px; background: var(--surface-2); border-left: 3px solid var(--bad); display: flex; flex-direction: column; gap: 2px; }
 /* 지시서 014: 펼치기 링크도 44px 터치 영역 */
 .more-toggle { min-height: 44px; align-self: flex-start; padding: 0 2px; }
 .facility-effects { display: flex; flex-direction: column; gap: 4px; }
 .facility-effects p { margin: 0; }
+
+/* 특성 목록(지시서 016 최소 UI) */
+.trait-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.trait-list li.locked { opacity: 0.6; }

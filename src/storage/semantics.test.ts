@@ -68,13 +68,13 @@ describe('세이브 의미 검증', () => {
   it('존재하지 않는 용병 id를 가진 파견', () => {
     const raw = audit(true);
     raw.state.expeditions[0].party[0].mercId = 'm99';
-    expect(problemsOf(raw)).toContain('state.expeditions[0].party[0].mercId: 세이브에 없는 용병 "m99"');
+    expect(problemsOf(raw)).toContain(`state.expeditions[0].party[0].mercId: 세이브에 없는 ${tables.terms.merc} "m99"`);
   });
 
   it('같은 용병이 중복된 파티', () => {
     const raw = audit(true);
     raw.state.expeditions[0].party[1].mercId = raw.state.expeditions[0].party[0].mercId;
-    expect(problemsOf(raw)).toContain(`state.expeditions[0].party[1].mercId: 같은 파티에 중복된 용병 "${raw.state.expeditions[0].party[0].mercId}"`);
+    expect(problemsOf(raw)).toContain(`state.expeditions[0].party[1].mercId: 같은 파티에 중복된 ${tables.terms.merc} "${raw.state.expeditions[0].party[0].mercId}"`);
   });
 
   it.each([
@@ -98,7 +98,7 @@ describe('세이브 의미 검증', () => {
     ['배경', (r: any) => (r.state.mercenaries[1].profile.background = 'pirate'), 'state.mercenaries[1].profile.background: 없는 배경 id "pirate"'],
     ['파견 리프트가 목록에도 있음', (r: any) => r.state.rifts.push(structuredClone(r.state.expeditions[0].rift)), /state\.expeditions\[0\]\.rift\.id: 파견 중인 리프트 "[^"]+"가 리프트 목록에도 있음/],
     ['복귀 보고의 리프트 손상', (r: any) => (r.state.reports[0].rift.enemies = []), 'state.reports[0].rift.enemies 비어 있음'],
-    ['주인공 용병 없음', (r: any) => (r.state.protagonist.mercId = 'nobody'), 'state.protagonist.mercId: 세이브에 없는 용병 "nobody"'],
+    ['주인공 용병 없음', (r: any) => (r.state.protagonist.mercId = 'nobody'), `state.protagonist.mercId: 세이브에 없는 ${tables.terms.merc} "nobody"`],
   ])('참조: %s', (_label, damage, expected) => {
     const raw = audit(true);
     damage(raw);

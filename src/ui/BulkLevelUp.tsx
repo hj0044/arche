@@ -2,21 +2,21 @@ import { useState } from 'react';
 import { tables } from '../data';
 import { getMerc, levelUpAll, type LevelUpStep } from '../engine/game';
 import { levelUpOverview } from '../engine/status';
-import { num } from './format';
+import { num, term, josa, traitName } from './format';
 import type { Ctx } from './nav';
 
 interface Result {
   mercs: number;
   levels: number;
   arche: number;
-  perMerc: { mercId: string; name: string; from: number; to: number }[];
+  perMerc: { mercId: string; name: string; from: number; to: number; newTraits: string[] }[];
 }
 
 function summarize(ctxNames: (id: string) => string, steps: LevelUpStep[]): Result {
-  const by = new Map<string, { from: number; to: number }>();
+  const by = new Map<string, { from: number; to: number; newTraits: string[] }>();
   for (const st of steps) {
     const cur = by.get(st.mercId);
-    by.set(st.mercId, { from: cur?.from ?? st.from, to: st.to });
+    by.set(st.mercId, { from: cur?.from ?? st.from, to: st.to, newTraits: [...(cur?.newTraits ?? []), ...st.newTraits] });
   }
   return {
     mercs: by.size,
@@ -62,7 +62,7 @@ export function BulkLevelUp({ ctx, hideWhenNone = false, title }: { ctx: Ctx; hi
       <button className="btn primary block" disabled={!!disabledReason} onClick={run}>
         {disabledReason ? `일괄 레벨업 · ${disabledReason}` : `일괄 레벨업 (${o.plan.mercs}명, 아르케 ${num(o.plan.arche)})`}
       </button>
-      {o.plan.levels > o.plan.mercs && <p className="hint">한 용병이 여러 번 오를 수 있습니다(총 {o.plan.levels}레벨). 낮은 레벨부터 올립니다.</p>}
+      {o.plan.levels > o.plan.mercs && <p className="hint">한 {term.merc}{josa(term.merc, '이', '가')} 여러 번 오를 수 있습니다(총 {o.plan.levels}레벨). 낮은 레벨부터 올립니다.</p>}
       {result && (
         <div className="bulk-result" role="status">
           <p className="small ok strong">
@@ -74,6 +74,7 @@ export function BulkLevelUp({ ctx, hideWhenNone = false, title }: { ctx: Ctx; hi
                 <button className="link" onClick={() => ctx.go({ name: 'merc', mercId: r.mercId })}>
                   {r.name} Lv{r.from} → Lv{r.to}
                 </button>
+                {r.newTraits.length > 0 && <span className="ok"> · 새 특성: {r.newTraits.map(traitName).join(', ')}</span>}
               </li>
             ))}
           </ul>

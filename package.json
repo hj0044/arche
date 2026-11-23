@@ -21,7 +21,8 @@
     "loyalty-sweep": "tsx scripts/loyalty-sweep.ts",
     "risk-check": "tsx scripts/risk-check.ts",
     "economy-sweep": "tsx scripts/economy-sweep.ts",
-    "rift-stats": "tsx scripts/rift-stats.ts"
+    "rift-stats": "tsx scripts/rift-stats.ts",
+    "difficulty-stats": "tsx scripts/difficulty-stats.ts"
   },
   "dependencies": {
     "react": "^19.3.1",

@@ -3,19 +3,31 @@
  * 위험도는 탐지소로 "보이는 정보"(VisibleRift)만 받는다. 실제 Rift를 받지 않으므로 숨은 값을 쓸 수 없다.
  * 시뮬레이션은 전용 시드(power:리프트id:회차)만 써서 세이브 상태와 실제 전투 난수 흐름을 건드리지 않는다.
  */
-import { getRole, type GameTables } from '../data';
+import { getRole, type GameTables, type Row, type Stats } from '../data';
+import { allyAuraRows, computeEffectiveStats } from './stats';
 import { resolveCombat, type CombatSlot } from './combat';
 import type { ValueRange, VisibleRift } from './facilities';
 import { createMonster, type Unit } from './unit';
 
-export function unitPower(tables: GameTables, u: Unit): number {
+/**
+ * 스탯 하나 묶음의 전투력(지시서 016). 치명타는 평균 피해 배수 1 + 치명타율 × (치명타 피해율 − 1)로 공격에,
+ * 회피는 받는 피해가 (1 − 회피율)배가 되는 효과를 체력에 1 ÷ (1 − 회피율)로 반영한다. 가중치는 combat-power.json.
+ */
+export function statsPower(tables: GameTables, s: Stats): number {
   const w = tables.combatPower.statWeights;
-  return u.stats.hp * w.hp + u.stats.atk * w.atk + u.stats.def * w.def + u.stats.spd * w.spd;
+  const critMul = 1 + s.crit * (s.critDmg - 1);
+  const evaMul = 1 / Math.max(0.01, 1 - s.eva);
+  return s.hp * w.hp * evaMul + (s.pAtk * w.pAtk + s.eAtk * w.eAtk) * critMul + s.pDef * w.pDef + s.eDef * w.eDef + s.spd * w.spd;
+}
+
+/** 유닛 전투력: 최종 스탯 계산(stats.ts)의 전투 시작 기준 값으로 계산한다 */
+export function unitPower(tables: GameTables, u: Unit, row?: Row): number {
+  return statsPower(tables, computeEffectiveStats(tables, u, { round: 1, hpRatio: 1, row, allyAuras: allyAuraRows(tables, u) }));
 }
 
 /** 파티 전투력: 파티원의 실제 현재 스탯(충성도 보정 포함, 호출 쪽이 mercToUnit으로 만든 유닛) 가중 합 */
 export function combatPower(tables: GameTables, party: CombatSlot[]): number {
-  return Math.round(party.reduce((s, p) => s + unitPower(tables, p.unit), 0));
+  return Math.round(party.reduce((s, p) => s + unitPower(tables, p.unit, p.row), 0));
 }
 
 /** 보이는 정보의 한 경우(레벨, 마릿수)로 상대 무리를 만든다. 정확한 구성이 보이면 그 구성을 쓴다. */
@@ -30,7 +42,7 @@ export function estimatedEnemies(tables: GameTables, v: VisibleRift, level: numb
     const m = tables.monsters.find((x) => x.id === id);
     if (!m) throw new Error(`몬스터 데이터에 없는 id: ${id}`);
     return {
-      unit: createMonster(tables, { id: `est${i}`, name: m.name, element: m.element, role: m.role, grade: v.grade, level }),
+      unit: createMonster(tables, { id: `est${i}`, name: m.name, element: m.element, role: m.role, grade: v.grade, level, monsterId: m.id }),
       row: getRole(tables, m.role).defaultRow,
     };
   });
@@ -47,6 +59,8 @@ export interface RiskTierRow {
   id: string;
   name: string;
   minWinRate: number;
+  /** 화면 5칸 막대 단계(1이 가장 좋음) */
+  step: number;
 }
 
 export function riskTierOf(tables: GameTables, winRate: number): RiskTierRow {

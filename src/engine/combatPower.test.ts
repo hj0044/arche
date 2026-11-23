@@ -38,8 +38,10 @@ describe('전투력', () => {
   it('스탯 가중 합(데이터 가중치)이고, 충성도 보정이 든 실제 스탯을 쓴다', () => {
     const w = tables.combatPower.statWeights;
     const p = party(5, 1);
-    const u = p[0].unit.stats;
-    expect(combatPower(tables, p)).toBe(Math.round(u.hp * w.hp + u.atk * w.atk + u.def * w.def + u.spd * w.spd));
+    const u = p[0].unit.stats; // 견본 유닛은 특성이 없어 최종 스탯 = 레벨 스탯
+    const crit = 1 + u.crit * (u.critDmg - 1);
+    const expected = (u.hp * w.hp) / (1 - u.eva) + (u.pAtk * w.pAtk + u.eAtk * w.eAtk) * crit + u.pDef * w.pDef + u.eDef * w.eDef + u.spd * w.spd;
+    expect(combatPower(tables, p)).toBe(Math.round(expected));
     const s = newGame(tables, { seed: 'cp', guildName: 'g', baseCityId: 'seoul', protagonist: { mode: 'guildMaster', name: 'g', background: 'heir' } });
     const m = s.mercenaries.find((x) => x.id === 'm01')!;
     const high = mercToUnit(tables, { ...m, loyalty: { ...m.loyalty!, value: 90 } });
@@ -113,18 +115,23 @@ describe('예상 위험도', () => {
       combatPower: {
         ...tables.combatPower,
         riskTiers: [
-          { id: 'a', name: '압승', minWinRate: 1 },
-          { id: 'b', name: '유리', minWinRate: 0.75 },
-          { id: 'c', name: '반반', minWinRate: 0.5 },
-          { id: 'd', name: '불리', minWinRate: 0.2 },
-          { id: 'e', name: '패배', minWinRate: 0 },
+          { id: 'a', name: '압승', minWinRate: 1, step: 1 },
+          { id: 'b', name: '유리', minWinRate: 0.75, step: 2 },
+          { id: 'c', name: '반반', minWinRate: 0.5, step: 3 },
+          { id: 'd', name: '불리', minWinRate: 0.2, step: 4 },
+          { id: 'e', name: '패배', minWinRate: 0, step: 5 },
         ],
       },
     };
     expect(riskTierOf(t, 1).name).toBe('압승');
     expect(riskTierOf(t, 0.8).name).toBe('유리');
     expect(riskTierOf(t, 0.1).name).toBe('패배');
-    expect(riskTierOf(tables, 0.8).id).toBe('fair');
+    // 기본 데이터는 5구간(지시서 015): 압도 ≥0.9, 우세 ≥0.75, 접전 ≥0.5, 열세 ≥0.25, 무모
+    expect(riskTierOf(tables, 0.95).name).toBe('압도');
+    expect(riskTierOf(tables, 0.8).name).toBe('우세');
+    expect(riskTierOf(tables, 0.6).name).toBe('접전');
+    expect(riskTierOf(tables, 0.3).name).toBe('열세');
+    expect(riskTierOf(tables, 0.1).name).toBe('무모');
     const v = visibleRift(tables, fsAt(2), rift());
     expect(['a', 'b', 'c', 'd', 'e']).toContain(estimateRisk(t, party(40), v).best.id);
   });

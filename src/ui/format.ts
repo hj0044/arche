@@ -63,3 +63,35 @@ export function josa(word: string, a: string, b: string): string {
   if (code < 0 || code > 11171) return `${a}(${b})`;
   return code % 28 ? a : b;
 }
+
+/** 부상 표기(지시서 015): 남은 일수 대신 출전할 수 있게 되는 날. "경상 · 13일차부터 출전" */
+export const injuryText = (injury: { severity: string; recoverDay: number }) => `${severityName(injury.severity)} · ${injury.recoverDay}일차부터 출전`;
+
+/** 스탯 표시 이름(stats.json) */
+export const statName = (id: string) => tables.stats.stats.find((s) => s.id === id)?.name ?? id;
+/** 스탯 여러 개를 "물리공격·에너지공격"처럼 */
+export const statsLabel = (ids: readonly string[] | undefined) => (ids ?? []).map(statName).join('·');
+/** 스탯 값 표시: 비율은 %, 배율은 ×, 나머지는 반올림 정수 */
+export function statValue(id: string, v: number): string {
+  const fmt = tables.stats.stats.find((s) => s.id === id)?.format;
+  if (fmt === 'percent') return `${Math.round(v * 1000) / 10}%`;
+  if (fmt === 'multiplier') return `×${Math.round(v * 100) / 100}`;
+  return num(Math.round(v));
+}
+
+/** 화면 용어(terms.json). 용병은 화면에 "계약자"로 보인다(지시서 016) */
+export const term = tables.terms;
+/** 단어 + 조사. pair는 "을/를", "이/가", "은/는", "과/와"처럼 받침 있을 때/없을 때 순서 */
+export function withJosa(word: string, pair: string): string {
+  const [a, b] = pair.split('/');
+  return word + josa(word, a, b);
+}
+/** 데이터 문구의 {merc} 자리에 용어를 넣는다(조사 포함 형태 {merc:이/가}도 가능) */
+export function termText(text: string): string {
+  return text.replace(/\{merc(?::([^}]+))?\}/g, (_, pair?: string) => (pair ? withJosa(term.merc, pair) : term.merc));
+}
+
+/** 특성 이름(traits.json) */
+export const traitName = (id: string) => tables.traits.traits.find((t) => t.id === id)?.name ?? id;
+/** 특성 종류 이름 */
+export const traitCategoryName: Record<string, string> = { common: '공통', role: '역할', background: '배경', race: '종족', element: '속성', unique: '고유' };

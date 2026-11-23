@@ -1,4 +1,4 @@
-import { getMonsterGrade, getRiftTier, type GameTables, type Outcome, type Row } from '../data';
+import { getMonsterGrade, getRiftTier, type GameTables, type Outcome, type RiftTierRow, type RiftVariantRow, type Row } from '../data';
 import type { CombatSlot } from './combat';
 import { createRng, type Rng } from './rng';
 import { createMonster } from './unit';
@@ -41,6 +41,32 @@ export interface Rift {
    * 1차에서는 표시와 선점 알림에만 쓴다. 고를 세력이 없으면 null(미정).
    */
   territoryFactionId: string | null;
+  /** 등급 안의 변형 id(지시서 015). 등급에 변형이 없으면 없음 */
+  variant?: string;
+}
+
+/** 리프트의 등급 변형 행(없으면 undefined) */
+export function riftVariant(tables: GameTables, rift: Pick<Rift, 'tier' | 'variant'>): RiftVariantRow | undefined {
+  if (!rift.variant) return undefined;
+  return getRiftTier(tables, rift.tier).variants?.find((v) => v.id === rift.variant);
+}
+
+/** 보상·부상 배율 = 등급 배율 × 변형 배율(없으면 1). 데이터 한 곳에서 바꾸는 비교 실험용 자리(지시서 015) */
+export function riftModifiers(tables: GameTables, rift: Pick<Rift, 'tier' | 'variant'>): { reward: number; injuryDays: number } {
+  const tier = getRiftTier(tables, rift.tier);
+  const v = riftVariant(tables, rift);
+  return {
+    reward: (tier.rewardMultiplier ?? 1) * (v?.rewardMultiplier ?? 1),
+    injuryDays: (tier.injuryDaysMultiplier ?? 1) * (v?.injuryDaysMultiplier ?? 1),
+  };
+}
+
+function pickVariant(tier: RiftTierRow, rng: Rng, fixed: boolean): RiftVariantRow | undefined {
+  const rows = tier.variants;
+  if (!rows?.length) return undefined;
+  if (fixed) return rows[0];
+  const id = weightedPick(Object.fromEntries(rows.map((v) => [v.id, v.weight])), rng);
+  return rows.find((v) => v.id === id);
 }
 
 export interface RiftFog {
@@ -97,16 +123,19 @@ export function generateRift(
   const city = tables.cities.find((c) => c.id === cityId);
   if (!city) throw new Error(`도시 데이터에 없는 id: ${cityId}`);
   const tier = getRiftTier(tables, fixed?.tier ?? weightedPick(city.riftSpawn.tierWeights, rng));
-  const grade = fixed?.grade ?? weightedPick(tier.monsterGradeWeights, rng);
-  // 몬스터 등급의 레벨 범위와 리프트 등급의 레벨 범위가 겹치는 구간에서 고른다.
+  // 변형은 별도 난수 흐름으로 고른다(변형이 없는 등급은 예전과 같은 결과). 시작 리프트(fixed)는 첫 행(기본 변형).
+  const variant = pickVariant(tier, createRng(`variant:${rng.getState()}`), !!fixed);
+  const grade = fixed?.grade ?? weightedPick(variant?.monsterGradeWeights ?? tier.monsterGradeWeights, rng);
+  // 몬스터 등급의 레벨 범위와 리프트 등급(변형)의 레벨 범위가 겹치는 구간에서 고른다. 겹치지 않으면 등급 값으로 돌아간다.
   const gradeRange = getMonsterGrade(tables, grade).level;
-  const lo = Math.max(gradeRange[0], tier.monsterLevel[0]);
-  const hi = Math.min(gradeRange[1], tier.monsterLevel[1]);
+  const window = (lv: [number, number]) => [Math.max(gradeRange[0], lv[0]), Math.min(gradeRange[1], lv[1])] as const;
+  let [lo, hi] = window(variant?.monsterLevel ?? tier.monsterLevel);
+  if (lo > hi) [lo, hi] = window(tier.monsterLevel);
   // levelSkew가 1보다 크면 낮은 레벨 쪽으로 치우친다(도시 색).
-  const level = lo + Math.floor(Math.pow(rng.next(), city.riftSpawn.levelSkew) * (hi - lo + 1));
+  const level = lo + Math.floor(Math.pow(rng.next(), variant?.levelSkew ?? city.riftSpawn.levelSkew) * (hi - lo + 1));
   const species = tables.monsters.filter((m) => m.grades.includes(grade));
   const pool = species.length ? species : tables.monsters;
-  const count = rollRange(rng, tier.enemyCount);
+  const count = rollRange(rng, variant?.enemyCount ?? tier.enemyCount);
   const enemies: RiftEnemy[] = Array.from({ length: count }, () => {
     const m = rng.pick(pool);
     const row = tables.roles.find((r) => r.id === m.role)?.defaultRow ?? 'front';
@@ -152,6 +181,7 @@ export function generateRift(
     ...(omen ? { omen } : {}),
     fog,
     territoryFactionId,
+    ...(variant ? { variant: variant.id } : {}),
   };
 }
 
@@ -167,6 +197,7 @@ export function riftEnemySlots(tables: GameTables, rift: Rift): CombatSlot[] {
         role: species.role,
         grade: e.grade,
         level: e.level,
+        monsterId: species.id,
       }),
       row: e.row,
     };
@@ -175,11 +206,12 @@ export function riftEnemySlots(tables: GameTables, rift: Rift): CombatSlot[] {
 
 /**
  * 결과별 실제 보상. 정산과 화면(리프트 카드)이 같은 함수를 쓴다.
- * = 기본 보상 × 결과 배율 × 안정화 통로 배율 × (1 + 레벨 배율 × 몬스터 레벨), 내림.
+ * = 기본 보상 × 등급·변형 보상 배율 × 결과 배율 × 안정화 통로 배율 × (1 + 레벨 배율 × 몬스터 레벨), 내림.
  */
 export function riftReward(tables: GameTables, rift: Rift, outcome: Outcome): RiftReward {
   const prog = tables.progression;
   const ratio =
+    riftModifiers(tables, rift).reward *
     prog.rewardRatioByOutcome[outcome] *
     (rift.stable ? prog.stablePassageRewardRatio : 1) *
     (1 + prog.rewardLevelScale * riftLevel(rift));

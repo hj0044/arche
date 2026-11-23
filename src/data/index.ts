@@ -29,10 +29,20 @@ import facilitiesJson from './facilities.json';
 import autoplayJson from './autoplay.json';
 import combatPowerJson from './combat-power.json';
 import riftPreemptionJson from './rift-preemption.json';
+import traitsJson from './traits.json';
+import termsJson from './terms.json';
 
 export type Range = [number, number];
-export type StatId = 'hp' | 'atk' | 'def' | 'spd';
+/** 핵심 6스탯(레벨로 성장). 지시서 016 */
+export type CoreStatId = 'hp' | 'pAtk' | 'pDef' | 'eAtk' | 'eDef' | 'spd';
+/** 보조 3스탯(성장하지 않음): 치명타율(비율), 치명타 피해율(배율), 회피율(비율) */
+export type AuxStatId = 'crit' | 'critDmg' | 'eva';
+export type StatId = CoreStatId | AuxStatId;
 export type Stats = Record<StatId, number>;
+export type CoreStats = Record<CoreStatId, number>;
+export const CORE_STATS: readonly CoreStatId[] = ['hp', 'pAtk', 'pDef', 'eAtk', 'eDef', 'spd'];
+export const AUX_STATS: readonly AuxStatId[] = ['crit', 'critDmg', 'eva'];
+export type DamageType = 'physical' | 'energy';
 export type Row = 'front' | 'back';
 export type Side = 'ally' | 'enemy';
 
@@ -61,6 +71,8 @@ export interface ElementRow { id: string; name: string; loreName: string; strong
 export interface RoleRow {
   id: string;
   name: string;
+  /** 예전 표시 이름(용병 CSV 가져오기용, 지시서 016에서 이름을 바꿈) */
+  aliases?: string[];
   /** 구성 보너스 판정용 분류: vanguard(전위), damage(딜러), support(지원), mobility(기동). */
   group: string;
   defaultRow: Row;
@@ -81,16 +93,27 @@ export interface SkillRow {
   hits?: number;
   cooldown: number;
   duration?: number;
-  stat?: StatId;
+  /** 버프가 올리는 스탯들 */
+  stats?: StatId[];
   amount?: number;
+  /** 공격 스킬의 피해 종류: 물리는 물리공격 대 물리방어, 에너지는 에너지공격 대 에너지방어 */
+  damageType?: DamageType;
+  /** 치유 스킬이 비례하는 스탯(없으면 eAtk) */
+  scaleStat?: StatId;
 }
 
 export interface RoleStatRow { base: Stats }
 export interface StatsTable {
-  stats: { id: StatId; name: string }[];
+  stats: { id: StatId; name: string; kind: 'core' | 'aux'; format?: 'percent' | 'multiplier' }[];
+  /** 보조 스탯 상한(치명타율·회피율) */
+  caps: Partial<Record<StatId, number>>;
   roleBase: Record<string, RoleStatRow>;
-  /** 레벨당 복리 성장률 */
-  levelGrowthRate: Stats;
+  /** 레벨당 복리 성장률(핵심 6개만) */
+  levelGrowthRate: CoreStats;
+  /** 계약자 baseStats 검증: 핵심은 역할 기본값 대비 배율, 보조는 절대값 범위 */
+  roleBounds: Record<StatId, Range>;
+  /** 특수 스탯(지시서 016: 자리만, 모두 꺼짐) */
+  special: { id: string; name: string; description: string; enabled: boolean }[];
 }
 
 export interface MonsterGradeRow { id: string; name: string; statMultiplier: number; level: Range }
@@ -113,6 +136,29 @@ export interface RiftTierRow {
   names: string[];
   /** 흑막 징조 표식이 붙을 확률(연출 전용, 규칙에 영향 없음) */
   omenChance: number;
+  /** 보상 배율(없으면 1). 변형 배율과 곱한다(지시서 015: 비교 실험용 자리) */
+  rewardMultiplier?: number;
+  /** 부상 일수 배율(없으면 1). 변형 배율과 곱한다 */
+  injuryDaysMultiplier?: number;
+  /**
+   * 등급 안의 변형(지시서 015). 가중치로 하나를 고르고, 적은 값만 등급 값을 덮어쓴다.
+   * 없으면 등급 값 그대로. 첫 행은 시작 리프트(initialGuaranteed)에 쓰는 기본 변형이다.
+   */
+  variants?: RiftVariantRow[];
+}
+
+export interface RiftVariantRow {
+  id: string;
+  /** 화면에 붙는 짧은 이름(예: 소규모). 없으면 표시 안 함 */
+  label?: string;
+  weight: number;
+  monsterLevel?: Range;
+  enemyCount?: Range;
+  monsterGradeWeights?: Record<string, number>;
+  /** 레벨 치우침(없으면 도시 levelSkew). 1이면 고르게 */
+  levelSkew?: number;
+  rewardMultiplier?: number;
+  injuryDaysMultiplier?: number;
 }
 
 export interface MaterialRow { id: string; name: string; world: string; note: string }
@@ -163,7 +209,15 @@ export interface FactionRow {
   cityInfluence: Record<string, number>;
 }
 
-export interface MonsterRow { id: string; name: string; role: string; element: string; grades: string[] }
+export interface MonsterRow {
+  id: string;
+  name: string;
+  role: string;
+  element: string;
+  grades: string[];
+  /** 보조 스탯(없으면 역할 기본값) */
+  aux?: Partial<Record<AuxStatId, number>>;
+}
 
 export type UnlockRule =
   | { type: 'totalVictories'; count: number }
@@ -190,6 +244,10 @@ export interface RosterRow {
   world: string;
   race: string;
   unlock?: UnlockRule;
+  /** 계약자별 기본 스탯(레벨 1 절대값, 지시서 016). 사람이 고치는 값이라 import-roster가 덮어쓰지 않는다 */
+  baseStats?: Stats;
+  /** 특성 슬롯 순서대로의 특성 id(traits.json). 짧으면 남은 슬롯은 비어 있다 */
+  traits?: string[];
 }
 
 export interface GrowthSpeedRow { id: string; name: string; expToNextMultiplier: number }
@@ -244,6 +302,62 @@ export interface GameTables {
   autoplay: AutoplayPolicy;
   combatPower: CombatPowerTable;
   riftPreemption: RiftPreemptionTable;
+  traits: TraitsTable;
+  terms: TermsTable;
+}
+
+/** 화면 용어(지시서 016) */
+export interface TermsTable {
+  /** 용병의 화면 이름(지금은 "계약자") */
+  merc: string;
+}
+
+export type TraitCategory = 'common' | 'role' | 'background' | 'race' | 'element' | 'unique';
+/** 특성 효과가 켜지는 때(지시서 016). 알 수 없는 type은 데이터 검증에서 실패한다 */
+export type TraitTrigger =
+  | { type: 'always' }
+  | { type: 'battleStart'; rounds: number }
+  | { type: 'firstAction' }
+  | { type: 'hpBelow'; threshold: number }
+  | { type: 'roundStack'; perRound: number; max: number }
+  | { type: 'fromRound'; round: number };
+export type TraitCondition =
+  | { type: 'advantage' }
+  | { type: 'disadvantage' }
+  | { type: 'enemyElement'; element: string }
+  | { type: 'row'; row: Row };
+export type TraitEffectKind = 'statMul' | 'statAdd' | 'damageMul' | 'damageTakenMul' | 'healMul';
+export interface TraitEffect {
+  kind: TraitEffectKind;
+  stat?: StatId;
+  /** roundStack이면 쓰지 않는다 */
+  value?: number;
+  scope: 'self' | 'allies';
+}
+export interface TraitEffectRow {
+  trigger: TraitTrigger;
+  condition?: TraitCondition;
+  effect: TraitEffect;
+}
+export interface TraitRow {
+  id: string;
+  name: string;
+  category: TraitCategory;
+  description: string;
+  /** 고를 수 있는 조건(종류별): roles·backgrounds·races·elements 목록 또는 owner(계약자 id) */
+  allowed: { roles?: string[]; backgrounds?: string[]; races?: string[]; elements?: string[]; owner?: string };
+  tags: string[];
+  maxRank: number;
+  /** 단계별 효과(지금은 1단계만) */
+  ranks: { effects: TraitEffectRow[] }[];
+  /** 강화 비용(나중에). 지금은 null */
+  upgrade: unknown;
+}
+export interface TraitsTable {
+  /** 슬롯 i(0부터)가 열리는 레벨 */
+  slotUnlockLevels: number[];
+  caps: { statMulMax: number; damageMulMax: number; healMulMax: number; damageTakenMulMin: number };
+  traits: TraitRow[];
 }
 
 /** 라이벌 리프트 선점(지시서 013). 등급과 세력은 다른 표의 id를 쓴다(목록을 코드에 박지 않음). */
@@ -266,10 +380,13 @@ export interface RiftPreemptionTable {
 
 /** 전투력과 예상 위험도 */
 export interface CombatPowerTable {
-  statWeights: Stats;
+  /** 핵심 스탯 가중치. 치명타·회피는 기댓값 배수로 반영 */
+  statWeights: CoreStats;
+  /** 계약자 baseStats 전투력 예산: 같은 역할 기본값 전투력 대비 비율 범위 */
+  budget: Range;
   simulations: number;
   /** minWinRate가 큰 것부터 판정. 단계 수는 데이터로 늘리고 줄인다. */
-  riskTiers: { id: string; name: string; minWinRate: number }[];
+  riskTiers: { id: string; name: string; minWinRate: number; /** 화면 5칸 막대 단계(1이 가장 좋음) */ step: number }[];
 }
 
 /** 시설 효과 정의. type별 처리기(engine/facilities.ts)가 나머지 값을 해석한다. */
@@ -383,7 +500,7 @@ export interface UiTable {
   mercStatusFilters: { id: string; name: string }[];
   /** 리프트 화면 정렬 항목(지시서 013). 비교 방법은 id로 화면 코드가 정한다. 첫 항목이 기본 */
   riftSort: { id: string; name: string }[];
-  /** "공략 가능"으로 세는 위험도 단계 id(combat-power.json riskTiers). 위험도 범위의 나쁜 쪽 끝으로 판정 */
+  /** "공략 가능"으로 세는 위험도 단계 id(combat-power.json riskTiers, 지금은 접전 이상). 위험도 범위의 나쁜 쪽 끝으로 판정 */
   riftPlayableRiskTiers: string[];
   /** 리프트 목록을 열 때 바로 계산하는 위험도 카드 수(나머지는 한가할 때) */
   riftEagerRiskCount: number;
@@ -397,7 +514,7 @@ export const tables: GameTables = {
   elements: elementsJson,
   roles: rolesJson as RoleRow[],
   skills: skillsJson as SkillRow[],
-  stats: statsJson as StatsTable,
+  stats: statsJson as unknown as StatsTable,
   monsterGrades: monsterGradesJson as MonsterGradeRow[],
   riftTiers: riftTiersJson as unknown as RiftTierRow[],
   combat: combatJson as CombatTable,
@@ -420,8 +537,10 @@ export const tables: GameTables = {
   poaching: poachingJson,
   facilities: facilitiesJson as unknown as FacilitiesTable,
   autoplay: autoplayJson,
-  combatPower: combatPowerJson as CombatPowerTable,
+  combatPower: combatPowerJson as unknown as CombatPowerTable,
   riftPreemption: riftPreemptionJson as RiftPreemptionTable,
+  traits: traitsJson as unknown as TraitsTable,
+  terms: termsJson as TermsTable,
 };
 
 /** 세이브 정책(명세 9절 확정 규칙의 값). 저장 코드와 화면 문구가 같은 값을 읽는다. */

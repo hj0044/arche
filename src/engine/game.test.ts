@@ -113,7 +113,7 @@ describe('파견', () => {
     s = dispatch(tables, s, 'B', guildParty(s, ['m02', 'm03']));
     expect(s.expeditions).toHaveLength(2);
     expect(isAvailable(s, 'hero')).toBe(false);
-    expect(isAvailable(s, 'm04')).toBe(false); // 주인공(술사)과 역할이 겹쳐 시작 길드에서 빠짐
+    expect(isAvailable(s, 'm04')).toBe(false); // 주인공(마도사)과 역할이 겹쳐 시작 길드에서 빠짐
 
     const d2 = advanceDay(tables, s);
     expect(d2.events.filter((e) => e.type === 'returned')).toHaveLength(1);
