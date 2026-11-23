@@ -14,7 +14,7 @@ import { MercDetail } from './screens/MercDetail';
 import { MercList } from './screens/MercList';
 import { NewGame } from './screens/NewGame';
 import { PartyBuilder } from './screens/PartyBuilder';
-import { RiftList } from './screens/RiftList';
+import { Content } from './screens/Content';
 import { SaveSlots } from './screens/SaveSlots';
 import { Title } from './screens/Title';
 
@@ -101,7 +101,7 @@ export function App() {
       screen = <GuildHome ctx={ctx} />;
       break;
     case 'rifts':
-      screen = <RiftList ctx={ctx} cityId={route.cityId} />;
+      screen = <Content ctx={ctx} cityId={route.cityId} sub={route.sub} />;
       break;
     case 'party':
       screen = <PartyBuilder ctx={ctx} riftId={route.riftId} />;
@@ -139,7 +139,11 @@ function fixtureRoute(screen: string, s: GameState, events?: DayEvent[]): Route 
   const baseRifts = s.rifts.filter((r) => r.cityId === s.baseCityId);
   switch (screen) {
     case 'rifts':
-      return { name: 'rifts' };
+      return { name: 'rifts', sub: 'rifts' };
+    case 'tower':
+    case 'boss':
+    case 'recruit':
+      return { name: 'rifts', sub: screen };
     case 'party':
       return { name: 'party', riftId: (baseRifts[2] ?? baseRifts[0]).id };
     case 'dayResult':

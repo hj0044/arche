@@ -21,6 +21,8 @@ for (const sc of SCREENS) {
     test.beforeEach(async ({ page }) => open(page, sc.screen));
 
     test('구역 계약: 순서와 이름', async ({ page }) => {
+      // 제안 화면(탑·보스·영입)은 콘텐츠의 서브 탭이고 계약에 구역이 없다
+      test.skip(spec.sections.length === 0, '계약에 구역이 없는 제안 화면');
       const found: string[] = await page.$$eval('[data-ui]', (els) => els.map((e) => e.getAttribute('data-ui')!));
       const prefix = `${sc.name}.`;
       const mine = found.filter((x) => x.startsWith(prefix)).map((x) => x.slice(prefix.length));

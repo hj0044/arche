@@ -191,3 +191,18 @@ html, body, #root { margin: 0; height: 100%; background: var(--c-page); }
 .card.todo { width: 100%; min-height: 50px; padding: 7px 12px; display: flex; align-items: center; gap: 10px; text-align: left; }
 .todo-icon { width: 36px; height: 36px; border-radius: var(--r-btn); background: var(--c-panel-2); border: 1px solid; display: flex; align-items: center; justify-content: center; flex: none; }
 .card.dispatch { padding: 8px 12px; display: flex; align-items: center; gap: 12px; }
+
+/* ── 콘텐츠(시안 Content·Recruit) ─────────────────── */
+.card.rift-card { display: block; width: 100%; overflow: hidden; border-left-width: 4px; text-align: left; padding: 0; }
+.rift-scrim { position: absolute; inset: 0; background: linear-gradient(90deg, color-mix(in srgb, var(--c-bg) 85%, transparent) 0%, color-mix(in srgb, var(--c-bg) 20%, transparent) 65%, transparent 100%); }
+.rift-title { position: absolute; left: 12px; top: 8px; gap: 2px; }
+.rift-name { font-size: 16px; font-weight: 700; text-shadow: 0 1px 3px var(--c-page); }
+.rift-dday { position: absolute; right: 0; top: 0; height: 22px; padding: 0 10px 0 12px; border-radius: 0 0 0 10px; font-size: 12px; font-weight: 700; display: flex; align-items: center; background: color-mix(in srgb, var(--c-bg) 78%, transparent); color: var(--c-text); }
+.rift-dday.urgent { background: var(--c-bad); color: var(--c-text); }
+.rift-body { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: var(--c-panel); }
+.el-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--el); flex: none; }
+.el-dot.big { position: absolute; right: 5px; top: 5px; width: 10px; height: 10px; }
+.card.recruit-card { display: flex; overflow: hidden; }
+.card.recruit-card.ready { border-color: var(--c-gold); }
+.card.recruit-card.locked { opacity: 0.6; }
+.recruit-art { width: 86px; height: 96px; position: relative; flex: none; display: block; }

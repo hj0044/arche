@@ -1,10 +1,14 @@
 {
   "Main": {
-    "mismatchRatio": 0.0409,
+    "mismatchRatio": 0.0398,
     "refRetakeMismatch": 0.0138
   },
   "Content": {
-    "mismatchRatio": 0.1435,
+    "mismatchRatio": 0.0919,
     "refRetakeMismatch": 0.0045
+  },
+  "Recruit": {
+    "mismatchRatio": 0.1483,
+    "refRetakeMismatch": 0.0079
   }
 }
