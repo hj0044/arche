@@ -33,6 +33,7 @@
   --c-warn: #F29B5B;
   --c-bad: #F0706F;
   --c-dmg: #FF8A7A; /* 전투 피해 숫자(시안 Battle) */
+  --c-omen: #F0A64A; /* 리프트 카드 '징조' 배지(시안 Content, 017b) */
 
   /* 위험도 5구간(combat-power.json riskTiers id) */
   --risk-crush: #3FCF8E;

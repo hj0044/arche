@@ -124,11 +124,14 @@ export function MercCard({
   off,
   onClick,
   compact,
+  shortName,
 }: {
   /** 파티 후보처럼 작게(초상 52, 막대 없음) */
   compact?: boolean;
   id: string;
   name: string;
+  /** 카드에 보일 짧은 이름(017b). 접근성 이름은 전체 name */
+  shortName?: string;
   element: string;
   role: string;
   /** 파티 후보처럼 역할 이름을 보일 때 */
@@ -157,7 +160,7 @@ export function MercCard({
         {up && <span className="mcard-up">UP</span>}
       </div>
       <div className="mcard-info">
-        <span className="mcard-name">{name}</span>
+        <span className="mcard-name">{shortName ?? name}</span>
         {roleName && <span className="mcard-role">{roleName}</span>}
         {expRatio !== undefined && <Gauge ratio={expRatio} color={expColor} size="thin" />}
         <span className={`mcard-state ${stateClass ?? ''}`}>{state}</span>
@@ -172,7 +175,7 @@ export function MercCard({
 }
 
 /** 파티 슬롯(+ 또는 계약자: 초상 56 · 이름 · 역할) */
-export function Slot({ filled, onClick, label }: { filled?: { id: string; name: string; element: string; role: string; level: number; roleName: string }; onClick: () => void; label: string }) {
+export function Slot({ filled, onClick, label }: { filled?: { id: string; name: string; shortName?: string; element: string; role: string; level: number; roleName: string }; onClick: () => void; label: string }) {
   return (
     <button className={`slot ${filled ? '' : 'empty'}`} data-role="slot" onClick={onClick} aria-label={label}>
       {filled ? (
@@ -182,7 +185,7 @@ export function Slot({ filled, onClick, label }: { filled?: { id: string; name: 
             <span className="slot-lv">{filled.level}</span>
           </span>
           <span className="slot-info">
-            <span className="slot-name">{filled.name}</span>
+            <span className="slot-name">{filled.shortName ?? filled.name}</span>
             <span className="slot-role">{filled.roleName}</span>
           </span>
         </>

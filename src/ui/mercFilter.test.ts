@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { tables, type GameTables } from '../data';
 import { assignToFacility, newGame, type GameState } from '../engine/game';
-import { choseong, filterAndSort, filterChips, matchesQuery, mercStatuses, type MercListOptions } from './mercFilter';
+import { choseong, emptySheetFilter, filterAndSort, filterChips, matchesQuery, mercStatuses, sheetFilterCount, type MercListOptions } from './mercFilter';
 
 const s0 = (): GameState => {
   const s = newGame(tables, { seed: 'flt', guildName: 'g', baseCityId: 'seoul', protagonist: { mode: 'guildMaster', name: 'g', background: 'heir' } });
@@ -68,5 +68,29 @@ describe('정렬과 필터', () => {
     expect(c.elements.map((e) => e.name)).toContain('시간');
     expect(c.roles.map((r) => r.id)).not.toContain('assassin'); // 비활성 역할은 칩 없음
     expect(c.statuses.length).toBe(tables.ui.mercStatusFilters.length);
+  });
+});
+
+describe('017b 필터 시트(역할·속성·상태 여러 개)', () => {
+  it('축 안에서는 OR, 축 사이는 AND, 칩 줄 상태와도 AND', () => {
+    let s = s0();
+    s = { ...s, mercenaries: s.mercenaries.map((m) => (m.id === 'm03' ? { ...m, injury: { severity: 'light', recoverDay: 5 } } : m)) };
+    const all = guild(s);
+    const roles = [...new Set(all.map((m) => m.role))].slice(0, 2);
+    const or = filterAndSort(tables, s, all, opts({ sheet: { ...emptySheetFilter(), roles } }));
+    expect(or.length).toBe(all.filter((m) => roles.includes(m.role)).length);
+    const el = or[0].element;
+    const and = filterAndSort(tables, s, all, opts({ sheet: { ...emptySheetFilter(), roles, elements: [el] } }));
+    expect(and.every((m) => roles.includes(m.role) && m.element === el)).toBe(true);
+    // 상태 OR: 부상 또는 출전 가능 = 전원(이 상태에서는 파견·훈련 없음)
+    expect(filterAndSort(tables, s, all, opts({ sheet: { ...emptySheetFilter(), statuses: ['injured', 'available'] } })).length).toBe(all.length);
+    // 칩 줄의 '대기'(available)와 시트의 '부상'은 AND라 아무도 없다
+    expect(filterAndSort(tables, s, all, opts({ status: 'available', sheet: { ...emptySheetFilter(), statuses: ['injured'] } }))).toEqual([]);
+    expect(filterAndSort(tables, s, all, opts({ sheet: { ...emptySheetFilter(), statuses: ['injured'] } })).map((m) => m.id)).toEqual(['m03']);
+  });
+  it('빈 시트는 조건이 없고, 고른 개수를 센다', () => {
+    const s = s0();
+    expect(filterAndSort(tables, s, guild(s), opts({ sheet: emptySheetFilter() })).length).toBe(guild(s).length);
+    expect(sheetFilterCount({ roles: ['shield'], elements: ['fire', 'frost'], statuses: [] })).toBe(3);
   });
 });

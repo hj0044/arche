@@ -226,5 +226,7 @@
       "status": "곧 열림",
       "note": "재료 용도가 정해지면 열려요"
     }
-  ]
+  ],
+  "partyRiskDebounceMs": 120,
+  "_partyRiskDebounceNote": "지시서 017b: 파티 편성 요약의 상세 위험도(96회)를 파티가 바뀐 뒤 이만큼 기다렸다가 한 번 계산한다(150ms 이내)."
 }

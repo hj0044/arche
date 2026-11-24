@@ -6,7 +6,7 @@ import { useEffect, useReducer, useState } from 'react';
 import { tables, travelDays } from '../../data';
 import { visibleRift } from '../../engine/facilities';
 import { recruit, recruitInfo, type MercenaryState } from '../../engine/game';
-import type { Rift } from '../../engine/rift';
+import { riftVariant, type Rift } from '../../engine/rift';
 import { guildStatusSummary, riftAutoRisk, type RiftAutoRisk } from '../../engine/status';
 import { Banner, Card, Chip, ChipRow, Gauge, Icon, LogoRow, Portrait, RiskPill, Screen } from '../components';
 import { cityName, factionName, num, roleName, tierName } from '../format';
@@ -159,6 +159,8 @@ function RiftCardView({ ctx, rift, risk }: { ctx: Ctx; rift: Rift; risk: RiftAut
   const range = (r: [number, number]) => (r[0] === r[1] ? num(r[0]) : `${num(r[0])}~${num(r[1])}`);
   const tierId = risk?.estimate.worst.id ?? 'none';
   const enemyEl = v.elements?.[0] ?? 'void';
+  // 017b 배지: 소규모 같은 변형 라벨(rift-tiers.json variants.label), 징조(탐지소로 보일 때만)
+  const variantLabel = riftVariant(tables, rift)?.label;
   const mats = Object.values(v.victoryReward.materials);
   const mat: [number, number] | null = mats.length ? [mats.reduce((a, x) => a + x[0], 0), mats.reduce((a, x) => a + x[1], 0)] : null;
   return (
@@ -166,8 +168,12 @@ function RiftCardView({ ctx, rift, risk }: { ctx: Ctx; rift: Rift; risk: RiftAut
       <Banner tier={rift.tier} risk={tierId}>
         <div className="rift-scrim" />
         <div className="rift-title col">
-          <span style={{ fontSize: 11, color: 'var(--c-text-banner)' }}>
-            {cityName(rift.cityId)} · {tierName(rift.tier)}
+          <span className="row" style={{ gap: 6 }}>
+            <span style={{ fontSize: 11, color: 'var(--c-text-banner)' }}>
+              {cityName(rift.cityId)} · {tierName(rift.tier)}
+            </span>
+            {variantLabel && <span className="rift-badge small">{variantLabel}</span>}
+            {v.omen && <span className="rift-badge omen">징조</span>}
           </span>
           <span className="rift-name">{name}</span>
         </div>

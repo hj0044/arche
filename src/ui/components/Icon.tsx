@@ -16,6 +16,7 @@ export type IconName =
   | 'heart'
   | 'plus'
   | 'search'
+  | 'filter'
   | 'lock'
   | 'check'
   | 'zero'
@@ -104,6 +105,12 @@ export function Icon({ name, size, style, className }: { name: IconName; size?: 
         <svg width={size ?? 18} height={size ?? 18} viewBox="0 0 24 24" {...stroke} {...common}>
           <circle cx="11" cy="11" r="7" />
           <path d="M20 20l-4-4" />
+        </svg>
+      );
+    case 'filter':
+      return (
+        <svg width={size ?? 20} height={size ?? 20} viewBox="0 0 24 24" {...stroke} {...common}>
+          <path d="M4 5h16l-6 8v6l-4-2v-4z" />
         </svg>
       );
     case 'lock':

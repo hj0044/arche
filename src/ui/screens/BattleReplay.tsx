@@ -10,7 +10,7 @@ import { deviceSettings } from '../../app/settings';
 import { isUiFixture } from '../../app/saves';
 import { BATTLE_FIELD, monsterSvg } from '../art/fallback';
 import { Art, Portrait, Sheet } from '../components';
-import { elementName, outcomeName, skillName, statsLabel } from '../format';
+import { cardName, elementName, outcomeName, skillName, statsLabel } from '../format';
 import type { Ctx, Route } from '../nav';
 
 interface Hit {
@@ -179,7 +179,7 @@ export function BattleReplay({ ctx, expeditionId, back }: { ctx: Ctx; expedition
         <div className="bt-hp">
           <i style={{ width: `${Math.max(0, Math.min(1, hp / u.maxHp)) * 100}%` }} />
         </div>
-        <div className="bt-name">{u.name}</div>
+        <div className="bt-name">{u.side === 'ally' ? cardName({ id: u.unitId, name: u.name }) : u.name}</div>
       </div>
     );
   };

@@ -228,6 +228,8 @@ export interface RosterRow {
   /** CSV 번호 */
   no: number;
   name: string;
+  /** 카드(계약자 그리드·파티 후보·슬롯 등)에 쓰는 짧은 이름(지시서 017b). 상세·시트·로그는 name */
+  shortName: string;
   element: string;
   role: string;
   hometown: string;
@@ -490,6 +492,7 @@ export interface UiTable {
   storageWarnRatio: number;
   replay: { stepMs: number; speeds: number[] };
   deviceSettings: { replaySpeed: number; sound: boolean; confirmImportant: boolean };
+  partyRiskDebounceMs: number;
   lockedFacilities: { id: string; name: string; status: string; note: string }[];
   recentReportsOnHome: number;
   toastMs: number;

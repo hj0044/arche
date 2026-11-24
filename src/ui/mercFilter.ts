@@ -51,6 +51,31 @@ export interface MercListOptions {
   status: string | null;
   /** 영입 탭 세력 칩 */
   faction: string | null;
+  /**
+   * 017b 필터 시트: 축마다 여러 개를 고른다(축 안에서는 OR, 비었으면 조건 없음).
+   * 축 사이와, 위의 단일 조건(칩 줄의 상태 등)과는 AND로 결합한다.
+   */
+  sheet?: MercSheetFilter;
+}
+
+export interface MercSheetFilter {
+  roles: string[];
+  elements: string[];
+  statuses: string[];
+}
+export const emptySheetFilter = (): MercSheetFilter => ({ roles: [], elements: [], statuses: [] });
+export const sheetFilterCount = (f: MercSheetFilter | undefined) => (f ? f.roles.length + f.elements.length + f.statuses.length : 0);
+
+/** 필터 시트 조건에 맞는가(축 안 OR, 축 사이 AND) */
+export function matchesSheet(tables: GameTables, state: GameState, m: MercenaryState, f: MercSheetFilter | undefined): boolean {
+  if (!f) return true;
+  if (f.roles.length && !f.roles.includes(m.role)) return false;
+  if (f.elements.length && !f.elements.includes(m.element)) return false;
+  if (f.statuses.length) {
+    const st = mercStatuses(tables, state, m);
+    if (!f.statuses.some((x) => st.includes(x as MercStatus))) return false;
+  }
+  return true;
 }
 
 const byId = (a: MercenaryState, b: MercenaryState) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
@@ -97,6 +122,7 @@ export function filterAndSort(tables: GameTables, state: GameState, list: Mercen
     .filter((m) => !o.element || m.element === o.element)
     .filter((m) => !o.status || mercStatuses(tables, state, m).includes(o.status as MercStatus))
     .filter((m) => !o.faction || (m.affiliation.kind === 'faction' && m.affiliation.factionId === o.faction))
+    .filter((m) => matchesSheet(tables, state, m, o.sheet))
     .sort((a, b) => cmp(a, b) || byId(a, b));
 }
 

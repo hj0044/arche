@@ -104,3 +104,46 @@ test('계약자 그리드 4열, 파티 슬롯 줄당 5', async ({ page }) => {
   const pcols = await page.$eval('[data-ui="Party.candidates"] [data-role=grid]', (e) => getComputedStyle(e).gridTemplateColumns.split(' ').length);
   expect(pcols).toBe(M.mercGridColumns);
 });
+
+// 017b: 카드 이름(짧은 이름)이 말줄임으로 잘리지 않는다. 계약자 30명 전원을 카드 글꼴·폭으로 재고, 픽스처 화면의 실제 카드도 본다.
+const roster: { id: string; name: string; shortName: string }[] = JSON.parse(readFileSync(resolve(import.meta.dirname, '../../src/data/roster.json'), 'utf8'));
+const clipped = (sel: string) => (els: Element[]) => els.filter((e) => e.scrollWidth > e.clientWidth + 0.5).map((e) => `${sel} ${e.textContent}`);
+
+test('카드 이름이 말줄임(…)으로 잘리지 않는다(30명 전원, 픽스처 기준)', async ({ page }) => {
+  await open(page, 'mercs');
+  expect(await page.$$eval('.mcard-name', clipped('계약자 카드'))).toEqual([]);
+  // 30명 전원: 실제 카드 이름 칸과 같은 글꼴·폭에 짧은 이름을 넣어 잰다
+  const overflow = await page.$eval(
+    '.mcard-name',
+    (el, names) => {
+      const box = el as HTMLElement;
+      const keep = box.textContent;
+      const bad: string[] = [];
+      for (const n of names) {
+        box.textContent = n;
+        if (box.scrollWidth > box.clientWidth + 0.5) bad.push(n);
+      }
+      box.textContent = keep;
+      return bad;
+    },
+    roster.map((r) => r.shortName),
+  );
+  expect(overflow).toEqual([]);
+  await open(page, 'party');
+  expect(await page.$$eval('[data-ui="Party.candidates"] .mcard-name', clipped('파티 후보'))).toEqual([]);
+  expect(await page.$$eval('.slot-name', clipped('파티 슬롯'))).toEqual([]);
+  const slotOverflow = await page.$eval(
+    '.slot-name',
+    (el, names) => {
+      const box = el as HTMLElement;
+      const bad: string[] = [];
+      for (const n of names) {
+        box.textContent = n;
+        if (box.scrollWidth > box.clientWidth + 0.5) bad.push(n);
+      }
+      return bad;
+    },
+    roster.map((r) => r.shortName),
+  );
+  expect(slotOverflow).toEqual([]);
+});

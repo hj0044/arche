@@ -238,7 +238,7 @@ html, body, #root { margin: 0; height: 100%; background: var(--c-page); }
 .search-box { flex: 1; height: 44px; background: var(--c-panel); border: 1px solid var(--c-line); border-radius: var(--r-chip); display: flex; align-items: center; gap: 8px; padding: 0 14px; color: var(--c-text-sub); min-width: 0; }
 .search-box input { flex: 1; min-width: 0; height: 40px; border: 0; background: none; color: var(--c-text); font: inherit; font-size: 14px; outline: none; }
 .search-box input::placeholder { color: var(--c-text-sub); }
-.sort-box { flex: none; width: 96px; height: 44px; background: var(--c-panel); border: 1px solid var(--c-line); border-radius: var(--r-chip); color: var(--c-text); font: inherit; font-size: 14px; text-align: center; appearance: none; padding: 0 8px; }
+.sort-box { flex: none; width: 84px; height: 44px; background: var(--c-panel); border: 1px solid var(--c-line); border-radius: var(--r-chip); color: var(--c-text); font: inherit; font-size: 14px; text-align: center; appearance: none; padding: 0 8px; }
 
 /* ── 계약자 상세(시안 MercDetail) ────────────────── */
 .md-hero { position: relative; height: 178px; border-bottom: 2px solid var(--c-gold); flex: none; overflow: hidden; }
@@ -321,3 +321,17 @@ html, body, #root { margin: 0; height: 100%; background: var(--c-page); }
 .set-btn.gold { background: var(--c-gold); color: var(--c-gold-ink); font-weight: 700; border-color: var(--c-gold); }
 .set-slots { gap: 10px; max-height: 45vh; overflow: auto; }
 .btn-act.danger { background: var(--c-bad); color: var(--c-gold-ink); border-color: var(--c-bad); font-weight: 700; }
+
+/* ── 017b: 홈 최근 보고, 리프트 카드 배지, 계약자 필터 ── */
+.card.report-line { padding: 0 0 0 12px; display: flex; align-items: center; gap: 10px; overflow: hidden; border-left-width: 4px; }
+.report-play { flex: none; min-width: 64px; height: 44px; border-left: 1px solid var(--c-line); background: var(--c-bg); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: var(--c-gold); }
+.report-play:disabled { color: var(--c-text-faint); }
+.rift-badge { font-size: 11px; font-weight: 700; line-height: 16px; padding: 0 7px; border-radius: 999px; border: 1px solid var(--badge); color: var(--badge); background: color-mix(in srgb, var(--c-bg) 70%, transparent); }
+.rift-badge.small { --badge: var(--c-text-sub); }
+.rift-badge.omen { --badge: var(--c-omen); }
+.filter-btn { flex: none; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; }
+.filter-btn > span { position: relative; width: 44px; height: 40px; border-radius: 12px; background: var(--c-panel); border: 1px solid var(--c-line); display: flex; align-items: center; justify-content: center; color: var(--c-text); }
+.filter-btn[aria-pressed='true'] > span { border-color: var(--c-gold); color: var(--c-gold); }
+.filter-count { position: absolute; top: -5px; right: -5px; min-width: 16px; height: 16px; border-radius: 8px; background: var(--c-gold); color: var(--c-gold-ink); font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; padding: 0 3px; }
+.filter-group { display: flex; flex-direction: column; gap: 6px; }
+.filter-chips { display: flex; flex-wrap: wrap; gap: 6px; }

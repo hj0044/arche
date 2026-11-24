@@ -1,18 +1,18 @@
 {
   "Main": {
-    "mismatchRatio": 0.0398,
-    "refRetakeMismatch": 0.0138
+    "mismatchRatio": 0.0446,
+    "refRetakeMismatch": 0.0148
   },
   "Content": {
-    "mismatchRatio": 0.0919,
-    "refRetakeMismatch": 0.0045
+    "mismatchRatio": 0.0916,
+    "refRetakeMismatch": 0.0049
   },
   "Recruit": {
     "mismatchRatio": 0.1483,
     "refRetakeMismatch": 0.0079
   },
   "Party": {
-    "mismatchRatio": 0.0531,
+    "mismatchRatio": 0.0529,
     "refRetakeMismatch": 0.0309
   },
   "Result": {
@@ -20,7 +20,7 @@
     "refRetakeMismatch": 0.0264
   },
   "Merc": {
-    "mismatchRatio": 0.1589,
+    "mismatchRatio": 0.1575,
     "refRetakeMismatch": 0.0255
   },
   "MercDetail": {
@@ -32,7 +32,7 @@
     "refRetakeMismatch": 0.0076
   },
   "Base": {
-    "mismatchRatio": 0.0275,
+    "mismatchRatio": 0.0274,
     "refRetakeMismatch": 0.01
   },
   "Settings": {

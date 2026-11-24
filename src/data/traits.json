@@ -1,5 +1,5 @@
 {
- "_note": "특성(지시서 016 [제안], 효과 수치는 모두 임시값). 한 단계 = effects 배열, 효과 하나 = { trigger, condition?, effect }. trigger: always, battleStart(rounds), firstAction, hpBelow(threshold), roundStack(perRound, max: 값은 min(라운드 × perRound, max)이고 effect.value는 쓰지 않음), fromRound(round). condition: advantage(내 공격이 상성 유리), disadvantage(상대 공격이 나에게 상성 유리), enemyElement(element: 상대 속성), row(row). effect.kind: statMul, statAdd, damageMul, damageTakenMul, healMul. scope: self | allies(allies는 always·battleStart만). hpBelow의 healMul은 치유받는 대상의 체력으로 판정한다.",
+ "_note": "특성(지시서 016 [제안], 효과 수치는 모두 임시값). 한 단계 = effects 배열, 효과 하나 = { trigger, condition?, effect }. trigger: always, battleStart(rounds), firstAction, hpBelow(threshold), roundStack(perRound, max: 값은 min(라운드 × perRound, max)이고 effect.value는 쓰지 않음), fromRound(round). condition: advantage(내 공격이 상성 유리), disadvantage(상대 공격이 나에게 상성 유리), enemyElement(element: 상대 속성), row(row). effect.kind: statMul, statAdd, damageMul, damageTakenMul, healMul. scope: self | allies(allies는 always·battleStart만). hpBelow의 healMul은 치유받는 대상의 체력으로 판정한다. 지시서 017b: 1단계 몬스터가 공허뿐이라 상성 조건 특성이 발동하지 않는 문제로, 속성 친화 7종·공명에 '상시 자기 속성 스킬 피해 +4%'(스킬 속성 = 계약자 속성이라 조건 없는 damageMul), 서리의 결정에 상시 에너지공격 +4%를 더했다(임시값). 적응력·공허의 이해는 그대로.",
  "slotUnlockLevels": [
   5,
   15,
@@ -311,7 +311,7 @@
    "id": "resonance",
    "name": "공명",
    "category": "role",
-   "description": "속성 상성 유리 시 피해 +10%",
+   "description": "속성 상성 유리 시 피해 +10%, 상시 자기 속성 스킬 피해 +4%",
    "allowed": {
     "roles": [
      "mage"
@@ -333,6 +333,16 @@
        },
        "condition": {
         "type": "advantage"
+       }
+      },
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "damageMul",
+        "scope": "self",
+        "value": 0.04
        }
       }
      ]
@@ -823,7 +833,7 @@
    "id": "affinity_fire",
    "name": "속성 친화: 화염",
    "category": "element",
-   "description": "속성 상성 유리 시 피해 +8%",
+   "description": "속성 상성 유리 시 피해 +8%, 상시 자기 속성 스킬 피해 +4%",
    "allowed": {
     "elements": [
      "fire"
@@ -846,6 +856,16 @@
        "condition": {
         "type": "advantage"
        }
+      },
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "damageMul",
+        "scope": "self",
+        "value": 0.04
+       }
       }
      ]
     }
@@ -856,7 +876,7 @@
    "id": "affinity_wind",
    "name": "속성 친화: 바람",
    "category": "element",
-   "description": "속성 상성 유리 시 피해 +8%",
+   "description": "속성 상성 유리 시 피해 +8%, 상시 자기 속성 스킬 피해 +4%",
    "allowed": {
     "elements": [
      "wind"
@@ -879,6 +899,16 @@
        "condition": {
         "type": "advantage"
        }
+      },
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "damageMul",
+        "scope": "self",
+        "value": 0.04
+       }
       }
      ]
     }
@@ -889,7 +919,7 @@
    "id": "affinity_earth",
    "name": "속성 친화: 대지",
    "category": "element",
-   "description": "속성 상성 유리 시 피해 +8%",
+   "description": "속성 상성 유리 시 피해 +8%, 상시 자기 속성 스킬 피해 +4%",
    "allowed": {
     "elements": [
      "earth"
@@ -912,6 +942,16 @@
        "condition": {
         "type": "advantage"
        }
+      },
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "damageMul",
+        "scope": "self",
+        "value": 0.04
+       }
       }
      ]
     }
@@ -922,7 +962,7 @@
    "id": "affinity_lightning",
    "name": "속성 친화: 전격",
    "category": "element",
-   "description": "속성 상성 유리 시 피해 +8%",
+   "description": "속성 상성 유리 시 피해 +8%, 상시 자기 속성 스킬 피해 +4%",
    "allowed": {
     "elements": [
      "lightning"
@@ -945,6 +985,16 @@
        "condition": {
         "type": "advantage"
        }
+      },
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "damageMul",
+        "scope": "self",
+        "value": 0.04
+       }
       }
      ]
     }
@@ -955,7 +1005,7 @@
    "id": "affinity_frost",
    "name": "속성 친화: 냉기",
    "category": "element",
-   "description": "속성 상성 유리 시 피해 +8%",
+   "description": "속성 상성 유리 시 피해 +8%, 상시 자기 속성 스킬 피해 +4%",
    "allowed": {
     "elements": [
      "frost"
@@ -978,6 +1028,16 @@
        "condition": {
         "type": "advantage"
        }
+      },
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "damageMul",
+        "scope": "self",
+        "value": 0.04
+       }
       }
      ]
     }
@@ -988,7 +1048,7 @@
    "id": "affinity_light",
    "name": "속성 친화: 빛",
    "category": "element",
-   "description": "속성 상성 유리 시 피해 +8%",
+   "description": "속성 상성 유리 시 피해 +8%, 상시 자기 속성 스킬 피해 +4%",
    "allowed": {
     "elements": [
      "light"
@@ -1011,6 +1071,16 @@
        "condition": {
         "type": "advantage"
        }
+      },
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "damageMul",
+        "scope": "self",
+        "value": 0.04
+       }
       }
      ]
     }
@@ -1021,7 +1091,7 @@
    "id": "affinity_void",
    "name": "속성 친화: 어둠",
    "category": "element",
-   "description": "속성 상성 유리 시 피해 +8%",
+   "description": "속성 상성 유리 시 피해 +8%, 상시 자기 속성 스킬 피해 +4%",
    "allowed": {
     "elements": [
      "void"
@@ -1043,6 +1113,16 @@
        },
        "condition": {
         "type": "advantage"
+       }
+      },
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "damageMul",
+        "scope": "self",
+        "value": 0.04
        }
       }
      ]
@@ -1469,7 +1549,7 @@
    "id": "unique_m14",
    "name": "서리의 결정",
    "category": "unique",
-   "description": "상성 유리 시 에너지공격 +10%",
+   "description": "상성 유리 시 에너지공격 +10%, 상시 에너지공격 +4%",
    "allowed": {
     "owner": "m14"
    },
@@ -1490,6 +1570,17 @@
        },
        "condition": {
         "type": "advantage"
+       }
+      },
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "self",
+        "stat": "eAtk",
+        "value": 0.04
        }
       }
      ]

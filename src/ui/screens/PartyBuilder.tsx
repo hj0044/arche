@@ -2,7 +2,7 @@
  * 파티 편성(시안 Party, 지시서 017). 구역 순서: header · riftCard · front · back · candidates · summary · actions.
  * 시안에 자리가 없는 열 바꾸기·빼기·훈련 해제는 바텀 시트로 흡수했다.
  */
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { getRole, tables, travelDays, type Row } from '../../data';
 import { autoParty } from '../../engine/autoParty';
 import { compositionMultiplier } from '../../engine/combat';
@@ -10,7 +10,7 @@ import { combatPower, estimateRisk } from '../../engine/combatPower';
 import { assignedFacility, getFacility, visibleRift } from '../../engine/facilities';
 import { dispatch, GameError, isAvailable, isOnExpedition, mercToUnit, refusedToday, unassignFromFacility, type MercenaryState, type PartyMember } from '../../engine/game';
 import { BackRow, Card, Icon, MercCard, RiskPill, Screen, Sheet, Slot } from '../components';
-import { elementName, num, pct, roleName, rowName, term } from '../format';
+import { cardName, elementName, num, pct, roleName, rowName, term } from '../format';
 import type { Ctx } from '../nav';
 import { winRateRange } from '../partyInfo';
 import { isUiFixture } from '../../app/saves';
@@ -26,12 +26,19 @@ export function PartyBuilder({ ctx, riftId }: { ctx: Ctx; riftId: string }) {
   const { maxSize, maxPerRow } = tables.combat.party;
 
   const slots = party.filter((p) => s.mercenaries.some((m) => m.id === p.mercId)).map((p) => ({ unit: mercToUnit(tables, s.mercenaries.find((m) => m.id === p.mercId)!), row: p.row }));
-  const info = useMemo(() => {
-    if (!rift || !slots.length) return null;
-    const v = visibleRift(tables, s.facilities, rift);
-    return { power: combatPower(tables, slots), estimate: estimateRisk(tables, slots, v), win: winRateRange(tables, slots, v) };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [party, rift, s]);
+  // 017b: 요약의 위험도·승률은 상세 평가(96회). 파티가 바뀔 때마다 한 번만, 짧게 늦춰 계산하고 그동안 직전 값을 흐리게 둔다.
+  const partyKey = JSON.stringify(slots.map((x) => [x.unit.id, x.row]));
+  const [info, setInfo] = useState<{ key: string; power: number; estimate: ReturnType<typeof estimateRisk>; win: [number, number] | null } | null>(null);
+  const power = useMemo(() => (slots.length ? combatPower(tables, slots) : 0), [partyKey]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (!rift || !slots.length) return setInfo(null);
+    const t = window.setTimeout(() => {
+      const v = visibleRift(tables, s.facilities, rift);
+      setInfo({ key: partyKey, power, estimate: estimateRisk(tables, slots, v, { detail: true }), win: winRateRange(tables, slots, v) });
+    }, tables.ui.partyRiskDebounceMs);
+    return () => window.clearTimeout(t);
+  }, [partyKey, rift?.id, s.facilities]); // eslint-disable-line react-hooks/exhaustive-deps
+  const pending = !!slots.length && info?.key !== partyKey;
 
   const back = () => ctx.go({ name: 'rifts', cityId: rift?.cityId });
   if (!rift) {
@@ -100,7 +107,7 @@ export function PartyBuilder({ ctx, riftId }: { ctx: Ctx; riftId: string }) {
       const p = members[i];
       if (!p) return <Slot key={`e${i}`} onClick={() => ctx.toast(`아래에서 ${term.merc}를 고르세요`)} label={`${rowName[row]} 빈 칸`} />;
       const m = merc(p.mercId);
-      return <Slot key={m.id} filled={{ id: m.id, name: m.name, element: m.element, role: m.role, level: m.level, roleName: roleName(m.role) }} onClick={() => setSheet(m.id)} label={`${m.name} ${rowName[row]}`} />;
+      return <Slot key={m.id} filled={{ id: m.id, name: m.name, shortName: cardName(m), element: m.element, role: m.role, level: m.level, roleName: roleName(m.role) }} onClick={() => setSheet(m.id)} label={`${m.name} ${rowName[row]}`} />;
     });
   };
 
@@ -109,15 +116,15 @@ export function PartyBuilder({ ctx, riftId }: { ctx: Ctx; riftId: string }) {
       footer={
         <>
           <div className="pg" style={{ paddingTop: 0, paddingBottom: 8 }} data-ui="Party.summary">
-            <Card style={{ padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <Card style={{ padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: 6, opacity: pending ? 0.5 : 1, transition: 'opacity 0.12s' }}>
               <div className="row between">
                 <div className="col" style={{ gap: 1 }}>
                   <span className="t13 dim">파티 전투력</span>
-                  <span style={{ fontSize: 20, fontWeight: 700 }}>{info ? num(info.power) : 0}</span>
+                  <span style={{ fontSize: 20, fontWeight: 700 }}>{num(power)}</span>
                 </div>
                 <div className="col" style={{ gap: 3, alignItems: 'flex-end' }}>
-                  {info ? <RiskPill best={info.estimate.best} worst={info.estimate.worst} /> : <span className="sub">{term.merc}를 넣으면 보입니다</span>}
-                  {info?.win && (
+                  {info && slots.length ? <RiskPill best={info.estimate.best} worst={info.estimate.worst} /> : <span className="sub">{slots.length ? '계산 중' : `${term.merc}를 넣으면 보입니다`}</span>}
+                  {slots.length > 0 && info?.win && (
                     <span className="sub">
                       승률 약 {range([Math.round(info.win[0] * 100), Math.round(info.win[1] * 100)])}%{info.estimate.estimated ? ' (추정)' : ''}
                     </span>
@@ -188,6 +195,7 @@ export function PartyBuilder({ ctx, riftId }: { ctx: Ctx; riftId: string }) {
                   compact
                   id={m.id}
                   name={m.name}
+                  shortName={cardName(m)}
                   element={m.element}
                   role={m.role}
                   roleName={roleName(m.role)}

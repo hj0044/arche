@@ -243,11 +243,11 @@ describe('특성 동작', () => {
     expect(computeEffectiveStats(tables, u, { round: 3 }).spd).toBeCloseTo(u.stats.spd, 2);
   });
 
-  it('advantage: 상성 유리한 상대일 때만(공명 +10%)', () => {
+  it('advantage: 상성 유리한 상대일 때만(공명 +10%), 상시 +4%는 늘(017b)', () => {
     const u = unitWith('resonance', 'mage', 'fire');
     const weak = tables.elements.find((e) => getElement(tables, 'fire').strongAgainst.includes(e.id))!.id;
-    expect(traitMultiplier(tables, u, 'damageMul', { opponentElement: weak })).toBeCloseTo(1.1);
-    expect(traitMultiplier(tables, u, 'damageMul', { opponentElement: 'fire' })).toBe(1);
+    expect(traitMultiplier(tables, u, 'damageMul', { opponentElement: weak })).toBeCloseTo(1.14);
+    expect(traitMultiplier(tables, u, 'damageMul', { opponentElement: 'fire' })).toBeCloseTo(1.04);
   });
 
   it('allies: 아군 전원에게 퍼진다(노련한 지휘: 속도 +4%)', () => {
