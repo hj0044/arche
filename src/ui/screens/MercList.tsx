@@ -7,15 +7,17 @@ import { tables } from '../../data';
 import { expToNextLevel, getMerc, isOnExpedition, levelUpAll, refusedToday, type GameState, type MercenaryState } from '../../engine/game';
 import { assignedFacility } from '../../engine/facilities';
 import { levelUpOverview } from '../../engine/status';
-import { Chip, ChipRow, Icon, LogoRow, MercCard, Screen } from '../components';
-import { num, term } from '../format';
-import { filterAndSort, type MercListOptions } from '../mercFilter';
+import { Chip, ChipRow, Icon, LogoRow, MercCard, Screen, Sheet } from '../components';
+import { cardName, num, term } from '../format';
+import { emptySheetFilter, filterAndSort, filterChips, sheetFilterCount, type MercListOptions, type MercSheetFilter } from '../mercFilter';
 import type { Ctx } from '../nav';
 
 interface ViewState {
   query: string;
   sort: string;
   status: string | null;
+  /** 017b 필터 시트(역할·속성·상태 여러 개, 칩 줄과 AND) */
+  sheet: MercSheetFilter;
 }
 /** 상세에서 돌아와도 유지(세이브에는 넣지 않음, 슬롯이 바뀌면 처음으로) */
 let remembered: { slotId: string; view: ViewState } | null = null;
@@ -32,7 +34,7 @@ function stateOf(s: GameState, m: MercenaryState): { text: string; cls: string; 
 export function MercList({ ctx }: { ctx: Ctx }) {
   const s = ctx.game.state;
   const [view, setViewRaw] = useState<ViewState>(() =>
-    remembered?.slotId === ctx.game.slotId ? remembered.view : { query: '', sort: tables.ui.mercSort.guild[0].id, status: null },
+    remembered?.slotId === ctx.game.slotId ? remembered.view : { query: '', sort: tables.ui.mercSort.guild[0].id, status: null, sheet: emptySheetFilter() },
   );
   const setView = (p: Partial<ViewState>) =>
     setViewRaw((v) => {
@@ -41,7 +43,13 @@ export function MercList({ ctx }: { ctx: Ctx }) {
       return next;
     });
   const guild = s.mercenaries.filter((m) => m.affiliation.kind === 'guild');
-  const opts: MercListOptions = { tab: 'guild', sortId: view.sort, query: view.query, role: null, element: null, status: view.status, faction: null };
+  const opts: MercListOptions = { tab: 'guild', sortId: view.sort, query: view.query, role: null, element: null, status: view.status, faction: null, sheet: view.sheet };
+  const [draft, setDraft] = useState<MercSheetFilter | null>(null);
+  const chips = filterChips(tables);
+  const sheetCount = sheetFilterCount(view.sheet);
+  const draftCount = draft ? filterAndSort(tables, s, guild, { ...opts, sheet: draft }).length : 0;
+  const toggle = (axis: keyof MercSheetFilter, id: string) =>
+    setDraft((d) => (d ? { ...d, [axis]: d[axis].includes(id) ? d[axis].filter((x) => x !== id) : [...d[axis], id] } : d));
   const list = filterAndSort(tables, s, guild, opts);
   const o = levelUpOverview(tables, s);
   const bulkCount = o.plan.mercs;
@@ -64,6 +72,12 @@ export function MercList({ ctx }: { ctx: Ctx }) {
             <Icon name="search" />
             <input type="search" placeholder="이름, 초성 검색" aria-label={`${term.merc} 검색`} value={view.query} onChange={(e) => setView({ query: e.target.value })} />
           </label>
+          <button className="filter-btn" aria-label={`역할·속성·상태 필터${sheetCount ? ` ${sheetCount}개 적용 중` : ''}`} aria-pressed={sheetCount > 0} data-touch onClick={() => setDraft(view.sheet)}>
+            <span>
+              <Icon name="filter" />
+              {sheetCount > 0 && <span className="filter-count">{sheetCount}</span>}
+            </span>
+          </button>
           <select className="sort-box" aria-label="정렬" value={view.sort} onChange={(e) => setView({ sort: e.target.value })}>
             {tables.ui.mercSort.guild.map((x) => (
               <option key={x.id} value={x.id}>
@@ -107,6 +121,7 @@ export function MercList({ ctx }: { ctx: Ctx }) {
                 key={m.id}
                 id={m.id}
                 name={m.name}
+                shortName={cardName(m)}
                 element={m.element}
                 role={m.role}
                 level={m.level}
@@ -123,6 +138,36 @@ export function MercList({ ctx }: { ctx: Ctx }) {
         </div>
         {list.length === 0 && <p className="t14 dim">조건에 맞는 {term.merc}가 없습니다</p>}
       </div>
+      {draft && (
+        <Sheet title="필터" onClose={() => setDraft(null)}>
+          {(
+            [
+              ['roles', '역할', chips.roles],
+              ['elements', '속성', chips.elements],
+              ['statuses', '상태', chips.statuses],
+            ] as [keyof MercSheetFilter, string, { id: string; name: string }[]][]
+          ).map(([axis, title, items]) => (
+            <div key={axis} className="filter-group" role="group" aria-label={title}>
+              <span className="t13 dim">{title}</span>
+              <div className="filter-chips">
+                {items.map((it) => (
+                  <Chip key={it.id} on={draft[axis].includes(it.id)} onClick={() => toggle(axis, it.id)}>
+                    {it.name}
+                  </Chip>
+                ))}
+              </div>
+            </div>
+          ))}
+          <div className="row" style={{ gap: 8 }}>
+            <button className="btn-act" style={{ width: 112, flex: 'none' }} disabled={!sheetFilterCount(draft)} onClick={() => setDraft(emptySheetFilter())}>
+              지우기
+            </button>
+            <button className="btn-act primary grow" onClick={() => (setView({ sheet: draft }), setDraft(null))}>
+              {draftCount}명 보기
+            </button>
+          </div>
+        </Sheet>
+      )}
     </Screen>
   );
 }

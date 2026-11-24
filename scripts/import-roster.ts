@@ -58,13 +58,15 @@ const rows = lines.map((line) => {
   };
 });
 
-// 계약자별 기본 스탯과 특성 슬롯(지시서 016)은 사람이 고치는 값이라 기존 roster.json에서 그대로 옮긴다.
-const previous = new Map<string, { baseStats?: unknown; traits?: unknown }>(
-  existsSync(OUT) ? (JSON.parse(readFileSync(OUT, 'utf8')) as { id: string; baseStats?: unknown; traits?: unknown }[]).map((r) => [r.id, r] as const) : [],
+// 계약자별 기본 스탯과 특성 슬롯(지시서 016), 짧은 이름(017b)은 사람이 고치는 값이라 기존 roster.json에서 그대로 옮긴다.
+const previous = new Map<string, { baseStats?: unknown; traits?: unknown; shortName?: string }>(
+  existsSync(OUT) ? (JSON.parse(readFileSync(OUT, 'utf8')) as { id: string; baseStats?: unknown; traits?: unknown; shortName?: string }[]).map((r) => [r.id, r] as const) : [],
 );
 const merged = rows.map((r) => {
   const prev = previous.get(r.id);
-  return { ...r, ...(prev?.baseStats ? { baseStats: prev.baseStats } : {}), ...(prev?.traits ? { traits: prev.traits } : {}) };
+  // 카드용 짧은 이름(지시서 017b)도 사람이 정한 값이라 옮긴다. 새 계약자는 이름 그대로
+  const { name, ...rest } = r as typeof r & { name: string };
+  return { ...rest, name, shortName: prev?.shortName ?? name, ...(prev?.baseStats ? { baseStats: prev.baseStats } : {}), ...(prev?.traits ? { traits: prev.traits } : {}) };
 });
 writeFileSync(OUT, '[\n' + merged.map((r) => '  ' + JSON.stringify(r)).join(',\n') + '\n]\n');
 console.log(`${rows.length}명을 ${OUT}에 썼다`);

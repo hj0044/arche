@@ -1,6 +1,6 @@
 /**
- * 홈(시안 Main, 지시서 017). 구역 순서: header · hero · resources · counts · todo · dispatch · cta.
- * 하루 넘기기 버튼은 이 화면에만 있다.
+ * 홈(시안 Main, 지시서 017). 구역 순서: header · hero · resources · counts · todo · dispatch · report · cta.
+ * 하루 넘기기 버튼은 이 화면에만 있다. 017b: 파견 현황 아래 '최근 보고' 한 줄 카드(재생 버튼).
  */
 import { tables } from '../../data';
 import { getFacility } from '../../engine/facilities';
@@ -9,7 +9,7 @@ import { loyaltyTier } from '../../engine/loyalty';
 import { guildStatusSummary, levelUpOverview } from '../../engine/status';
 import { GUILD_BANNER } from '../art/fallback';
 import { Art, Avatar, Card, Gauge, Icon, LogoRow, Screen, Section, type IconName } from '../components';
-import { cityName, num } from '../format';
+import { cityName, num, reportOutcomeName, severityName } from '../format';
 import type { Ctx } from '../nav';
 import { isUrgent, daysLeft } from '../riftFilter';
 
@@ -28,6 +28,8 @@ export function GuildHome({ ctx }: { ctx: Ctx }) {
   const sum = guildStatusSummary(tables, s);
   const o = levelUpOverview(tables, s);
   const materials = Object.values(s.resources.materials).reduce((a, n) => a + n, 0);
+  // 가장 최근 하루 결과(복귀 보고). 없으면 '최근 보고' 구역을 숨긴다
+  const last = s.reports.at(-1);
 
   // 오늘 할 일(해당하는 것만, 최대 4종)
   const todos: Todo[] = [];
@@ -101,7 +103,7 @@ export function GuildHome({ ctx }: { ctx: Ctx }) {
         <div data-ui="Main.header">
           <LogoRow ctx={ctx} back={{ name: 'home' }} right={<span className="day-pill">{s.day}일차</span>} />
         </div>
-        <div className="card" data-role="card" data-ui="Main.hero" style={{ position: 'relative', height: 84, overflow: 'hidden' }}>
+        <div className="card" data-role="card" data-ui="Main.hero" style={{ position: 'relative', height: 50, overflow: 'hidden' }}>
           <Art kind="banner" id="guild" fallback={GUILD_BANNER} fill />
           <div style={{ position: 'absolute', left: 14, bottom: 8 }} className="col">
             <span style={{ fontSize: 17, fontWeight: 700 }}>{s.guildName}</span>
@@ -165,6 +167,31 @@ export function GuildHome({ ctx }: { ctx: Ctx }) {
           );
         })}
       </Section>
+      {last && (
+        <div className="pg" data-role="page">
+          <div className="card report-line" data-role="card" data-ui="Main.report" style={{ borderLeftColor: last.outcome === 'victory' ? 'var(--risk-crush)' : last.outcome === 'retreat' ? 'var(--c-warn)' : 'var(--c-bad)' }}>
+            <span className="col grow" style={{ minWidth: 0 }}>
+              <span className="ellipsis" style={{ fontSize: 13, fontWeight: 500 }}>
+                최근 보고 · {last.day}일차 {shortName(last.rift.name, last.rift.cityId)} {reportOutcomeName[last.outcome]}
+              </span>
+              <span className="sub ellipsis">
+                {[
+                  `제로 ${last.reward.zero >= 0 ? '+' : ''}${num(last.reward.zero)}`,
+                  ...Object.entries(last.injuries.reduce<Record<string, number>>((a, i) => ({ ...a, [i.severity]: (a[i.severity] ?? 0) + 1 }), {})).map(([sev, n]) => `${severityName(sev)} ${n}명`),
+                ].join(' · ')}
+              </span>
+            </span>
+            <button
+              className="report-play"
+              aria-label={`${last.rift.name} 전투 재생`}
+              disabled={!last.events}
+              onClick={() => ctx.go({ name: 'replay', expeditionId: last.expeditionId, back: { name: 'home' } })}
+            >
+              재생
+            </button>
+          </div>
+        </div>
+      )}
       <div className="grow" />
     </Screen>
   );

@@ -34,3 +34,14 @@ describe('라이벌 선점 표(지시서 013)', () => {
     }
   });
 });
+
+describe('017b: 카드용 짧은 이름', () => {
+  it('30명 모두 shortName이 있고, 이름에서 따온 4자 이하다', async () => {
+    const { tables } = await import('./index');
+    expect(tables.roster).toHaveLength(30);
+    const bad = tables.roster.filter((r) => !r.shortName || r.shortName.length > 4 || !r.name.replace(/\s/g, '').includes(r.shortName));
+    expect(bad.map((r) => `${r.name}→${r.shortName}`)).toEqual([]);
+    expect(tables.roster.find((r) => r.name === '빅토리아 레이놀즈')?.shortName).toBe('빅토리아');
+    expect(tables.roster.find((r) => r.name === '강태산')?.shortName).toBe('강태산');
+  });
+});

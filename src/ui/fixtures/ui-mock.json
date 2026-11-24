@@ -1009,7 +1009,7 @@
     "name": "서울 폐역 승강장 균열",
     "appearedDay": 10,
     "deadlineDay": 13,
-    "durationDays": 1,
+    "durationDays": 2,
     "enemies": [
      {
       "monsterId": "void_hound",
@@ -1025,18 +1025,18 @@
      }
     ],
     "reward": {
-     "zero": 149,
-     "arche": 15,
+     "zero": 130,
+     "arche": 17,
      "materials": {}
     },
     "fog": {
      "deadlineOffset": 2,
-     "levelOffset": 2,
+     "levelOffset": 1,
      "countOffset": 1,
-     "rewardU": 0.397
+     "rewardU": 0.265
     },
-    "territoryFactionId": "dokkaebi",
-    "variant": "base"
+    "territoryFactionId": "rrb",
+    "variant": "small"
    },
    {
     "id": "r120",
@@ -1045,7 +1045,7 @@
     "name": "서울 골목 끝 균열",
     "appearedDay": 10,
     "deadlineDay": 16,
-    "durationDays": 1,
+    "durationDays": 2,
     "enemies": [
      {
       "monsterId": "void_hound",
@@ -1067,18 +1067,21 @@
      }
     ],
     "reward": {
-     "zero": 149,
-     "arche": 15,
+     "zero": 130,
+     "arche": 17,
      "materials": {}
     },
     "fog": {
      "deadlineOffset": 2,
-     "levelOffset": 2,
+     "levelOffset": 1,
      "countOffset": 1,
-     "rewardU": 0.397
+     "rewardU": 0.265
     },
-    "territoryFactionId": "dokkaebi",
-    "variant": "base"
+    "territoryFactionId": "rrb",
+    "variant": "upper",
+    "omen": {
+     "textId": "drain_echo"
+    }
    },
    {
     "id": "r119",
@@ -1087,7 +1090,7 @@
     "name": "서울 지하 배수로 균열",
     "appearedDay": 10,
     "deadlineDay": 17,
-    "durationDays": 1,
+    "durationDays": 2,
     "enemies": [
      {
       "monsterId": "void_hound",
@@ -1103,18 +1106,18 @@
      }
     ],
     "reward": {
-     "zero": 149,
-     "arche": 15,
+     "zero": 130,
+     "arche": 17,
      "materials": {}
     },
     "fog": {
      "deadlineOffset": 2,
-     "levelOffset": 2,
+     "levelOffset": 1,
      "countOffset": 1,
-     "rewardU": 0.397
+     "rewardU": 0.265
     },
-    "territoryFactionId": "dokkaebi",
-    "variant": "base"
+    "territoryFactionId": "rrb",
+    "variant": "upper"
    },
    {
     "id": "r122",
@@ -1123,7 +1126,7 @@
     "name": "서울 공사장 가림막 균열",
     "appearedDay": 10,
     "deadlineDay": 18,
-    "durationDays": 1,
+    "durationDays": 2,
     "enemies": [
      {
       "monsterId": "void_hound",
@@ -1145,18 +1148,18 @@
      }
     ],
     "reward": {
-     "zero": 149,
-     "arche": 15,
+     "zero": 130,
+     "arche": 17,
      "materials": {}
     },
     "fog": {
      "deadlineOffset": 2,
-     "levelOffset": 2,
+     "levelOffset": 1,
      "countOffset": 1,
-     "rewardU": 0.397
+     "rewardU": 0.265
     },
-    "territoryFactionId": "dokkaebi",
-    "variant": "base"
+    "territoryFactionId": "rrb",
+    "variant": "upper"
    },
    {
     "id": "r124",
@@ -1165,7 +1168,7 @@
     "name": "서울 옥상 물탱크 균열",
     "appearedDay": 10,
     "deadlineDay": 19,
-    "durationDays": 1,
+    "durationDays": 2,
     "enemies": [
      {
       "monsterId": "void_hound",
@@ -1187,7 +1190,43 @@
      }
     ],
     "reward": {
-     "zero": 149,
+     "zero": 130,
+     "arche": 17,
+     "materials": {}
+    },
+    "fog": {
+     "deadlineOffset": 2,
+     "levelOffset": 1,
+     "countOffset": 1,
+     "rewardU": 0.265
+    },
+    "territoryFactionId": "rrb",
+    "variant": "upper"
+   },
+   {
+    "id": "r125",
+    "cityId": "tokyo",
+    "tier": "crack",
+    "name": "도쿄 지하 배수로 균열",
+    "appearedDay": 10,
+    "deadlineDay": 15,
+    "durationDays": 1,
+    "enemies": [
+     {
+      "monsterId": "rift_caller",
+      "grade": "mid",
+      "level": 21,
+      "row": "back"
+     },
+     {
+      "monsterId": "void_hound",
+      "grade": "mid",
+      "level": 21,
+      "row": "front"
+     }
+    ],
+    "reward": {
+     "zero": 160,
      "arche": 15,
      "materials": {}
     },
@@ -1195,58 +1234,10 @@
      "deadlineOffset": 2,
      "levelOffset": 2,
      "countOffset": 1,
-     "rewardU": 0.397
-    },
-    "territoryFactionId": "dokkaebi",
-    "variant": "base"
-   },
-   {
-    "id": "r125",
-    "cityId": "tokyo",
-    "tier": "crack",
-    "name": "도쿄 비상계단 균열",
-    "appearedDay": 10,
-    "deadlineDay": 15,
-    "durationDays": 2,
-    "enemies": [
-     {
-      "monsterId": "rift_caller",
-      "grade": "mid",
-      "level": 18,
-      "row": "back"
-     },
-     {
-      "monsterId": "void_hound",
-      "grade": "mid",
-      "level": 18,
-      "row": "front"
-     },
-     {
-      "monsterId": "husk_guard",
-      "grade": "mid",
-      "level": 18,
-      "row": "front"
-     },
-     {
-      "monsterId": "rift_caller",
-      "grade": "mid",
-      "level": 18,
-      "row": "back"
-     }
-    ],
-    "reward": {
-     "zero": 115,
-     "arche": 12,
-     "materials": {}
-    },
-    "fog": {
-     "deadlineOffset": 0,
-     "levelOffset": 3,
-     "countOffset": 1,
-     "rewardU": 0.375
+     "rewardU": 0.968
     },
     "territoryFactionId": "archon",
-    "variant": "upper"
+    "variant": "small"
    },
    {
     "id": "r126",
@@ -1430,37 +1421,43 @@
      "id": "r101",
      "cityId": "seoul",
      "tier": "crack",
-     "name": "서울 공사장 가림막 균열",
+     "name": "서울 폐업한 목욕탕 균열",
      "appearedDay": 10,
      "deadlineDay": 17,
      "durationDays": 1,
      "enemies": [
       {
        "monsterId": "void_hound",
-       "grade": "low",
-       "level": 1,
+       "grade": "mid",
+       "level": 15,
        "row": "front"
       },
       {
        "monsterId": "husk_guard",
-       "grade": "low",
-       "level": 1,
+       "grade": "mid",
+       "level": 15,
        "row": "front"
+      },
+      {
+       "monsterId": "rift_caller",
+       "grade": "mid",
+       "level": 15,
+       "row": "back"
       }
      ],
      "reward": {
-      "zero": 103,
-      "arche": 20,
+      "zero": 159,
+      "arche": 13,
       "materials": {}
      },
      "fog": {
-      "deadlineOffset": 2,
-      "levelOffset": 3,
+      "deadlineOffset": 1,
+      "levelOffset": 1,
       "countOffset": 1,
-      "rewardU": 0.348
+      "rewardU": 0.674
      },
      "territoryFactionId": "waypoint",
-     "variant": "base"
+     "variant": "upper"
     },
     "party": [
      {
@@ -1552,37 +1549,43 @@
      "id": "r101",
      "cityId": "seoul",
      "tier": "crack",
-     "name": "서울 공사장 가림막 균열",
+     "name": "서울 폐업한 목욕탕 균열",
      "appearedDay": 10,
      "deadlineDay": 17,
      "durationDays": 1,
      "enemies": [
       {
        "monsterId": "void_hound",
-       "grade": "low",
-       "level": 1,
+       "grade": "mid",
+       "level": 15,
        "row": "front"
       },
       {
        "monsterId": "husk_guard",
-       "grade": "low",
-       "level": 1,
+       "grade": "mid",
+       "level": 15,
        "row": "front"
+      },
+      {
+       "monsterId": "rift_caller",
+       "grade": "mid",
+       "level": 15,
+       "row": "back"
       }
      ],
      "reward": {
-      "zero": 103,
-      "arche": 20,
+      "zero": 159,
+      "arche": 13,
       "materials": {}
      },
      "fog": {
-      "deadlineOffset": 2,
-      "levelOffset": 3,
+      "deadlineOffset": 1,
+      "levelOffset": 1,
       "countOffset": 1,
-      "rewardU": 0.348
+      "rewardU": 0.674
      },
      "territoryFactionId": "waypoint",
-     "variant": "base"
+     "variant": "upper"
     },
     "party": [
      {
@@ -1603,8 +1606,8 @@
      }
     ],
     "day": 11,
-    "outcome": "victory",
-    "rounds": 3,
+    "outcome": "defeat",
+    "rounds": 4,
     "combatSeed": "ui-fixture:x1",
     "events": [
      {
@@ -1675,9 +1678,9 @@
         "row": "front",
         "element": "void",
         "role": "warrior",
-        "level": 1,
-        "hp": 92,
-        "maxHp": 92,
+        "level": 15,
+        "hp": 186,
+        "maxHp": 186,
         "offRow": false
        },
        {
@@ -1688,9 +1691,22 @@
         "row": "front",
         "element": "void",
         "role": "shield",
-        "level": 1,
-        "hp": 112,
-        "maxHp": 112,
+        "level": 15,
+        "hp": 227,
+        "maxHp": 227,
+        "offRow": false
+       },
+       {
+        "key": "e2",
+        "unitId": "r101_e2",
+        "name": "균열 술사",
+        "side": "enemy",
+        "row": "back",
+        "element": "void",
+        "role": "mage",
+        "level": 15,
+        "hp": 121,
+        "maxHp": 121,
         "offRow": false
        }
       ]
@@ -1702,8 +1718,9 @@
        "a2",
        "a1",
        "a0",
-       "a3",
+       "e2",
        "e0",
+       "a3",
        "e1"
       ]
      },
@@ -1715,9 +1732,9 @@
       "effects": [
        {
         "kind": "damage",
-        "target": "e0",
-        "amount": 11,
-        "hpAfter": 81,
+        "target": "e1",
+        "amount": 9,
+        "hpAfter": 218,
         "elementMultiplier": 1,
         "downed": false
        }
@@ -1732,8 +1749,8 @@
        {
         "kind": "damage",
         "target": "e1",
-        "amount": 45,
-        "hpAfter": 67,
+        "amount": 39,
+        "hpAfter": 179,
         "elementMultiplier": 1,
         "downed": false
        }
@@ -1794,15 +1811,15 @@
      {
       "type": "action",
       "round": 1,
-      "actor": "a3",
+      "actor": "e2",
       "skillId": "mage_burst",
       "effects": [
        {
         "kind": "damage",
-        "target": "e1",
-        "amount": 114,
+        "target": "a2",
+        "amount": 108,
         "hpAfter": 0,
-        "elementMultiplier": 1.3,
+        "elementMultiplier": 1,
         "downed": true
        }
       ]
@@ -1815,11 +1832,25 @@
       "effects": [
        {
         "kind": "damage",
-        "target": "a1",
-        "amount": 33,
-        "hpAfter": 51,
-        "elementMultiplier": 1,
-        "downed": false
+        "target": "a3",
+        "amount": 93,
+        "hpAfter": 0,
+        "elementMultiplier": 1.3,
+        "downed": true
+       }
+      ]
+     },
+     {
+      "type": "action",
+      "round": 1,
+      "actor": "e1",
+      "skillId": "shield_taunt",
+      "effects": [
+       {
+        "kind": "status",
+        "target": "e1",
+        "status": "taunt",
+        "duration": 2
        }
       ]
      },
@@ -1827,25 +1858,11 @@
       "type": "round",
       "round": 2,
       "order": [
-       "a2",
        "a1",
        "a0",
-       "a3",
-       "e0"
-      ]
-     },
-     {
-      "type": "action",
-      "round": 2,
-      "actor": "a2",
-      "skillId": "healer_mend",
-      "effects": [
-       {
-        "kind": "heal",
-        "target": "a1",
-        "amount": 33,
-        "hpAfter": 84
-       }
+       "e2",
+       "e0",
+       "e1"
       ]
      },
      {
@@ -1856,17 +1873,17 @@
       "effects": [
        {
         "kind": "damage",
-        "target": "e0",
-        "amount": 21,
-        "hpAfter": 60,
+        "target": "e1",
+        "amount": 17,
+        "hpAfter": 162,
         "elementMultiplier": 1,
         "downed": false
        },
        {
         "kind": "damage",
-        "target": "e0",
-        "amount": 23,
-        "hpAfter": 37,
+        "target": "e1",
+        "amount": 18,
+        "hpAfter": 144,
         "elementMultiplier": 1,
         "downed": false
        }
@@ -1899,43 +1916,29 @@
         ],
         "amount": 0.3,
         "duration": 2
-       },
-       {
-        "kind": "status",
-        "target": "a2",
-        "status": "buff",
-        "stats": [
-         "pDef",
-         "eDef"
-        ],
-        "amount": 0.3,
-        "duration": 2
-       },
-       {
-        "kind": "status",
-        "target": "a3",
-        "status": "buff",
-        "stats": [
-         "pDef",
-         "eDef"
-        ],
-        "amount": 0.3,
-        "duration": 2
        }
       ]
      },
      {
       "type": "action",
       "round": 2,
-      "actor": "a3",
+      "actor": "e2",
       "skillId": "mage_storm",
       "effects": [
        {
         "kind": "damage",
-        "target": "e0",
+        "target": "a0",
+        "amount": 31,
+        "hpAfter": 124,
+        "elementMultiplier": 1,
+        "downed": false
+       },
+       {
+        "kind": "damage",
+        "target": "a1",
         "amount": 36,
-        "hpAfter": 1,
-        "elementMultiplier": 1.3,
+        "hpAfter": 48,
+        "elementMultiplier": 1,
         "downed": false
        }
       ]
@@ -1949,34 +1952,37 @@
        {
         "kind": "damage",
         "target": "a0",
-        "amount": 15,
-        "hpAfter": 140,
+        "amount": 30,
+        "hpAfter": 94,
         "elementMultiplier": 1,
         "downed": false
        },
        {
         "kind": "damage",
         "target": "a1",
-        "amount": 15,
-        "hpAfter": 69,
+        "amount": 34,
+        "hpAfter": 14,
         "elementMultiplier": 1,
         "downed": false
-       },
+       }
+      ]
+     },
+     {
+      "type": "action",
+      "round": 2,
+      "actor": "e1",
+      "skillId": "shield_guard",
+      "effects": [
        {
-        "kind": "damage",
-        "target": "a2",
-        "amount": 16,
-        "hpAfter": 78,
-        "elementMultiplier": 1,
-        "downed": false
-       },
-       {
-        "kind": "damage",
-        "target": "a3",
-        "amount": 22,
-        "hpAfter": 64,
-        "elementMultiplier": 1.3,
-        "downed": false
+        "kind": "status",
+        "target": "e1",
+        "status": "buff",
+        "stats": [
+         "pDef",
+         "eDef"
+        ],
+        "amount": 0.5,
+        "duration": 2
        }
       ]
      },
@@ -1997,74 +2003,250 @@
      {
       "type": "expire",
       "round": 2,
-      "target": "a2",
-      "status": "buff",
-      "skillId": "commander_rally"
-     },
-     {
-      "type": "expire",
-      "round": 2,
-      "target": "a3",
-      "status": "buff",
-      "skillId": "commander_rally"
+      "target": "e1",
+      "status": "taunt",
+      "skillId": "shield_taunt"
      },
      {
       "type": "round",
       "round": 3,
       "order": [
-       "a2",
        "a1",
        "a0",
-       "a3",
-       "e0"
+       "e2",
+       "e0",
+       "e1"
       ]
      },
      {
       "type": "action",
       "round": 3,
-      "actor": "a2",
-      "skillId": "healer_strike",
+      "actor": "a1",
+      "skillId": "archer_shot",
       "effects": [
        {
         "kind": "damage",
         "target": "e0",
-        "amount": 10,
+        "amount": 21,
+        "hpAfter": 165,
+        "elementMultiplier": 1,
+        "downed": false
+       }
+      ]
+     },
+     {
+      "type": "action",
+      "round": 3,
+      "actor": "a0",
+      "skillId": "commander_strike",
+      "effects": [
+       {
+        "kind": "damage",
+        "target": "e1",
+        "amount": 11,
+        "hpAfter": 133,
+        "elementMultiplier": 1,
+        "downed": false
+       }
+      ]
+     },
+     {
+      "type": "action",
+      "round": 3,
+      "actor": "e2",
+      "skillId": "mage_bolt",
+      "effects": [
+       {
+        "kind": "damage",
+        "target": "a0",
+        "amount": 35,
+        "hpAfter": 59,
+        "elementMultiplier": 1,
+        "downed": false
+       }
+      ]
+     },
+     {
+      "type": "action",
+      "round": 3,
+      "actor": "e0",
+      "skillId": "warrior_slash",
+      "effects": [
+       {
+        "kind": "damage",
+        "target": "a0",
+        "amount": 37,
+        "hpAfter": 22,
+        "elementMultiplier": 1,
+        "downed": false
+       }
+      ]
+     },
+     {
+      "type": "action",
+      "round": 3,
+      "actor": "e1",
+      "skillId": "shield_strike",
+      "effects": [
+       {
+        "kind": "damage",
+        "target": "a0",
+        "amount": 17,
+        "hpAfter": 5,
+        "elementMultiplier": 1,
+        "downed": false
+       }
+      ]
+     },
+     {
+      "type": "expire",
+      "round": 3,
+      "target": "a0",
+      "status": "buff",
+      "skillId": "commander_focus"
+     },
+     {
+      "type": "expire",
+      "round": 3,
+      "target": "a1",
+      "status": "buff",
+      "skillId": "commander_focus"
+     },
+     {
+      "type": "expire",
+      "round": 3,
+      "target": "e1",
+      "status": "buff",
+      "skillId": "shield_guard"
+     },
+     {
+      "type": "round",
+      "round": 4,
+      "order": [
+       "a1",
+       "a0",
+       "e2",
+       "e0",
+       "e1"
+      ]
+     },
+     {
+      "type": "action",
+      "round": 4,
+      "actor": "a1",
+      "skillId": "archer_aimed",
+      "effects": [
+       {
+        "kind": "damage",
+        "target": "e0",
+        "amount": 41,
+        "hpAfter": 124,
+        "elementMultiplier": 1,
+        "downed": false
+       }
+      ]
+     },
+     {
+      "type": "action",
+      "round": 4,
+      "actor": "a0",
+      "skillId": "commander_strike",
+      "effects": [
+       {
+        "kind": "damage",
+        "target": "e1",
+        "amount": 13,
+        "hpAfter": 120,
+        "elementMultiplier": 1,
+        "downed": false
+       }
+      ]
+     },
+     {
+      "type": "action",
+      "round": 4,
+      "actor": "e2",
+      "skillId": "mage_bolt",
+      "effects": [
+       {
+        "kind": "damage",
+        "target": "a0",
+        "amount": 55,
         "hpAfter": 0,
         "elementMultiplier": 1,
-        "downed": true
+        "downed": true,
+        "crit": true
+       }
+      ]
+     },
+     {
+      "type": "action",
+      "round": 4,
+      "actor": "e0",
+      "skillId": "warrior_heavy",
+      "effects": [
+       {
+        "kind": "damage",
+        "target": "a1",
+        "amount": 101,
+        "hpAfter": 0,
+        "elementMultiplier": 1,
+        "downed": true,
+        "crit": true
        }
       ]
      },
      {
       "type": "end",
-      "outcome": "victory",
-      "rounds": 3
+      "outcome": "defeat",
+      "rounds": 4
      }
     ],
     "reward": {
-     "zero": 108,
-     "arche": 21,
+     "zero": 0,
+     "arche": 0,
      "materials": {}
     },
     "expGains": [
      {
       "mercId": "m07",
-      "exp": 40
+      "exp": 18
      },
      {
       "mercId": "m08",
-      "exp": 40
+      "exp": 18
      },
      {
       "mercId": "m09",
-      "exp": 40
+      "exp": 18
      },
      {
       "mercId": "m10",
-      "exp": 40
+      "exp": 18
      }
     ],
-    "injuries": [],
+    "injuries": [
+     {
+      "unitId": "m07",
+      "severity": "heavy",
+      "days": 3
+     },
+     {
+      "unitId": "m08",
+      "severity": "light",
+      "days": 1
+     },
+     {
+      "unitId": "m09",
+      "severity": "light",
+      "days": 1
+     },
+     {
+      "unitId": "m10",
+      "severity": "heavy",
+      "days": 3
+     }
+    ],
     "stabilized": false
    }
   ],
@@ -2081,7 +2263,7 @@
    "levels": {
     "infirmary": 1,
     "training": 2,
-    "scout": 2
+    "scout": 3
    },
    "construction": {
     "facilityId": "infirmary",

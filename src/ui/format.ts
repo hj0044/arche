@@ -29,6 +29,8 @@ export const severityName = (id: string) => tables.injuries.severities.find((s) 
 export const factionName = (id: string) => tables.factions.find((f) => f.id === id)?.name ?? id;
 
 export const outcomeName: Record<Outcome, string> = { victory: '승리', retreat: '철수', defeat: '패배' };
+/** 홈 '최근 보고' 카드의 결과 글자(시안 Main) */
+export const reportOutcomeName: Record<Outcome, string> = { victory: '성공', retreat: '철수', defeat: '실패' };
 export const rowName = { front: '전열', back: '후열' } as const;
 
 export const pct = (ratio: number) => `${ratio >= 0 ? '+' : ''}${Math.round(ratio * 100)}%`;
@@ -95,3 +97,6 @@ export function termText(text: string): string {
 export const traitName = (id: string) => tables.traits.traits.find((t) => t.id === id)?.name ?? id;
 /** 특성 종류 이름 */
 export const traitCategoryName: Record<string, string> = { common: '공통', role: '역할', background: '배경', race: '종족', element: '속성', unique: '고유' };
+
+/** 카드용 짧은 이름(roster.json shortName, 지시서 017b). 명단에 없으면(주인공 등) 이름 그대로 */
+export const cardName = (m: { id: string; name: string }) => tables.roster.find((r) => r.id === m.id)?.shortName ?? m.name;

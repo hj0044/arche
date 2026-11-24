@@ -33,7 +33,7 @@ s = {
     return { ...m, affiliation: { kind: 'guild' }, level, exp: 0, loyalty: m.loyalty ? { ...m.loyalty, value: 62 } : m.loyalty };
   }),
   rifts: [],
-  facilities: { ...s.facilities, levels: { ...s.facilities.levels, infirmary: 1, training: 2, scout: 2 } },
+  facilities: { ...s.facilities, levels: { ...s.facilities.levels, infirmary: 1, training: 2, scout: 3 } },
 };
 const patch = (id: string, f: (m: MercenaryState) => Partial<MercenaryState>) => {
   s = { ...s, mercenaries: s.mercenaries.map((m) => (m.id === id ? { ...m, ...f(m) } : m)) };
@@ -67,7 +67,7 @@ s = assignToFacility(t, s, 'training', guildIds[13]);
 s = { ...s, facilities: { ...s.facilities, construction: { facilityId: 'infirmary', targetLevel: 2, startDay: DAY - 1, completeDay: DAY + 2 } } };
 
 // 위험도 5구간 채우기: 같은 구성(중급 3마리 균열)의 몬스터 레벨을 올려 가며 구간별로 하나씩 고른다(정확히 한 구간인 것).
-// 탐지소 Lv2라 레벨·수가 정확히 보여 위험도가 범위가 아니다.
+// 탐지소 Lv3이라 레벨·수가 정확히 보여 위험도가 범위가 아니다(017b: 징조 배지가 보이도록 Lv3).
 const want = t.combatPower.riskTiers.map((x) => x.id);
 const picked = new Map<string, Rift>();
 const tmpl = make('seoul', 'fx-tmpl', DAY + 4);
@@ -91,7 +91,9 @@ if (missing.length) throw new Error(`위험도 구간을 다 채우지 못했다
 // 마감 D-1 하나(가장 위험도가 좋은 것)
 const crackNames = t.riftTiers.find((x) => x.id === 'crack')!.names;
 const seoul = want.map((id, i) => ({ ...picked.get(id)!, name: `서울 ${crackNames[i]}`, deadlineDay: DAY + 3 + i }));
-seoul[0] = { ...seoul[0], deadlineDay: DAY + 1 };
+seoul[0] = { ...seoul[0], deadlineDay: DAY + 1, variant: 'small' };
+// 017b 배지: 첫 카드는 소규모 변형, 둘째 카드는 징조(시안 Content)
+seoul[1] = { ...seoul[1], omen: { textId: t.omens[0].id } };
 const others = [
   make('tokyo', 'fx-t1'),
   make('tokyo', 'fx-t2'),
