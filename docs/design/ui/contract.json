@@ -352,7 +352,12 @@
     "Recruit": {
       "status": "제안",
       "implement": "check-engine",
-      "sections": []
+      "sections": [
+        {
+          "id": "cards",
+          "desc": "영입 카드 목록. 영입 가능·진행 중 카드는 초상 왼쪽 위에 '레벨/성장 한계' 배지(계약자 카드와 같은 모양, 예 4/50, 최초 레벨 기준). 잠김 카드는 정체를 모르니 배지 없음"
+        }
+      ]
     },
     "Help": {
       "route": "help",
