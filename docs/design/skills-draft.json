@@ -1,0 +1,1628 @@
+{
+ "statusEffects": [
+  {
+   "id": "stun",
+   "name": "기절",
+   "kind": "stun",
+   "defaultDuration": 1,
+   "description": "행동하지 못한다. 풀린 다음 라운드에는 다시 걸리지 않는다."
+  },
+  {
+   "id": "dot",
+   "name": "지속 피해",
+   "kind": "dot",
+   "defaultDuration": 3,
+   "description": "자기 차례가 시작될 때 피해를 입는다. 방어는 적용되고 변동은 없다."
+  },
+  {
+   "id": "shield",
+   "name": "보호막",
+   "kind": "shield",
+   "defaultDuration": 3,
+   "description": "체력보다 먼저 피해를 흡수한다. 시간이 끝나면 남은 양은 사라진다."
+  },
+  {
+   "id": "mark",
+   "name": "표식",
+   "kind": "mark",
+   "defaultDuration": 2,
+   "multiplier": 1.25,
+   "description": "받는 피해가 25% 늘어난다."
+  },
+  {
+   "id": "weaken",
+   "name": "약화",
+   "kind": "weaken",
+   "defaultDuration": 2,
+   "multiplier": 0.75,
+   "description": "주는 피해와 치유량이 25% 줄어든다."
+  }
+ ],
+ "roleBase": {
+  "assassin": {
+   "hp": 82.2,
+   "atkMain": 22.4,
+   "def": 9,
+   "spd": 14
+  },
+  "disruptor": {
+   "hp": 88.3,
+   "atkMain": 22.6,
+   "def": 9,
+   "spd": 12
+  }
+ },
+ "basicSkills": [
+  {
+   "id": "shield_strike",
+   "name": "방패 치기",
+   "kind": "attack",
+   "target": "enemy",
+   "power": 0.8,
+   "cooldown": 0,
+   "damageType": "physical",
+   "role": "shield",
+   "description": "기본 공격. 쿨다운 없이 매 라운드 쓸 수 있다."
+  },
+  {
+   "id": "warrior_slash",
+   "name": "베기",
+   "kind": "attack",
+   "target": "enemy",
+   "power": 1.0,
+   "cooldown": 0,
+   "damageType": "physical",
+   "role": "warrior",
+   "description": "기본 공격. 쿨다운 없이 매 라운드 쓸 수 있다."
+  },
+  {
+   "id": "archer_shot",
+   "name": "사격",
+   "kind": "attack",
+   "target": "enemy",
+   "power": 1.0,
+   "cooldown": 0,
+   "damageType": "physical",
+   "role": "archer",
+   "description": "기본 공격. 쿨다운 없이 매 라운드 쓸 수 있다."
+  },
+  {
+   "id": "mage_bolt",
+   "name": "마력탄",
+   "kind": "attack",
+   "target": "enemy",
+   "power": 0.9,
+   "cooldown": 0,
+   "damageType": "energy",
+   "role": "mage",
+   "description": "기본 공격. 쿨다운 없이 매 라운드 쓸 수 있다."
+  },
+  {
+   "id": "healer_strike",
+   "name": "타격",
+   "kind": "attack",
+   "target": "enemy",
+   "power": 0.6,
+   "cooldown": 0,
+   "damageType": "energy",
+   "role": "healer",
+   "description": "기본 공격. 쿨다운 없이 매 라운드 쓸 수 있다."
+  },
+  {
+   "id": "commander_strike",
+   "name": "지휘 일격",
+   "kind": "attack",
+   "target": "enemy",
+   "power": 0.8,
+   "cooldown": 0,
+   "damageType": "energy",
+   "role": "commander",
+   "description": "기본 공격. 쿨다운 없이 매 라운드 쓸 수 있다."
+  },
+  {
+   "id": "assassin_stab",
+   "name": "암습",
+   "kind": "attack",
+   "target": "enemyBackLowest",
+   "power": 0.9,
+   "cooldown": 0,
+   "damageType": "physical",
+   "role": "assassin",
+   "description": "기본 공격. 후열의 가장 약한 적을 노린다."
+  },
+  {
+   "id": "disruptor_jab",
+   "name": "교란탄",
+   "kind": "attack",
+   "target": "enemy",
+   "power": 0.7,
+   "cooldown": 0,
+   "damageType": "energy",
+   "role": "disruptor",
+   "description": "기본 공격. 쿨다운 없이 매 라운드 쓸 수 있다."
+  }
+ ],
+ "skillPools": {
+  "shield": [
+   {
+    "id": "shield_taunt",
+    "name": "도발",
+    "kind": "taunt",
+    "target": "self",
+    "cooldown": 3,
+    "duration": 2,
+    "role": "shield",
+    "description": "2라운드 동안 단일 공격을 자신에게 끌어온다."
+   },
+   {
+    "id": "shield_guard",
+    "name": "굳건한 자세",
+    "kind": "buff",
+    "target": "self",
+    "cooldown": 4,
+    "duration": 2,
+    "stats": [
+     "pDef",
+     "eDef"
+    ],
+    "amount": 0.5,
+    "role": "shield",
+    "description": "2라운드 동안 자신의 방어 +50%."
+   },
+   {
+    "id": "shield_bash",
+    "name": "방패 강타",
+    "kind": "attack",
+    "target": "enemy",
+    "power": 0.9,
+    "cooldown": 5,
+    "damageType": "physical",
+    "applies": [
+     {
+      "status": "stun"
+     }
+    ],
+    "role": "shield",
+    "description": "피해를 주고 대상을 기절시킨다."
+   },
+   {
+    "id": "shield_barrier",
+    "name": "수호의 장벽",
+    "kind": "shield",
+    "target": "allyLowest",
+    "cooldown": 4,
+    "duration": 3,
+    "shield": {
+     "scaleStat": "hp",
+     "ratio": 0.18
+    },
+    "role": "shield",
+    "description": "가장 약한 아군에게 보호막."
+   },
+   {
+    "id": "shield_shove",
+    "name": "밀어내기",
+    "kind": "attack",
+    "target": "enemy",
+    "power": 0.7,
+    "cooldown": 3,
+    "damageType": "physical",
+    "applies": [
+     {
+      "status": "weaken"
+     }
+    ],
+    "role": "shield",
+    "description": "피해를 주고 대상을 약화시킨다."
+   },
+   {
+    "id": "shield_bulwark",
+    "name": "연대 방어",
+    "kind": "buff",
+    "target": "allyAll",
+    "cooldown": 5,
+    "duration": 2,
+    "stats": [
+     "pDef",
+     "eDef"
+    ],
+    "amount": 0.2,
+    "role": "shield",
+    "description": "2라운드 동안 아군 전원 방어 +20%."
+   }
+  ],
+  "warrior": [
+   {
+    "id": "warrior_heavy",
+    "name": "강타",
+    "kind": "attack",
+    "target": "enemy",
+    "power": 1.8,
+    "cooldown": 3,
+    "damageType": "physical",
+    "role": "warrior",
+    "description": "큰 피해를 주는 강한 일격."
+   },
+   {
+    "id": "warrior_cleave",
+    "name": "휩쓸기",
+    "kind": "attack",
+    "target": "enemyRow",
+    "power": 0.9,
+    "cooldown": 4,
+    "damageType": "physical",
+    "role": "warrior",
+    "description": "적 한 열 전체를 벤다."
+   },
+   {
+    "id": "warrior_rend",
+    "name": "출혈 베기",
+    "kind": "attack",
+    "target": "enemy",
+    "power": 0.7,
+    "cooldown": 3,
+    "damageType": "physical",
+    "applies": [
+     {
+      "status": "dot"
+     }
+    ],
+    "role": "warrior",
+    "description": "피해를 주고 지속 피해를 건다."
+   },
+   {
+    "id": "warrior_execute",
+    "name": "처형 일격",
+    "kind": "attack",
+    "target": "enemy",
+    "power": 1.4,
+    "cooldown": 4,
+    "damageType": "physical",
+    "lowHpBonus": 1.0,
+    "role": "warrior",
+    "description": "대상 체력이 낮을수록 피해가 커진다."
+   },
+   {
+    "id": "warrior_warcry",
+    "name": "전의 고양",
+    "kind": "buff",
+    "target": "self",
+    "cooldown": 4,
+    "duration": 2,
+    "stats": [
+     "pAtk"
+    ],
+    "amount": 0.4,
+    "role": "warrior",
+    "description": "2라운드 동안 자신의 물리공격 +40%."
+   },
+   {
+    "id": "warrior_breaker",
+    "name": "갑옷 파쇄",
+    "kind": "attack",
+    "target": "enemy",
+    "power": 1.2,
+    "cooldown": 4,
+    "damageType": "physical",
+    "applies": [
+     {
+      "status": "mark"
+     }
+    ],
+    "role": "warrior",
+    "description": "피해를 주고 대상에 표식을 건다."
+   }
+  ],
+  "archer": [
+   {
+    "id": "archer_aimed",
+    "name": "조준 사격",
+    "kind": "attack",
+    "target": "enemy",
+    "power": 2.0,
+    "cooldown": 3,
+    "damageType": "physical",
+    "role": "archer",
+    "description": "큰 피해를 주는 조준 사격."
+   },
+   {
+    "id": "archer_double",
+    "name": "연사",
+    "kind": "attack",
+    "target": "enemy",
+    "power": 0.75,
+    "cooldown": 2,
+    "damageType": "physical",
+    "hits": 2,
+    "role": "archer",
+    "description": "두 번 연속으로 쏜다."
+   },
+   {
+    "id": "archer_snipe",
+    "name": "저격",
+    "kind": "attack",
+    "target": "enemyBackLowest",
+    "power": 1.6,
+    "cooldown": 4,
+    "damageType": "physical",
+    "lowHpBonus": 1.0,
+    "ignoreTaunt": true,
+    "role": "archer",
+    "description": "후열의 가장 약한 적을 노린다(도발 무시). 체력이 낮을수록 피해가 커진다."
+   },
+   {
+    "id": "archer_mark",
+    "name": "표적 지정",
+    "kind": "attack",
+    "target": "enemy",
+    "power": 0.5,
+    "cooldown": 3,
+    "damageType": "physical",
+    "applies": [
+     {
+      "status": "mark"
+     }
+    ],
+    "role": "archer",
+    "description": "대상에 표식을 건다."
+   },
+   {
+    "id": "archer_poison",
+    "name": "독화살",
+    "kind": "attack",
+    "target": "enemy",
+    "power": 0.6,
+    "cooldown": 3,
+    "damageType": "physical",
+    "applies": [
+     {
+      "status": "dot"
+     }
+    ],
+    "role": "archer",
+    "description": "피해를 주고 지속 피해를 건다."
+   },
+   {
+    "id": "archer_volley",
+    "name": "소나기",
+    "kind": "attack",
+    "target": "enemyAll",
+    "power": 0.55,
+    "cooldown": 4,
+    "damageType": "physical",
+    "role": "archer",
+    "description": "적 전체에 피해를 준다."
+   }
+  ],
+  "mage": [
+   {
+    "id": "mage_burst",
+    "name": "폭발",
+    "kind": "attack",
+    "target": "enemy",
+    "power": 2.2,
+    "cooldown": 4,
+    "damageType": "energy",
+    "role": "mage",
+    "description": "아주 큰 피해를 주는 폭발."
+   },
+   {
+    "id": "mage_storm",
+    "name": "광역 방출",
+    "kind": "attack",
+    "target": "enemyAll",
+    "power": 0.8,
+    "cooldown": 3,
+    "damageType": "energy",
+    "role": "mage",
+    "description": "적 전체에 피해를 준다."
+   },
+   {
+    "id": "mage_flame",
+    "name": "불씨",
+    "kind": "attack",
+    "target": "enemy",
+    "power": 0.8,
+    "cooldown": 3,
+    "damageType": "energy",
+    "applies": [
+     {
+      "status": "dot"
+     }
+    ],
+    "role": "mage",
+    "description": "피해를 주고 지속 피해를 건다."
+   },
+   {
+    "id": "mage_bind",
+    "name": "속박",
+    "kind": "attack",
+    "target": "enemy",
+    "power": 0.9,
+    "cooldown": 5,
+    "damageType": "energy",
+    "applies": [
+     {
+      "status": "stun"
+     }
+    ],
+    "role": "mage",
+    "description": "피해를 주고 대상을 기절시킨다."
+   },
+   {
+    "id": "mage_curse",
+    "name": "약화의 저주",
+    "kind": "attack",
+    "target": "enemy",
+    "power": 0.7,
+    "cooldown": 3,
+    "damageType": "energy",
+    "applies": [
+     {
+      "status": "weaken"
+     }
+    ],
+    "role": "mage",
+    "description": "피해를 주고 대상을 약화시킨다."
+   },
+   {
+    "id": "mage_meteor",
+    "name": "유성",
+    "kind": "attack",
+    "target": "enemyRow",
+    "power": 1.3,
+    "cooldown": 5,
+    "damageType": "energy",
+    "role": "mage",
+    "description": "적 한 열 전체에 큰 피해를 준다."
+   }
+  ],
+  "healer": [
+   {
+    "id": "healer_mend",
+    "name": "치유",
+    "kind": "heal",
+    "target": "allyLowest",
+    "power": 1.6,
+    "cooldown": 2,
+    "scaleStat": "eAtk",
+    "role": "healer",
+    "description": "가장 약한 아군을 치유한다."
+   },
+   {
+    "id": "healer_prayer",
+    "name": "회복의 빛",
+    "kind": "heal",
+    "target": "allyAll",
+    "power": 0.8,
+    "cooldown": 4,
+    "scaleStat": "eAtk",
+    "role": "healer",
+    "description": "아군 전원을 치유한다."
+   },
+   {
+    "id": "healer_ward",
+    "name": "수호의 가호",
+    "kind": "shield",
+    "target": "allyLowest",
+    "cooldown": 3,
+    "duration": 3,
+    "shield": {
+     "scaleStat": "eAtk",
+     "ratio": 1.5
+    },
+    "role": "healer",
+    "description": "가장 약한 아군에게 보호막."
+   },
+   {
+    "id": "healer_purify",
+    "name": "정화",
+    "kind": "heal",
+    "target": "allyLowest",
+    "power": 0.8,
+    "cooldown": 4,
+    "scaleStat": "eAtk",
+    "cleanse": true,
+    "role": "healer",
+    "description": "가장 약한 아군을 치유하고 지속 피해·표식·약화를 지운다."
+   },
+   {
+    "id": "healer_smite",
+    "name": "징벌",
+    "kind": "attack",
+    "target": "enemy",
+    "power": 1.2,
+    "cooldown": 3,
+    "damageType": "energy",
+    "role": "healer",
+    "description": "적에게 에너지 피해를 준다."
+   },
+   {
+    "id": "healer_sanctuary",
+    "name": "성역",
+    "kind": "shield",
+    "target": "allyAll",
+    "cooldown": 5,
+    "duration": 2,
+    "shield": {
+     "scaleStat": "eAtk",
+     "ratio": 0.8
+    },
+    "role": "healer",
+    "description": "아군 전원에게 보호막."
+   }
+  ],
+  "commander": [
+   {
+    "id": "commander_rally",
+    "name": "공격 명령",
+    "kind": "buff",
+    "target": "allyAll",
+    "cooldown": 4,
+    "duration": 2,
+    "stats": [
+     "pAtk",
+     "eAtk"
+    ],
+    "amount": 0.25,
+    "role": "commander",
+    "description": "2라운드 동안 아군 전원 공격 +25%."
+   },
+   {
+    "id": "commander_focus",
+    "name": "방어 명령",
+    "kind": "buff",
+    "target": "allyAll",
+    "cooldown": 4,
+    "duration": 2,
+    "stats": [
+     "pDef",
+     "eDef"
+    ],
+    "amount": 0.3,
+    "role": "commander",
+    "description": "2라운드 동안 아군 전원 방어 +30%."
+   },
+   {
+    "id": "commander_analyze",
+    "name": "약점 분석",
+    "kind": "debuff",
+    "target": "enemy",
+    "cooldown": 3,
+    "applies": [
+     {
+      "status": "mark"
+     }
+    ],
+    "role": "commander",
+    "description": "대상에 표식을 건다."
+   },
+   {
+    "id": "commander_tempo",
+    "name": "진군 신호",
+    "kind": "buff",
+    "target": "allyAll",
+    "cooldown": 4,
+    "duration": 2,
+    "stats": [
+     "spd"
+    ],
+    "amount": 0.25,
+    "role": "commander",
+    "description": "2라운드 동안 아군 전원 속도 +25%."
+   },
+   {
+    "id": "commander_cover",
+    "name": "엄호 지시",
+    "kind": "shield",
+    "target": "allyAll",
+    "cooldown": 5,
+    "duration": 2,
+    "shield": {
+     "scaleStat": "eAtk",
+     "ratio": 0.6
+    },
+    "role": "commander",
+    "description": "아군 전원에게 보호막."
+   },
+   {
+    "id": "commander_gambit",
+    "name": "책략",
+    "kind": "attack",
+    "target": "enemy",
+    "power": 0.9,
+    "cooldown": 3,
+    "damageType": "energy",
+    "applies": [
+     {
+      "status": "weaken"
+     }
+    ],
+    "role": "commander",
+    "description": "피해를 주고 대상을 약화시킨다."
+   }
+  ],
+  "assassin": [
+   {
+    "id": "assassin_backstab",
+    "name": "급소 찌르기",
+    "kind": "attack",
+    "target": "enemyBackLowest",
+    "power": 1.7,
+    "cooldown": 3,
+    "damageType": "physical",
+    "lowHpBonus": 1.0,
+    "role": "assassin",
+    "description": "후열의 가장 약한 적을 찌른다. 체력이 낮을수록 피해가 커진다."
+   },
+   {
+    "id": "assassin_toxin",
+    "name": "독날",
+    "kind": "attack",
+    "target": "enemyBackLowest",
+    "power": 0.6,
+    "cooldown": 3,
+    "damageType": "physical",
+    "applies": [
+     {
+      "status": "dot"
+     }
+    ],
+    "role": "assassin",
+    "description": "후열의 가장 약한 적에게 피해와 지속 피해."
+   },
+   {
+    "id": "assassin_shadowstep",
+    "name": "그림자 걸음",
+    "kind": "buff",
+    "target": "self",
+    "cooldown": 4,
+    "duration": 2,
+    "stats": [
+     "spd"
+    ],
+    "amount": 0.4,
+    "role": "assassin",
+    "description": "2라운드 동안 자신의 속도 +40%."
+   },
+   {
+    "id": "assassin_flurry",
+    "name": "난도질",
+    "kind": "attack",
+    "target": "enemyBackLowest",
+    "power": 0.5,
+    "cooldown": 4,
+    "damageType": "physical",
+    "hits": 3,
+    "role": "assassin",
+    "description": "후열의 가장 약한 적을 세 번 벤다."
+   },
+   {
+    "id": "assassin_paralyze",
+    "name": "마비 독",
+    "kind": "attack",
+    "target": "enemyBackLowest",
+    "power": 0.7,
+    "cooldown": 5,
+    "damageType": "physical",
+    "applies": [
+     {
+      "status": "stun"
+     }
+    ],
+    "role": "assassin",
+    "description": "후열의 가장 약한 적을 기절시킨다."
+   },
+   {
+    "id": "assassin_ambush",
+    "name": "그림자 습격",
+    "kind": "attack",
+    "target": "enemyBackRow",
+    "power": 0.9,
+    "cooldown": 5,
+    "damageType": "physical",
+    "role": "assassin",
+    "description": "적 후열 전체를 습격한다."
+   }
+  ],
+  "disruptor": [
+   {
+    "id": "disruptor_hex",
+    "name": "약화 저주",
+    "kind": "attack",
+    "target": "enemyRow",
+    "power": 0.5,
+    "cooldown": 4,
+    "damageType": "energy",
+    "applies": [
+     {
+      "status": "weaken"
+     }
+    ],
+    "role": "disruptor",
+    "description": "적 한 열을 약화시킨다."
+   },
+   {
+    "id": "disruptor_expose",
+    "name": "약점 노출",
+    "kind": "debuff",
+    "target": "enemy",
+    "cooldown": 3,
+    "applies": [
+     {
+      "status": "mark"
+     }
+    ],
+    "role": "disruptor",
+    "description": "대상에 표식을 건다."
+   },
+   {
+    "id": "disruptor_daze",
+    "name": "현혹",
+    "kind": "attack",
+    "target": "enemy",
+    "power": 0.6,
+    "cooldown": 5,
+    "damageType": "energy",
+    "applies": [
+     {
+      "status": "stun"
+     }
+    ],
+    "role": "disruptor",
+    "description": "피해를 주고 대상을 기절시킨다."
+   },
+   {
+    "id": "disruptor_miasma",
+    "name": "중독 안개",
+    "kind": "attack",
+    "target": "enemyAll",
+    "power": 0.4,
+    "cooldown": 5,
+    "damageType": "energy",
+    "applies": [
+     {
+      "status": "dot"
+     }
+    ],
+    "role": "disruptor",
+    "description": "적 전체에 약한 피해와 지속 피해."
+   },
+   {
+    "id": "disruptor_drain",
+    "name": "기력 탈취",
+    "kind": "attack",
+    "target": "enemy",
+    "power": 0.8,
+    "cooldown": 3,
+    "damageType": "energy",
+    "applies": [
+     {
+      "status": "weaken"
+     }
+    ],
+    "role": "disruptor",
+    "description": "피해를 주고 대상을 약화시킨다."
+   },
+   {
+    "id": "disruptor_fog",
+    "name": "혼란의 안개",
+    "kind": "debuff",
+    "target": "enemyAll",
+    "cooldown": 6,
+    "applies": [
+     {
+      "status": "weaken",
+      "duration": 1
+     }
+    ],
+    "role": "disruptor",
+    "description": "1라운드 동안 적 전체를 약화시킨다."
+   }
+  ]
+ },
+ "roleTraits": {
+  "shield": [
+   "bulwark",
+   "iron_wall",
+   "guardian_oath"
+  ],
+  "warrior": [
+   "fighting_spirit",
+   "berserk_blood",
+   "vanguard_charge"
+  ],
+  "archer": [
+   "first_shot",
+   "hawk_eye",
+   "hunter_instinct"
+  ],
+  "mage": [
+   "resonance",
+   "arcane_flow",
+   "spell_mastery"
+  ],
+  "healer": [
+   "first_aid",
+   "gentle_hands",
+   "vital_light"
+  ],
+  "commander": [
+   "tactical_command",
+   "keen_analysis",
+   "steady_nerve"
+  ],
+  "assassin": [
+   "shadow_step",
+   "killer_instinct",
+   "vital_strike"
+  ],
+  "disruptor": [
+   "hex_craft",
+   "cunning",
+   "trickster"
+  ]
+ },
+ "newTraits": [
+  {
+   "id": "iron_wall",
+   "name": "철벽 대열",
+   "category": "role",
+   "description": "받는 피해 −5%",
+   "allowed": {
+    "roles": [
+     "shield"
+    ]
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "damageTakenMul",
+        "scope": "self",
+        "value": -0.05
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "guardian_oath",
+   "name": "수호의 맹세",
+   "category": "role",
+   "description": "아군 전원 물리방어 +4%",
+   "allowed": {
+    "roles": [
+     "shield"
+    ]
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "allies",
+        "stat": "pDef",
+        "value": 0.04
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "berserk_blood",
+   "name": "광전사의 피",
+   "category": "role",
+   "description": "체력 50% 이하에서 피해 +15%",
+   "allowed": {
+    "roles": [
+     "warrior"
+    ]
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "hpBelow",
+        "threshold": 0.5
+       },
+       "effect": {
+        "kind": "damageMul",
+        "scope": "self",
+        "value": 0.15
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "vanguard_charge",
+   "name": "선봉 돌격",
+   "category": "role",
+   "description": "첫 행동 피해 +20%",
+   "allowed": {
+    "roles": [
+     "warrior"
+    ]
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "firstAction"
+       },
+       "effect": {
+        "kind": "damageMul",
+        "scope": "self",
+        "value": 0.2
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "hawk_eye",
+   "name": "매의 눈",
+   "category": "role",
+   "description": "치명타율 +6%p",
+   "allowed": {
+    "roles": [
+     "archer"
+    ]
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statAdd",
+        "scope": "self",
+        "stat": "crit",
+        "value": 0.06
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "hunter_instinct",
+   "name": "사냥꾼의 본능",
+   "category": "role",
+   "description": "체력 50% 이하 적에게 피해 +10%",
+   "allowed": {
+    "roles": [
+     "archer"
+    ]
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "targetHpBelow",
+        "threshold": 0.5
+       },
+       "effect": {
+        "kind": "damageMul",
+        "scope": "self",
+        "value": 0.1
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "arcane_flow",
+   "name": "아르케 순환",
+   "category": "role",
+   "description": "에너지공격 +6%",
+   "allowed": {
+    "roles": [
+     "mage"
+    ]
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "self",
+        "stat": "eAtk",
+        "value": 0.06
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "spell_mastery",
+   "name": "주문 숙련",
+   "category": "role",
+   "description": "피해 +5%",
+   "allowed": {
+    "roles": [
+     "mage"
+    ]
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "damageMul",
+        "scope": "self",
+        "value": 0.05
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "gentle_hands",
+   "name": "따뜻한 손길",
+   "category": "role",
+   "description": "치유량 +10%",
+   "allowed": {
+    "roles": [
+     "healer"
+    ]
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "healMul",
+        "scope": "self",
+        "value": 0.1
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "vital_light",
+   "name": "생명의 빛",
+   "category": "role",
+   "description": "아군 전원 체력 +4%",
+   "allowed": {
+    "roles": [
+     "healer"
+    ]
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "allies",
+        "stat": "hp",
+        "value": 0.04
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "keen_analysis",
+   "name": "날카로운 분석",
+   "category": "role",
+   "description": "아군 전원 물리공격·에너지공격 +3%",
+   "allowed": {
+    "roles": [
+     "commander"
+    ]
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "allies",
+        "stat": "pAtk",
+        "value": 0.03
+       }
+      },
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "allies",
+        "stat": "eAtk",
+        "value": 0.03
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "steady_nerve",
+   "name": "침착",
+   "category": "role",
+   "description": "아군 전원 에너지방어 +4%",
+   "allowed": {
+    "roles": [
+     "commander"
+    ]
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "allies",
+        "stat": "eDef",
+        "value": 0.04
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "shadow_step",
+   "name": "그림자 걸음걸이",
+   "category": "role",
+   "description": "속도 +6%",
+   "allowed": {
+    "roles": [
+     "assassin"
+    ]
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "self",
+        "stat": "spd",
+        "value": 0.06
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "killer_instinct",
+   "name": "살의",
+   "category": "role",
+   "description": "체력 40% 이하 적에게 피해 +18%",
+   "allowed": {
+    "roles": [
+     "assassin"
+    ]
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "targetHpBelow",
+        "threshold": 0.4
+       },
+       "effect": {
+        "kind": "damageMul",
+        "scope": "self",
+        "value": 0.18
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "vital_strike",
+   "name": "급소 노리기",
+   "category": "role",
+   "description": "치명타율 +6%p",
+   "allowed": {
+    "roles": [
+     "assassin"
+    ]
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statAdd",
+        "scope": "self",
+        "stat": "crit",
+        "value": 0.06
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "hex_craft",
+   "name": "저주 숙련",
+   "category": "role",
+   "description": "에너지공격 +5%",
+   "allowed": {
+    "roles": [
+     "disruptor"
+    ]
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "self",
+        "stat": "eAtk",
+        "value": 0.05
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "cunning",
+   "name": "교활함",
+   "category": "role",
+   "description": "속도 +5%",
+   "allowed": {
+    "roles": [
+     "disruptor"
+    ]
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "self",
+        "stat": "spd",
+        "value": 0.05
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "trickster",
+   "name": "속임수",
+   "category": "role",
+   "description": "첫 행동 피해 +15%",
+   "allowed": {
+    "roles": [
+     "disruptor"
+    ]
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "firstAction"
+       },
+       "effect": {
+        "kind": "damageMul",
+        "scope": "self",
+        "value": 0.15
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "unique_m31",
+   "name": "설원의 칼날",
+   "category": "unique",
+   "description": "치명타율 +5%p",
+   "allowed": {
+    "mercs": [
+     "m31"
+    ]
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statAdd",
+        "scope": "self",
+        "stat": "crit",
+        "value": 0.05
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "unique_m32",
+   "name": "질풍 일섬",
+   "category": "unique",
+   "description": "첫 행동 피해 +25%",
+   "allowed": {
+    "mercs": [
+     "m32"
+    ]
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "firstAction"
+       },
+       "effect": {
+        "kind": "damageMul",
+        "scope": "self",
+        "value": 0.25
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "unique_m33",
+   "name": "밤의 그림자",
+   "category": "unique",
+   "description": "속도 +8%",
+   "allowed": {
+    "mercs": [
+     "m33"
+    ]
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "self",
+        "stat": "spd",
+        "value": 0.08
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "unique_m34",
+   "name": "흐트러뜨리기",
+   "category": "unique",
+   "description": "아군 전원 속도 +3%",
+   "allowed": {
+    "mercs": [
+     "m34"
+    ]
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "allies",
+        "stat": "spd",
+        "value": 0.03
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "unique_m35",
+   "name": "대지의 맥",
+   "category": "unique",
+   "description": "체력 +8%",
+   "allowed": {
+    "mercs": [
+     "m35"
+    ]
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "self",
+        "stat": "hp",
+        "value": 0.08
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "unique_m36",
+   "name": "타오르는 저주",
+   "category": "unique",
+   "description": "에너지공격 +8%",
+   "allowed": {
+    "mercs": [
+     "m36"
+    ]
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "self",
+        "stat": "eAtk",
+        "value": 0.08
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  }
+ ],
+ "newTriggers": [
+  "targetHpBelow"
+ ],
+ "growthStarStep": {
+  "hp": 0.05,
+  "pAtk": 0.05,
+  "pDef": 0.05,
+  "eAtk": 0.05,
+  "eDef": 0.05,
+  "spd": 0.15
+ }
+}

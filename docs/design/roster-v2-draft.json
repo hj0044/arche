@@ -1,0 +1,1719 @@
+[
+ {
+  "id": "m01",
+  "role": "shield",
+  "baseStats": {
+   "hp": 149.5,
+   "pAtk": 13.0,
+   "pDef": 29.4,
+   "eAtk": 5.2,
+   "eDef": 16.1,
+   "spd": 6.8,
+   "crit": 0.05,
+   "critDmg": 1.5,
+   "eva": 0.0
+  },
+  "growthRates": {
+   "hp": 0.0357,
+   "pAtk": 0.03325,
+   "pDef": 0.03675,
+   "eAtk": 0.03325,
+   "eDef": 0.035,
+   "spd": 0.0085
+  },
+  "skills": [
+   "shield_taunt",
+   "shield_guard",
+   "shield_bash"
+  ],
+  "traits": [
+   "sturdy",
+   "bulwark",
+   "tactical_training",
+   "unique_m01",
+   "affinity_frost"
+  ],
+  "powerRatio": 1.002,
+  "growthPowerRatio": 1.0077,
+  "stars": {
+   "hp": 3,
+   "pAtk": 2,
+   "pDef": 4,
+   "eAtk": 2,
+   "eDef": 3,
+   "spd": 2
+  }
+ },
+ {
+  "id": "m02",
+  "role": "archer",
+  "baseStats": {
+   "hp": 62.8,
+   "pAtk": 25.0,
+   "pDef": 8.3,
+   "eAtk": 9.1,
+   "eDef": 6.8,
+   "spd": 15.4,
+   "crit": 0.1,
+   "critDmg": 1.5,
+   "eva": 0.05
+  },
+  "growthRates": {
+   "hp": 0.03128,
+   "pAtk": 0.03688,
+   "pDef": 0.03303,
+   "eAtk": 0.03408,
+   "eDef": 0.03408,
+   "spd": 0.01221
+  },
+  "skills": [
+   "archer_aimed",
+   "archer_double",
+   "archer_snipe"
+  ],
+  "traits": [
+   "sense",
+   "first_shot",
+   "adaptability",
+   "unique_m02",
+   "affinity_fire"
+  ],
+  "powerRatio": 1.004,
+  "growthPowerRatio": 1.0,
+  "stars": {
+   "hp": 1,
+   "pAtk": 4,
+   "pDef": 2,
+   "eAtk": 2,
+   "eDef": 2,
+   "spd": 4
+  }
+ },
+ {
+  "id": "m03",
+  "role": "healer",
+  "baseStats": {
+   "hp": 85.7,
+   "pAtk": 5.5,
+   "pDef": 6.5,
+   "eAtk": 17.2,
+   "eDef": 10.8,
+   "spd": 12.1,
+   "crit": 0.05,
+   "critDmg": 1.5,
+   "eva": 0.0
+  },
+  "growthRates": {
+   "hp": 0.0357,
+   "pAtk": 0.0322,
+   "pDef": 0.0336,
+   "eAtk": 0.03605,
+   "eDef": 0.0336,
+   "spd": 0.0088
+  },
+  "skills": [
+   "healer_mend",
+   "healer_prayer",
+   "healer_ward"
+  ],
+  "traits": [
+   "focus",
+   "first_aid",
+   "arche_insight",
+   "unique_m03",
+   "affinity_light",
+   "human_will"
+  ],
+  "powerRatio": 1.003,
+  "growthPowerRatio": 1.0,
+  "stars": {
+   "hp": 3,
+   "pAtk": 1,
+   "pDef": 2,
+   "eAtk": 4,
+   "eDef": 2,
+   "spd": 2
+  }
+ },
+ {
+  "id": "m04",
+  "role": "mage",
+  "baseStats": {
+   "hp": 60.0,
+   "pAtk": 9.7,
+   "pDef": 4.6,
+   "eAtk": 28.0,
+   "eDef": 9.4,
+   "spd": 12.3,
+   "crit": 0.05,
+   "critDmg": 1.5,
+   "eva": 0.05
+  },
+  "growthRates": {
+   "hp": 0.03128,
+   "pAtk": 0.03373,
+   "pDef": 0.03268,
+   "eAtk": 0.03653,
+   "eDef": 0.03583,
+   "spd": 0.01191
+  },
+  "skills": [
+   "mage_burst",
+   "mage_storm",
+   "mage_flame"
+  ],
+  "traits": [
+   "focus",
+   "resonance",
+   "perseverance",
+   "unique_m04"
+  ],
+  "powerRatio": 1.002,
+  "growthPowerRatio": 1.0,
+  "stars": {
+   "hp": 1,
+   "pAtk": 2,
+   "pDef": 2,
+   "eAtk": 4,
+   "eDef": 3,
+   "spd": 4
+  }
+ },
+ {
+  "id": "m05",
+  "role": "shield",
+  "baseStats": {
+   "hp": 173.2,
+   "pAtk": 11.1,
+   "pDef": 27.9,
+   "eAtk": 4.5,
+   "eDef": 15.3,
+   "spd": 6.4,
+   "crit": 0.05,
+   "critDmg": 1.5,
+   "eva": 0.0
+  },
+  "growthRates": {
+   "hp": 0.03675,
+   "pAtk": 0.03325,
+   "pDef": 0.03675,
+   "eAtk": 0.03325,
+   "eDef": 0.035,
+   "spd": 0.0064
+  },
+  "skills": [
+   "shield_taunt",
+   "shield_barrier",
+   "shield_shove"
+  ],
+  "traits": [
+   "sturdy",
+   "iron_wall",
+   "tactical_training",
+   "unique_m05",
+   "affinity_earth",
+   "human_will"
+  ],
+  "powerRatio": 1.003,
+  "growthPowerRatio": 1.0383,
+  "stars": {
+   "hp": 4,
+   "pAtk": 2,
+   "pDef": 4,
+   "eAtk": 2,
+   "eDef": 3,
+   "spd": 1
+  }
+ },
+ {
+  "id": "m06",
+  "role": "warrior",
+  "baseStats": {
+   "hp": 93.0,
+   "pAtk": 25.8,
+   "pDef": 14.8,
+   "eAtk": 8.6,
+   "eDef": 9.8,
+   "spd": 11.7,
+   "crit": 0.05,
+   "critDmg": 1.6,
+   "eva": 0.05
+  },
+  "growthRates": {
+   "hp": 0.03148,
+   "pAtk": 0.03813,
+   "pDef": 0.03148,
+   "eAtk": 0.03463,
+   "eDef": 0.03253,
+   "spd": 0.01268
+  },
+  "skills": [
+   "warrior_heavy",
+   "warrior_cleave",
+   "warrior_rend"
+  ],
+  "traits": [
+   "honed",
+   "fighting_spirit",
+   "protocol",
+   "unique_m06",
+   "affinity_lightning"
+  ],
+  "powerRatio": 1.003,
+  "growthPowerRatio": 1.0,
+  "stars": {
+   "hp": 1,
+   "pAtk": 5,
+   "pDef": 1,
+   "eAtk": 3,
+   "eDef": 2,
+   "spd": 5
+  }
+ },
+ {
+  "id": "m07",
+  "role": "commander",
+  "baseStats": {
+   "hp": 105.9,
+   "pAtk": 5.9,
+   "pDef": 11.6,
+   "eAtk": 14.8,
+   "eDef": 13.5,
+   "spd": 11.6,
+   "crit": 0.05,
+   "critDmg": 1.5,
+   "eva": 0.0
+  },
+  "growthRates": {
+   "hp": 0.0359,
+   "pAtk": 0.03345,
+   "pDef": 0.03695,
+   "eAtk": 0.0324,
+   "eDef": 0.03695,
+   "spd": 0.01047
+  },
+  "skills": [
+   "commander_rally",
+   "commander_focus",
+   "commander_analyze"
+  ],
+  "traits": [
+   "trained_body",
+   "tactical_command",
+   "tactical_training",
+   "unique_m07",
+   "affinity_frost",
+   "human_will",
+   "sturdy"
+  ],
+  "powerRatio": 1.002,
+  "growthPowerRatio": 1.0,
+  "stars": {
+   "hp": 4,
+   "pAtk": 2,
+   "pDef": 4,
+   "eAtk": 2,
+   "eDef": 4,
+   "spd": 3
+  }
+ },
+ {
+  "id": "m08",
+  "role": "archer",
+  "baseStats": {
+   "hp": 70.9,
+   "pAtk": 25.4,
+   "pDef": 8.5,
+   "eAtk": 9.2,
+   "eDef": 6.9,
+   "spd": 13.1,
+   "crit": 0.1,
+   "critDmg": 1.5,
+   "eva": 0.0
+  },
+  "growthRates": {
+   "hp": 0.03278,
+   "pAtk": 0.03663,
+   "pDef": 0.03383,
+   "eAtk": 0.03383,
+   "eDef": 0.03383,
+   "spd": 0.01049
+  },
+  "skills": [
+   "archer_aimed",
+   "archer_mark",
+   "archer_poison"
+  ],
+  "traits": [
+   "sense",
+   "hawk_eye",
+   "protocol",
+   "unique_m08",
+   "affinity_lightning"
+  ],
+  "powerRatio": 1.003,
+  "growthPowerRatio": 1.0,
+  "stars": {
+   "hp": 2,
+   "pAtk": 4,
+   "pDef": 2,
+   "eAtk": 2,
+   "eDef": 2,
+   "spd": 3
+  }
+ },
+ {
+  "id": "m09",
+  "role": "healer",
+  "baseStats": {
+   "hp": 76.1,
+   "pAtk": 5.5,
+   "pDef": 6.4,
+   "eAtk": 17.0,
+   "eDef": 10.7,
+   "spd": 14.2,
+   "crit": 0.05,
+   "critDmg": 1.5,
+   "eva": 0.05
+  },
+  "growthRates": {
+   "hp": 0.03437,
+   "pAtk": 0.03262,
+   "pDef": 0.03297,
+   "eAtk": 0.03647,
+   "eDef": 0.03402,
+   "spd": 0.01216
+  },
+  "skills": [
+   "healer_mend",
+   "healer_purify",
+   "healer_smite"
+  ],
+  "traits": [
+   "focus",
+   "gentle_hands",
+   "protocol",
+   "unique_m09",
+   "affinity_wind"
+  ],
+  "powerRatio": 1.004,
+  "growthPowerRatio": 1.0,
+  "stars": {
+   "hp": 3,
+   "pAtk": 2,
+   "pDef": 2,
+   "eAtk": 4,
+   "eDef": 2,
+   "spd": 4
+  }
+ },
+ {
+  "id": "m10",
+  "role": "mage",
+  "baseStats": {
+   "hp": 67.6,
+   "pAtk": 9.9,
+   "pDef": 4.6,
+   "eAtk": 28.4,
+   "eDef": 9.5,
+   "spd": 10.4,
+   "crit": 0.05,
+   "critDmg": 1.5,
+   "eva": 0.0
+  },
+  "growthRates": {
+   "hp": 0.03284,
+   "pAtk": 0.03354,
+   "pDef": 0.03354,
+   "eAtk": 0.03634,
+   "eDef": 0.03564,
+   "spd": 0.00875
+  },
+  "skills": [
+   "mage_burst",
+   "mage_bind",
+   "mage_curse"
+  ],
+  "traits": [
+   "focus",
+   "arcane_flow",
+   "arche_insight",
+   "unique_m10",
+   "affinity_light",
+   "human_will"
+  ],
+  "powerRatio": 1.004,
+  "growthPowerRatio": 1.0,
+  "stars": {
+   "hp": 2,
+   "pAtk": 2,
+   "pDef": 2,
+   "eAtk": 4,
+   "eDef": 3,
+   "spd": 2
+  }
+ },
+ {
+  "id": "m11",
+  "role": "shield",
+  "baseStats": {
+   "hp": 133.5,
+   "pAtk": 14.8,
+   "pDef": 30.6,
+   "eAtk": 5.2,
+   "eDef": 16.8,
+   "spd": 6.8,
+   "crit": 0.05,
+   "critDmg": 1.5,
+   "eva": 0.0
+  },
+  "growthRates": {
+   "hp": 0.03465,
+   "pAtk": 0.03605,
+   "pDef": 0.03675,
+   "eAtk": 0.03325,
+   "eDef": 0.035,
+   "spd": 0.0085
+  },
+  "skills": [
+   "shield_guard",
+   "shield_barrier",
+   "shield_bulwark"
+  ],
+  "traits": [
+   "sturdy",
+   "bulwark",
+   "gear_support",
+   "unique_m11",
+   "affinity_fire"
+  ],
+  "powerRatio": 1.003,
+  "growthPowerRatio": 1.0178,
+  "stars": {
+   "hp": 3,
+   "pAtk": 4,
+   "pDef": 4,
+   "eAtk": 2,
+   "eDef": 3,
+   "spd": 2
+  }
+ },
+ {
+  "id": "m12",
+  "role": "warrior",
+  "baseStats": {
+   "hp": 90.1,
+   "pAtk": 28.7,
+   "pDef": 15.0,
+   "eAtk": 8.3,
+   "eDef": 10.0,
+   "spd": 9.5,
+   "crit": 0.05,
+   "critDmg": 1.6,
+   "eva": 0.0
+  },
+  "growthRates": {
+   "hp": 0.03159,
+   "pAtk": 0.03754,
+   "pDef": 0.03369,
+   "eAtk": 0.03404,
+   "eDef": 0.03194,
+   "spd": 0.00918
+  },
+  "skills": [
+   "warrior_heavy",
+   "warrior_execute",
+   "warrior_warcry"
+  ],
+  "traits": [
+   "honed",
+   "berserk_blood",
+   "gear_support",
+   "unique_m12",
+   "affinity_void",
+   "human_will",
+   "sturdy"
+  ],
+  "powerRatio": 1.004,
+  "growthPowerRatio": 1.0,
+  "stars": {
+   "hp": 1,
+   "pAtk": 4,
+   "pDef": 2,
+   "eAtk": 2,
+   "eDef": 1,
+   "spd": 2
+  }
+ },
+ {
+  "id": "m13",
+  "role": "archer",
+  "baseStats": {
+   "hp": 62.8,
+   "pAtk": 25.0,
+   "pDef": 8.3,
+   "eAtk": 9.1,
+   "eDef": 6.8,
+   "spd": 15.4,
+   "crit": 0.1,
+   "critDmg": 1.5,
+   "eva": 0.05
+  },
+  "growthRates": {
+   "hp": 0.03127,
+   "pAtk": 0.03687,
+   "pDef": 0.03302,
+   "eAtk": 0.03407,
+   "eDef": 0.03407,
+   "spd": 0.0122
+  },
+  "skills": [
+   "archer_double",
+   "archer_mark",
+   "archer_volley"
+  ],
+  "traits": [
+   "sense",
+   "first_shot",
+   "gear_support",
+   "unique_m13"
+  ],
+  "powerRatio": 1.004,
+  "growthPowerRatio": 1.0,
+  "stars": {
+   "hp": 1,
+   "pAtk": 4,
+   "pDef": 2,
+   "eAtk": 2,
+   "eDef": 2,
+   "spd": 4
+  }
+ },
+ {
+  "id": "m14",
+  "role": "mage",
+  "baseStats": {
+   "hp": 67.6,
+   "pAtk": 9.9,
+   "pDef": 4.6,
+   "eAtk": 28.4,
+   "eDef": 9.5,
+   "spd": 10.4,
+   "crit": 0.05,
+   "critDmg": 1.5,
+   "eva": 0.0
+  },
+  "growthRates": {
+   "hp": 0.03285,
+   "pAtk": 0.03355,
+   "pDef": 0.03355,
+   "eAtk": 0.03635,
+   "eDef": 0.03565,
+   "spd": 0.00876
+  },
+  "skills": [
+   "mage_storm",
+   "mage_bind",
+   "mage_meteor"
+  ],
+  "traits": [
+   "focus",
+   "resonance",
+   "arche_insight",
+   "unique_m14",
+   "affinity_frost",
+   "human_will"
+  ],
+  "powerRatio": 1.004,
+  "growthPowerRatio": 1.0,
+  "stars": {
+   "hp": 2,
+   "pAtk": 2,
+   "pDef": 2,
+   "eAtk": 4,
+   "eDef": 3,
+   "spd": 2
+  }
+ },
+ {
+  "id": "m15",
+  "role": "commander",
+  "baseStats": {
+   "hp": 96.0,
+   "pAtk": 6.2,
+   "pDef": 10.5,
+   "eAtk": 15.5,
+   "eDef": 13.5,
+   "spd": 13.1,
+   "crit": 0.05,
+   "critDmg": 1.5,
+   "eva": 0.0
+  },
+  "growthRates": {
+   "hp": 0.03472,
+   "pAtk": 0.03472,
+   "pDef": 0.03647,
+   "eAtk": 0.03367,
+   "eDef": 0.03682,
+   "spd": 0.01156
+  },
+  "skills": [
+   "commander_rally",
+   "commander_tempo",
+   "commander_cover"
+  ],
+  "traits": [
+   "trained_body",
+   "keen_analysis",
+   "gear_support",
+   "unique_m15",
+   "affinity_light"
+  ],
+  "powerRatio": 0.996,
+  "growthPowerRatio": 1.0,
+  "stars": {
+   "hp": 3,
+   "pAtk": 3,
+   "pDef": 4,
+   "eAtk": 2,
+   "eDef": 4,
+   "spd": 4
+  }
+ },
+ {
+  "id": "m16",
+  "role": "warrior",
+  "baseStats": {
+   "hp": 129.6,
+   "pAtk": 21.9,
+   "pDef": 17.0,
+   "eAtk": 7.6,
+   "eDef": 11.3,
+   "spd": 8.2,
+   "crit": 0.05,
+   "critDmg": 1.5,
+   "eva": 0.0
+  },
+  "growthRates": {
+   "hp": 0.0357,
+   "pAtk": 0.03605,
+   "pDef": 0.03605,
+   "eAtk": 0.03325,
+   "eDef": 0.03325,
+   "spd": 0.0064
+  },
+  "skills": [
+   "warrior_cleave",
+   "warrior_execute",
+   "warrior_breaker"
+  ],
+  "traits": [
+   "honed",
+   "fighting_spirit",
+   "company_discipline",
+   "unique_m16",
+   "affinity_fire",
+   "human_will"
+  ],
+  "powerRatio": 1.003,
+  "growthPowerRatio": 1.0187,
+  "stars": {
+   "hp": 3,
+   "pAtk": 4,
+   "pDef": 4,
+   "eAtk": 2,
+   "eDef": 2,
+   "spd": 1
+  }
+ },
+ {
+  "id": "m17",
+  "role": "shield",
+  "baseStats": {
+   "hp": 133.5,
+   "pAtk": 14.8,
+   "pDef": 30.6,
+   "eAtk": 5.2,
+   "eDef": 16.8,
+   "spd": 6.8,
+   "crit": 0.05,
+   "critDmg": 1.5,
+   "eva": 0.0
+  },
+  "growthRates": {
+   "hp": 0.03465,
+   "pAtk": 0.03605,
+   "pDef": 0.03675,
+   "eAtk": 0.03325,
+   "eDef": 0.035,
+   "spd": 0.0085
+  },
+  "skills": [
+   "shield_taunt",
+   "shield_bash",
+   "shield_bulwark"
+  ],
+  "traits": [
+   "sturdy",
+   "guardian_oath",
+   "company_discipline",
+   "unique_m17",
+   "affinity_lightning",
+   "human_will",
+   "honed"
+  ],
+  "powerRatio": 1.003,
+  "growthPowerRatio": 1.0246,
+  "stars": {
+   "hp": 3,
+   "pAtk": 4,
+   "pDef": 4,
+   "eAtk": 2,
+   "eDef": 3,
+   "spd": 2
+  }
+ },
+ {
+  "id": "m18",
+  "role": "archer",
+  "baseStats": {
+   "hp": 61.6,
+   "pAtk": 28.8,
+   "pDef": 7.2,
+   "eAtk": 8.7,
+   "eDef": 5.9,
+   "spd": 12.4,
+   "crit": 0.1,
+   "critDmg": 1.6,
+   "eva": 0.0
+  },
+  "growthRates": {
+   "hp": 0.03117,
+   "pAtk": 0.03712,
+   "pDef": 0.03152,
+   "eAtk": 0.03362,
+   "eDef": 0.03152,
+   "spd": 0.01032
+  },
+  "skills": [
+   "archer_aimed",
+   "archer_snipe",
+   "archer_volley"
+  ],
+  "traits": [
+   "sense",
+   "hunter_instinct",
+   "company_discipline",
+   "unique_m18",
+   "affinity_void",
+   "human_will",
+   "honed"
+  ],
+  "powerRatio": 1.003,
+  "growthPowerRatio": 1.0,
+  "stars": {
+   "hp": 1,
+   "pAtk": 4,
+   "pDef": 1,
+   "eAtk": 2,
+   "eDef": 1,
+   "spd": 3
+  }
+ },
+ {
+  "id": "m19",
+  "role": "healer",
+  "baseStats": {
+   "hp": 85.7,
+   "pAtk": 5.5,
+   "pDef": 6.5,
+   "eAtk": 17.2,
+   "eDef": 10.8,
+   "spd": 12.1,
+   "crit": 0.05,
+   "critDmg": 1.5,
+   "eva": 0.0
+  },
+  "growthRates": {
+   "hp": 0.03574,
+   "pAtk": 0.03224,
+   "pDef": 0.03364,
+   "eAtk": 0.03609,
+   "eDef": 0.03364,
+   "spd": 0.00883
+  },
+  "skills": [
+   "healer_prayer",
+   "healer_purify",
+   "healer_sanctuary"
+  ],
+  "traits": [
+   "focus",
+   "first_aid",
+   "company_discipline",
+   "unique_m19"
+  ],
+  "powerRatio": 1.003,
+  "growthPowerRatio": 1.0,
+  "stars": {
+   "hp": 3,
+   "pAtk": 1,
+   "pDef": 2,
+   "eAtk": 4,
+   "eDef": 2,
+   "spd": 2
+  }
+ },
+ {
+  "id": "m20",
+  "role": "commander",
+  "baseStats": {
+   "hp": 85.2,
+   "pAtk": 6.1,
+   "pDef": 10.9,
+   "eAtk": 17.5,
+   "eDef": 13.9,
+   "spd": 12.9,
+   "crit": 0.05,
+   "critDmg": 1.5,
+   "eva": 0.0
+  },
+  "growthRates": {
+   "hp": 0.03287,
+   "pAtk": 0.03392,
+   "pDef": 0.03742,
+   "eAtk": 0.03567,
+   "eDef": 0.03602,
+   "spd": 0.01087
+  },
+  "skills": [
+   "commander_focus",
+   "commander_tempo",
+   "commander_gambit"
+  ],
+  "traits": [
+   "trained_body",
+   "tactical_command",
+   "company_discipline",
+   "unique_m20",
+   "affinity_fire",
+   "human_will"
+  ],
+  "powerRatio": 1.004,
+  "growthPowerRatio": 1.0,
+  "stars": {
+   "hp": 2,
+   "pAtk": 2,
+   "pDef": 4,
+   "eAtk": 3,
+   "eDef": 4,
+   "spd": 4
+  }
+ },
+ {
+  "id": "m21",
+  "role": "warrior",
+  "baseStats": {
+   "hp": 93.0,
+   "pAtk": 25.8,
+   "pDef": 14.8,
+   "eAtk": 8.6,
+   "eDef": 9.8,
+   "spd": 11.7,
+   "crit": 0.05,
+   "critDmg": 1.6,
+   "eva": 0.05
+  },
+  "growthRates": {
+   "hp": 0.03147,
+   "pAtk": 0.03812,
+   "pDef": 0.03147,
+   "eAtk": 0.03462,
+   "eDef": 0.03252,
+   "spd": 0.01267
+  },
+  "skills": [
+   "warrior_heavy",
+   "warrior_rend",
+   "warrior_breaker"
+  ],
+  "traits": [
+   "honed",
+   "vanguard_charge",
+   "company_discipline",
+   "unique_m21",
+   "affinity_wind"
+  ],
+  "powerRatio": 1.003,
+  "growthPowerRatio": 1.0,
+  "stars": {
+   "hp": 1,
+   "pAtk": 5,
+   "pDef": 1,
+   "eAtk": 3,
+   "eDef": 2,
+   "spd": 5
+  }
+ },
+ {
+  "id": "m22",
+  "role": "shield",
+  "baseStats": {
+   "hp": 135.3,
+   "pAtk": 13.1,
+   "pDef": 29.5,
+   "eAtk": 5.2,
+   "eDef": 16.2,
+   "spd": 8.2,
+   "crit": 0.05,
+   "critDmg": 1.5,
+   "eva": 0.05
+  },
+  "growthRates": {
+   "hp": 0.03458,
+   "pAtk": 0.03388,
+   "pDef": 0.03633,
+   "eAtk": 0.03388,
+   "eDef": 0.03563,
+   "spd": 0.01204
+  },
+  "skills": [
+   "shield_guard",
+   "shield_bash",
+   "shield_shove"
+  ],
+  "traits": [
+   "sturdy",
+   "bulwark",
+   "company_discipline",
+   "unique_m22",
+   "affinity_light"
+  ],
+  "powerRatio": 1.002,
+  "growthPowerRatio": 1.0,
+  "stars": {
+   "hp": 3,
+   "pAtk": 2,
+   "pDef": 4,
+   "eAtk": 2,
+   "eDef": 3,
+   "spd": 4
+  }
+ },
+ {
+  "id": "m23",
+  "role": "archer",
+  "baseStats": {
+   "hp": 61.6,
+   "pAtk": 28.8,
+   "pDef": 7.2,
+   "eAtk": 8.7,
+   "eDef": 5.9,
+   "spd": 12.4,
+   "crit": 0.1,
+   "critDmg": 1.6,
+   "eva": 0.0
+  },
+  "growthRates": {
+   "hp": 0.03127,
+   "pAtk": 0.03722,
+   "pDef": 0.03162,
+   "eAtk": 0.03372,
+   "eDef": 0.03162,
+   "spd": 0.0104
+  },
+  "skills": [
+   "archer_double",
+   "archer_snipe",
+   "archer_poison"
+  ],
+  "traits": [
+   "sense",
+   "first_shot",
+   "adaptability",
+   "unique_m23"
+  ],
+  "powerRatio": 1.003,
+  "growthPowerRatio": 1.0,
+  "stars": {
+   "hp": 1,
+   "pAtk": 4,
+   "pDef": 1,
+   "eAtk": 2,
+   "eDef": 1,
+   "spd": 3
+  }
+ },
+ {
+  "id": "m24",
+  "role": "mage",
+  "baseStats": {
+   "hp": 58.3,
+   "pAtk": 9.3,
+   "pDef": 3.9,
+   "eAtk": 31.9,
+   "eDef": 8.0,
+   "spd": 9.8,
+   "crit": 0.05,
+   "critDmg": 1.6,
+   "eva": 0.0
+  },
+  "growthRates": {
+   "hp": 0.03127,
+   "pAtk": 0.03337,
+   "pDef": 0.03127,
+   "eAtk": 0.03687,
+   "eDef": 0.03337,
+   "spd": 0.0086
+  },
+  "skills": [
+   "mage_burst",
+   "mage_flame",
+   "mage_meteor"
+  ],
+  "traits": [
+   "focus",
+   "spell_mastery",
+   "company_discipline",
+   "unique_m24",
+   "affinity_fire",
+   "human_will"
+  ],
+  "powerRatio": 1.004,
+  "growthPowerRatio": 1.0,
+  "stars": {
+   "hp": 1,
+   "pAtk": 2,
+   "pDef": 1,
+   "eAtk": 4,
+   "eDef": 2,
+   "spd": 2
+  }
+ },
+ {
+  "id": "m25",
+  "role": "healer",
+  "baseStats": {
+   "hp": 76.1,
+   "pAtk": 5.5,
+   "pDef": 6.4,
+   "eAtk": 17.0,
+   "eDef": 10.7,
+   "spd": 14.2,
+   "crit": 0.05,
+   "critDmg": 1.5,
+   "eva": 0.05
+  },
+  "growthRates": {
+   "hp": 0.03437,
+   "pAtk": 0.03262,
+   "pDef": 0.03297,
+   "eAtk": 0.03647,
+   "eDef": 0.03402,
+   "spd": 0.01216
+  },
+  "skills": [
+   "healer_mend",
+   "healer_ward",
+   "healer_sanctuary"
+  ],
+  "traits": [
+   "focus",
+   "vital_light",
+   "adaptability",
+   "unique_m25",
+   "affinity_lightning"
+  ],
+  "powerRatio": 1.004,
+  "growthPowerRatio": 1.0,
+  "stars": {
+   "hp": 3,
+   "pAtk": 2,
+   "pDef": 2,
+   "eAtk": 4,
+   "eDef": 2,
+   "spd": 4
+  }
+ },
+ {
+  "id": "m26",
+  "role": "commander",
+  "baseStats": {
+   "hp": 105.9,
+   "pAtk": 5.9,
+   "pDef": 11.6,
+   "eAtk": 14.8,
+   "eDef": 13.5,
+   "spd": 11.6,
+   "crit": 0.05,
+   "critDmg": 1.5,
+   "eva": 0.0
+  },
+  "growthRates": {
+   "hp": 0.0359,
+   "pAtk": 0.03345,
+   "pDef": 0.03695,
+   "eAtk": 0.0324,
+   "eDef": 0.03695,
+   "spd": 0.01047
+  },
+  "skills": [
+   "commander_rally",
+   "commander_analyze",
+   "commander_gambit"
+  ],
+  "traits": [
+   "trained_body",
+   "steady_nerve",
+   "perseverance",
+   "unique_m26",
+   "affinity_void",
+   "human_will",
+   "sturdy"
+  ],
+  "powerRatio": 1.002,
+  "growthPowerRatio": 1.0,
+  "stars": {
+   "hp": 4,
+   "pAtk": 2,
+   "pDef": 4,
+   "eAtk": 2,
+   "eDef": 4,
+   "spd": 3
+  }
+ },
+ {
+  "id": "m27",
+  "role": "warrior",
+  "baseStats": {
+   "hp": 129.6,
+   "pAtk": 21.9,
+   "pDef": 17.0,
+   "eAtk": 7.6,
+   "eDef": 11.3,
+   "spd": 8.2,
+   "crit": 0.05,
+   "critDmg": 1.5,
+   "eva": 0.0
+  },
+  "growthRates": {
+   "hp": 0.0357,
+   "pAtk": 0.03605,
+   "pDef": 0.03605,
+   "eAtk": 0.03325,
+   "eDef": 0.03325,
+   "spd": 0.0064
+  },
+  "skills": [
+   "warrior_cleave",
+   "warrior_rend",
+   "warrior_warcry"
+  ],
+  "traits": [
+   "sturdy",
+   "fighting_spirit",
+   "perseverance",
+   "unique_m27",
+   "affinity_earth",
+   "human_will"
+  ],
+  "powerRatio": 1.003,
+  "growthPowerRatio": 1.0165,
+  "stars": {
+   "hp": 3,
+   "pAtk": 4,
+   "pDef": 4,
+   "eAtk": 2,
+   "eDef": 2,
+   "spd": 1
+  }
+ },
+ {
+  "id": "m28",
+  "role": "healer",
+  "baseStats": {
+   "hp": 78.0,
+   "pAtk": 5.3,
+   "pDef": 6.2,
+   "eAtk": 18.9,
+   "eDef": 11.4,
+   "spd": 11.6,
+   "crit": 0.05,
+   "critDmg": 1.5,
+   "eva": 0.0
+  },
+  "growthRates": {
+   "hp": 0.03465,
+   "pAtk": 0.03185,
+   "pDef": 0.03325,
+   "eAtk": 0.03675,
+   "eDef": 0.03535,
+   "spd": 0.0085
+  },
+  "skills": [
+   "healer_prayer",
+   "healer_ward",
+   "healer_smite"
+  ],
+  "traits": [
+   "focus",
+   "first_aid",
+   "arche_insight",
+   "unique_m28",
+   "affinity_wind",
+   "human_will"
+  ],
+  "powerRatio": 1.003,
+  "growthPowerRatio": 1.0104,
+  "stars": {
+   "hp": 3,
+   "pAtk": 1,
+   "pDef": 2,
+   "eAtk": 4,
+   "eDef": 3,
+   "spd": 2
+  }
+ },
+ {
+  "id": "m29",
+  "role": "mage",
+  "baseStats": {
+   "hp": 67.6,
+   "pAtk": 9.9,
+   "pDef": 4.6,
+   "eAtk": 28.4,
+   "eDef": 9.5,
+   "spd": 10.4,
+   "crit": 0.05,
+   "critDmg": 1.5,
+   "eva": 0.0
+  },
+  "growthRates": {
+   "hp": 0.03287,
+   "pAtk": 0.03357,
+   "pDef": 0.03357,
+   "eAtk": 0.03637,
+   "eDef": 0.03567,
+   "spd": 0.00878
+  },
+  "skills": [
+   "mage_storm",
+   "mage_flame",
+   "mage_curse"
+  ],
+  "traits": [
+   "focus",
+   "resonance",
+   "perseverance",
+   "unique_m29",
+   "affinity_void"
+  ],
+  "powerRatio": 1.004,
+  "growthPowerRatio": 1.0,
+  "stars": {
+   "hp": 2,
+   "pAtk": 2,
+   "pDef": 2,
+   "eAtk": 4,
+   "eDef": 3,
+   "spd": 2
+  }
+ },
+ {
+  "id": "m30",
+  "role": "commander",
+  "baseStats": {
+   "hp": 88.5,
+   "pAtk": 6.0,
+   "pDef": 10.2,
+   "eAtk": 17.3,
+   "eDef": 14.4,
+   "spd": 12.7,
+   "crit": 0.05,
+   "critDmg": 1.5,
+   "eva": 0.0
+  },
+  "growthRates": {
+   "hp": 0.03314,
+   "pAtk": 0.03384,
+   "pDef": 0.03559,
+   "eAtk": 0.03559,
+   "eDef": 0.03734,
+   "spd": 0.0108
+  },
+  "skills": [
+   "commander_focus",
+   "commander_analyze",
+   "commander_cover"
+  ],
+  "traits": [
+   "trained_body",
+   "tactical_command",
+   "tactical_training",
+   "unique_m30",
+   "affinity_light"
+  ],
+  "powerRatio": 1.003,
+  "growthPowerRatio": 1.0,
+  "stars": {
+   "hp": 2,
+   "pAtk": 2,
+   "pDef": 3,
+   "eAtk": 3,
+   "eDef": 4,
+   "spd": 4
+  }
+ },
+ {
+  "id": "m31",
+  "role": "assassin",
+  "baseStats": {
+   "hp": 64.6,
+   "pAtk": 23.4,
+   "pDef": 9.4,
+   "eAtk": 8.5,
+   "eDef": 7.7,
+   "spd": 16.6,
+   "crit": 0.1,
+   "critDmg": 1.5,
+   "eva": 0.05
+  },
+  "growthRates": {
+   "hp": 0.03137,
+   "pAtk": 0.03697,
+   "pDef": 0.03312,
+   "eAtk": 0.03417,
+   "eDef": 0.03417,
+   "spd": 0.01229
+  },
+  "skills": [
+   "assassin_backstab",
+   "assassin_toxin",
+   "assassin_shadowstep"
+  ],
+  "traits": [
+   "agile",
+   "shadow_step",
+   "adaptability",
+   "unique_m31",
+   "affinity_frost"
+  ],
+  "powerRatio": 1.003,
+  "growthPowerRatio": 1.0,
+  "stars": {
+   "hp": 1,
+   "pAtk": 4,
+   "pDef": 2,
+   "eAtk": 3,
+   "eDef": 3,
+   "spd": 5
+  },
+  "profile": {
+   "no": 31,
+   "name": "이설화",
+   "shortName": "이설화",
+   "element": "frost",
+   "hometown": "seoul",
+   "faction": "free",
+   "background": "freelancer",
+   "age": 26,
+   "gender": "여",
+   "cap": 50,
+   "initialLevel": 5
+  }
+ },
+ {
+  "id": "m32",
+  "role": "assassin",
+  "baseStats": {
+   "hp": 64.5,
+   "pAtk": 25.5,
+   "pDef": 8.4,
+   "eAtk": 8.5,
+   "eDef": 6.9,
+   "spd": 15.9,
+   "crit": 0.05,
+   "critDmg": 1.6,
+   "eva": 0.05
+  },
+  "growthRates": {
+   "hp": 0.03089,
+   "pAtk": 0.03754,
+   "pDef": 0.03089,
+   "eAtk": 0.03404,
+   "eDef": 0.03194,
+   "spd": 0.01217
+  },
+  "skills": [
+   "assassin_backstab",
+   "assassin_flurry",
+   "assassin_ambush"
+  ],
+  "traits": [
+   "honed",
+   "killer_instinct",
+   "protocol",
+   "unique_m32",
+   "affinity_lightning",
+   "human_will",
+   "agile"
+  ],
+  "powerRatio": 1.004,
+  "growthPowerRatio": 1.0,
+  "stars": {
+   "hp": 1,
+   "pAtk": 4,
+   "pDef": 1,
+   "eAtk": 2,
+   "eDef": 1,
+   "spd": 4
+  },
+  "profile": {
+   "no": 32,
+   "name": "사이토 류",
+   "shortName": "류",
+   "element": "lightning",
+   "hometown": "tokyo",
+   "faction": "waypoint",
+   "background": "agent",
+   "age": 29,
+   "gender": "남",
+   "cap": 65,
+   "initialLevel": 2
+  }
+ },
+ {
+  "id": "m33",
+  "role": "assassin",
+  "baseStats": {
+   "hp": 73.0,
+   "pAtk": 23.8,
+   "pDef": 9.6,
+   "eAtk": 8.7,
+   "eDef": 7.8,
+   "spd": 14.2,
+   "crit": 0.1,
+   "critDmg": 1.5,
+   "eva": 0.0
+  },
+  "growthRates": {
+   "hp": 0.03284,
+   "pAtk": 0.03669,
+   "pDef": 0.03389,
+   "eAtk": 0.03389,
+   "eDef": 0.03389,
+   "spd": 0.01055
+  },
+  "skills": [
+   "assassin_toxin",
+   "assassin_paralyze",
+   "assassin_ambush"
+  ],
+  "traits": [
+   "sense",
+   "vital_strike",
+   "company_discipline",
+   "unique_m33",
+   "affinity_void",
+   "human_will"
+  ],
+  "powerRatio": 1.002,
+  "growthPowerRatio": 1.0,
+  "stars": {
+   "hp": 2,
+   "pAtk": 4,
+   "pDef": 2,
+   "eAtk": 2,
+   "eDef": 2,
+   "spd": 3
+  },
+  "profile": {
+   "no": 33,
+   "name": "엘레나 크루즈",
+   "shortName": "엘레나",
+   "element": "void",
+   "hometown": "newyork",
+   "faction": "dokkaebi",
+   "background": "mercenary_company",
+   "age": 31,
+   "gender": "여",
+   "cap": 55,
+   "initialLevel": 4
+  }
+ },
+ {
+  "id": "m34",
+  "role": "disruptor",
+  "baseStats": {
+   "hp": 71.3,
+   "pAtk": 8.5,
+   "pDef": 7.2,
+   "eAtk": 24.5,
+   "eDef": 10.7,
+   "spd": 13.6,
+   "crit": 0.05,
+   "critDmg": 1.5,
+   "eva": 0.05
+  },
+  "growthRates": {
+   "hp": 0.03151,
+   "pAtk": 0.03396,
+   "pDef": 0.03291,
+   "eAtk": 0.03676,
+   "eDef": 0.03606,
+   "spd": 0.01211
+  },
+  "skills": [
+   "disruptor_hex",
+   "disruptor_expose",
+   "disruptor_daze"
+  ],
+  "traits": [
+   "focus",
+   "hex_craft",
+   "arche_insight",
+   "unique_m34",
+   "affinity_wind"
+  ],
+  "powerRatio": 1.004,
+  "growthPowerRatio": 1.0,
+  "stars": {
+   "hp": 1,
+   "pAtk": 2,
+   "pDef": 2,
+   "eAtk": 4,
+   "eDef": 4,
+   "spd": 4
+  },
+  "profile": {
+   "no": 34,
+   "name": "문지안",
+   "shortName": "문지안",
+   "element": "wind",
+   "hometown": "seoul",
+   "faction": "rrb",
+   "background": "researcher",
+   "age": 27,
+   "gender": "여",
+   "cap": 50,
+   "initialLevel": 6
+  }
+ },
+ {
+  "id": "m35",
+  "role": "disruptor",
+  "baseStats": {
+   "hp": 80.2,
+   "pAtk": 8.6,
+   "pDef": 7.3,
+   "eAtk": 24.8,
+   "eDef": 10.9,
+   "spd": 11.5,
+   "crit": 0.05,
+   "critDmg": 1.5,
+   "eva": 0.0
+  },
+  "growthRates": {
+   "hp": 0.033,
+   "pAtk": 0.0337,
+   "pDef": 0.0337,
+   "eAtk": 0.0365,
+   "eDef": 0.0358,
+   "spd": 0.00889
+  },
+  "skills": [
+   "disruptor_hex",
+   "disruptor_miasma",
+   "disruptor_fog"
+  ],
+  "traits": [
+   "focus",
+   "cunning",
+   "gear_support",
+   "unique_m35",
+   "affinity_earth",
+   "human_will"
+  ],
+  "powerRatio": 1.003,
+  "growthPowerRatio": 1.0,
+  "stars": {
+   "hp": 2,
+   "pAtk": 2,
+   "pDef": 2,
+   "eAtk": 4,
+   "eDef": 3,
+   "spd": 2
+  },
+  "profile": {
+   "no": 35,
+   "name": "후지와라 사쿠",
+   "shortName": "사쿠",
+   "element": "earth",
+   "hometown": "tokyo",
+   "faction": "archon",
+   "background": "corporate",
+   "age": 33,
+   "gender": "남",
+   "cap": 60,
+   "initialLevel": 3
+  }
+ },
+ {
+  "id": "m36",
+  "role": "disruptor",
+  "baseStats": {
+   "hp": 70.3,
+   "pAtk": 8.2,
+   "pDef": 6.3,
+   "eAtk": 28.4,
+   "eDef": 9.3,
+   "spd": 10.9,
+   "crit": 0.05,
+   "critDmg": 1.6,
+   "eva": 0.0
+  },
+  "growthRates": {
+   "hp": 0.03163,
+   "pAtk": 0.03373,
+   "pDef": 0.03163,
+   "eAtk": 0.03723,
+   "eDef": 0.03373,
+   "spd": 0.00891
+  },
+  "skills": [
+   "disruptor_expose",
+   "disruptor_drain",
+   "disruptor_fog"
+  ],
+  "traits": [
+   "focus",
+   "trickster",
+   "perseverance",
+   "unique_m36",
+   "affinity_fire"
+  ],
+  "powerRatio": 1.003,
+  "growthPowerRatio": 1.0,
+  "stars": {
+   "hp": 1,
+   "pAtk": 2,
+   "pDef": 1,
+   "eAtk": 4,
+   "eDef": 2,
+   "spd": 2
+  },
+  "profile": {
+   "no": 36,
+   "name": "레이첼 애덤스",
+   "shortName": "레이첼",
+   "element": "fire",
+   "hometown": "newyork",
+   "faction": "free",
+   "background": "citizen",
+   "age": 30,
+   "gender": "여",
+   "cap": 45,
+   "initialLevel": 5
+  }
+ }
+]
