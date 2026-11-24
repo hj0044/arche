@@ -8,7 +8,7 @@ import { visibleRift } from '../../engine/facilities';
 import { recruit, recruitInfo, type MercenaryState } from '../../engine/game';
 import { riftVariant, type Rift } from '../../engine/rift';
 import { guildStatusSummary, riftAutoRisk, type RiftAutoRisk } from '../../engine/status';
-import { Banner, Card, Chip, ChipRow, Gauge, Icon, LogoRow, Portrait, RiskPill, Screen } from '../components';
+import { Banner, Card, Chip, ChipRow, Gauge, Icon, LevelBadge, LogoRow, Portrait, RiskPill, Screen } from '../components';
 import { cityName, factionName, num, roleName, tierName } from '../format';
 import type { ContentTab, Ctx } from '../nav';
 import { cityChips, daysLeft, filterAndSortRifts, isUrgent, type RiskLookup } from '../riftFilter';
@@ -256,7 +256,7 @@ function RecruitList({ ctx, list }: { ctx: Ctx; list: MercenaryState[] }) {
   const unlockText = (info: ReturnType<typeof recruitInfo>) =>
     info.unlock ? (info.unlock.type === 'totalVictories' ? '리프트 공략' : `${tierName(info.unlock.tier)} 공략`) : '';
   return (
-    <div className="pg" data-role="page">
+    <div className="pg" data-role="page" data-ui="Recruit.cards">
       {rows.map(({ m, info, kind }) => {
         const p = info.progress;
         const ratio = info.unlocked ? 1 : p ? p.current / p.required : 0;
@@ -266,6 +266,8 @@ function RecruitList({ ctx, list }: { ctx: Ctx; list: MercenaryState[] }) {
           <div key={m.id} className={`card recruit-card ${kind === 'ready' ? 'ready' : ''} ${kind === 'locked' ? 'locked' : ''}`} data-role="card">
             <button className="recruit-art" aria-label={`${m.name} 상세`} onClick={() => ctx.go({ name: 'merc', mercId: m.id })}>
               <Portrait id={m.id} element={m.element} role={m.role} fill />
+              {/* 017c: 최초 레벨/성장 한계. 잠김 카드는 정체를 모르니 숨긴다 */}
+              {kind !== 'locked' && <LevelBadge level={m.initialLevel} cap={m.growth.cap} large ui="recruit.level" />}
               <span className="el-dot big" data-el={m.element} />
             </button>
             <div className="col grow" style={{ padding: '8px 12px', gap: 4, minWidth: 0 }}>

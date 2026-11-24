@@ -107,6 +107,16 @@ export function capTier(cap: number) {
 /** 보석 표시 구간(시안: 55~60, 65~) */
 const GEM_TIERS = (): string[] => tables.ui.capTiers.slice(-2).map((t) => t.id);
 
+/** 초상 왼쪽 위 '레벨/성장 한계' 배지(계약자 카드·영입 카드가 같이 쓴다). large는 영입 카드(시안 Recruit: 12px) */
+export function LevelBadge({ level, cap, large, ui }: { level: number; cap?: number; large?: boolean; ui?: string }) {
+  return (
+    <span className={`mcard-lv ${large ? 'lg' : ''}`} data-ui={ui}>
+      {level}
+      {cap !== undefined && <span>/{cap}</span>}
+    </span>
+  );
+}
+
 /** 계약자 카드(시안 Merc·Party): 초상, 레벨/한계, 속성 점, UP, 이름, (역할), 경험치 막대, 상태 글자, 한계 구간 테두리·빛·보석 */
 export function MercCard({
   id,
@@ -152,10 +162,7 @@ export function MercCard({
     <button className={`mcard ${off ? 'off' : ''} ${compact ? 'compact' : ''}`} data-cap={tier?.id} data-el={element} onClick={onClick} aria-label={`${name} Lv${level}${cap ? `/${cap}` : ''} ${state}`}>
       <div className="mcard-art">
         <Portrait id={id} element={element} role={role} fill />
-        <span className="mcard-lv">
-          {level}
-          {cap !== undefined && <span>/{cap}</span>}
-        </span>
+        <LevelBadge level={level} cap={cap} />
         <span className="mcard-el" />
         {up && <span className="mcard-up">UP</span>}
       </div>

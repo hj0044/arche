@@ -134,6 +134,9 @@ html, body, #root { margin: 0; height: 100%; background: var(--c-page); }
 .mcard-art { height: 58px; position: relative; }
 .mcard-lv { position: absolute; left: 3px; top: 3px; font-size: 11px; font-weight: 700; background: var(--c-scrim); border-radius: 4px; padding: 0 4px; }
 .mcard-lv > span { font-weight: 400; color: var(--c-text-sub); }
+/* 영입 카드(시안 Recruit): 조금 크고 한계 숫자도 같은 굵기·색 */
+.mcard-lv.lg { left: 4px; top: 4px; font-size: 12px; line-height: 16px; padding: 0 5px; z-index: 2; }
+.mcard-lv.lg > span { font-weight: inherit; color: inherit; }
 .mcard-el { position: absolute; right: 4px; top: 4px; width: 9px; height: 9px; border-radius: 50%; background: var(--el); }
 .mcard-up { position: absolute; right: 3px; bottom: 3px; font-size: 11px; font-weight: 700; color: var(--c-gold-ink); background: var(--c-gold); border-radius: 4px; padding: 0 4px; }
 .mcard-gem { position: absolute; left: 50%; top: -1px; margin-left: -6px; width: 12px; height: 12px; }

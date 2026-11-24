@@ -4,6 +4,8 @@ export interface ScreenDef {
   name: string;
   /** 앱 픽스처 screen 파라미터 */
   screen: string;
+  /** 서브 탭 화면이면 부모 화면 이름. 부모의 머리 구역(header·subtabs)은 같이 보인다 */
+  parent?: string;
 }
 
 export const SCREENS: ScreenDef[] = [
@@ -16,9 +18,9 @@ export const SCREENS: ScreenDef[] = [
   { name: 'Battle', screen: 'replay' },
   { name: 'Base', screen: 'base' },
   { name: 'Settings', screen: 'saves' },
-  { name: 'Tower', screen: 'tower' },
-  { name: 'Boss', screen: 'boss' },
-  { name: 'Recruit', screen: 'recruit' },
+  { name: 'Tower', screen: 'tower', parent: 'Content' },
+  { name: 'Boss', screen: 'boss', parent: 'Content' },
+  { name: 'Recruit', screen: 'recruit', parent: 'Content' },
 ];
 
 export const appUrl = (port: number, s: ScreenDef) => `http://localhost:${port}/?fixture=ui&screen=${s.screen}`;
