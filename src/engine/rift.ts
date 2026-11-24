@@ -251,7 +251,7 @@ export function shareOf(tables: GameTables, perMember: number, partySize: number
 
 /**
  * 파견 경험치 나누기(지시서 009). 총량이 정해져 있고 참가자가 나눠 갖는다.
- * 파티 인원은 파견에 나간 전원(주인공, 쓰러진 사람 포함).
+ * 파티 인원은 파견에 나간 전원(쓰러진 사람 포함).
  */
 export function expShare(tables: GameTables, rift: Rift, outcome: Outcome, partySize: number): number {
   return shareOf(tables, expPerMember(tables, rift, outcome), partySize);

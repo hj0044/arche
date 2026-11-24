@@ -16,12 +16,12 @@ function playedState(): GameState {
     seed: 'save-test',
     guildName: '저장 길드',
     baseCityId: 'seoul',
-    protagonist: { mode: 'opener', name: '주인공', element: 'light', role: 'healer', background: 'researcher' },
+    protagonist: { name: '마스터' },
   });
   for (let i = 0; i < 3; i++) s = advanceDay(tables, s).state;
   const rift = s.rifts.find((r) => r.cityId === 'seoul')!;
   s = dispatch(tables, s, rift.id, [
-    { mercId: 'hero', row: 'back' },
+    { mercId: 'm03', row: 'back' },
     { mercId: 'm01', row: 'front' },
   ]);
   return advanceDay(tables, s).state;
@@ -162,11 +162,17 @@ describe('세이브 v6(리프트 영역 세력)', () => {
   });
 });
 
-describe('세이브 v10(지시서 021)', () => {
-  it('버전은 10이고 v9 세이브는 지원하지 않는 세이브로 거절한다', () => {
-    expect(SAVE_VERSION).toBe(10);
+describe('세이브 v11(지시서 022, AGENTS.md: 마이그레이션 없음)', () => {
+  it('버전은 11이고 v10 세이브(주인공이 있던 세이브 포함)는 지원하지 않는 세이브로 거절한다', () => {
+    expect(SAVE_VERSION).toBe(11);
     const file = JSON.parse(serializeSave(createSaveFile(playedState(), 'manual')));
-    expect(() => parseSave(JSON.stringify({ ...file, version: 9 }))).toThrow(/지원하지 않는 세이브/);
+    expect(() => parseSave(JSON.stringify({ ...file, version: 10 }))).toThrow(/지원하지 않는 세이브/);
+    const withHero = { ...file, version: 10, state: { ...file.state, protagonist: { mode: 'opener', name: 'p', background: 'survivor', mercId: 'hero' } } };
+    expect(() => parseSave(JSON.stringify(withHero))).toThrow(/지원하지 않는 세이브/);
+  });
+  it('protagonist는 이름·배경만 저장한다', () => {
+    const file = JSON.parse(serializeSave(createSaveFile(playedState(), 'manual')));
+    expect(Object.keys(file.state.protagonist).sort()).toEqual(['background', 'name']);
   });
   it('저장하고 불러오면 그대로 돌아오고 성장 속도 필드가 없다', () => {
     const s = playedState();

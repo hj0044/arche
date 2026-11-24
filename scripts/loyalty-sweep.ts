@@ -54,7 +54,7 @@ function play(t: GameTables, seed: string) {
     seed,
     guildName: '시험 길드',
     baseCityId: 'seoul',
-    protagonist: { mode: 'opener', name: '주인공', element: 'fire', role: 'warrior', background: 'survivor' },
+    protagonist: { name: '마스터' },
   });
   const out = { refusals: 0, departures: 0, idleDecays: 0, poaches: 0, wins: 0, unpaidDays: 0, trainingExp: 0 };
   for (let d = 0; d < days; d++) {
@@ -86,7 +86,7 @@ const tierNames = base.loyalty.tiers.map((t) => t.name).join('/');
 const facilityNames = base.facilities.facilities.map((f) => f.name).join('/');
 console.log(`### ${days}일, 시드 ${seeds.length}개 (${seeds.join(', ')})`);
 console.log('');
-console.log('횟수는 시드 합계, 길드 인원·구간 분포·시설 레벨은 마지막 날 평균(주인공 제외).');
+console.log('횟수는 시드 합계, 길드 인원·구간 분포·시설 레벨은 마지막 날 평균.');
 console.log('');
 console.log(`| 조합 | 미납 | 위험 거부 | 이탈 | 대기 하락 | 무소속 이동 | 이탈 수 | 이탈 발생 시드 | 거부 수 | 대기 하락 횟수 | 무소속 이동 수 | 미납 일수 | 훈련 경험치 | 승리 | 길드 인원 | ${tierNames} | 시설 레벨(${facilityNames}) |`);
 console.log('|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|');

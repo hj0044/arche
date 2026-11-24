@@ -95,15 +95,14 @@ export function validateSemantics(state: GameState, t: SemanticTables): string[]
       if (!t.injuries.severities.some((s) => s.id === m.injury!.severity)) errors.push(`${p}.injury.severity: 없는 부상 등급 id "${m.injury.severity}"`);
       atLeast(`${p}.injury.recoverDay`, m.injury.recoverDay, L.minDay);
     }
-    // 충성도: 주인공을 뺀 모든 용병이 같은 틀로 갖는다(길드 밖은 시작값 보관). 주인공은 없다.
-    if (!m.isProtagonist && !m.loyalty) errors.push(`${p}.loyalty 없음`);
-    if (m.isProtagonist && m.loyalty) errors.push(`${p}.loyalty: 주인공에게 충성도가 있음`);
+    // 충성도: 모든 계약자가 같은 틀로 갖는다(길드 밖은 시작값 보관)
+    if (!m.loyalty) errors.push(`${p}.loyalty 없음`);
     if (m.loyalty) {
       within(`${p}.loyalty.value`, m.loyalty.value, t.loyalty.range);
       atLeast(`${p}.loyalty.dangerDays`, m.loyalty.dangerDays, 0);
       atLeast(`${p}.loyalty.restStreak`, m.loyalty.restStreak, 0);
       m.loyalty.recent.forEach((r, j) => {
-        if (!(r.reason in t.loyalty.changes)) errors.push(`${p}.loyalty.recent[${j}].reason: 없는 변동 요인 "${r.reason}"`);
+        if (!(r.reason in t.loyalty.changes) && r.reason !== 'outerMission') errors.push(`${p}.loyalty.recent[${j}].reason: 없는 변동 요인 "${r.reason}"`);
       });
     }
     if (m.departedDay !== undefined) atLeast(`${p}.departedDay`, m.departedDay, L.minDay);
@@ -112,10 +111,6 @@ export function validateSemantics(state: GameState, t: SemanticTables): string[]
       atLeast(`${p}.unpaidUpkeep.zero`, m.unpaidUpkeep.zero, 0);
     }
   });
-  if (state.protagonist.mode === 'opener') {
-    if (!state.protagonist.mercId) errors.push('state.protagonist.mercId 없음');
-    else if (!mercIds.has(state.protagonist.mercId)) errors.push(`state.protagonist.mercId: 세이브에 없는 ${M} "${state.protagonist.mercId}"`);
-  }
   const isGuild = (id: string) => state.mercenaries.find((m) => m.id === id)?.affiliation.kind === 'guild';
 
   // ── 리프트(목록, 파견, 보고가 같은 검사를 쓴다)
@@ -235,7 +230,6 @@ export function validateSemantics(state: GameState, t: SemanticTables): string[]
       if (!m) errors.push(`${p}[${j}]: 세이브에 없는 ${M} "${mercId}"`);
       else {
         if (m.affiliation.kind !== 'guild') errors.push(`${p}[${j}]: 길드 소속이 아닌 ${M} "${mercId}"`);
-        if (m.isProtagonist) errors.push(`${p}[${j}]: 주인공은 배치할 수 없음`);
         if (m.injury) errors.push(`${p}[${j}]: 부상 중인 ${M} "${mercId}"`);
       }
       if (busy.has(mercId)) errors.push(`${p}[${j}]: 파견 중인 ${M} "${mercId}"`);

@@ -62,7 +62,7 @@
   - 실행(개발 서버): `npm run dev`
   - 테스트: `npm test` (감시 모드는 `npm run test:watch`)
   - 샘플 전투 로그: `npm run sim -- [시드] [몬스터 레벨] [몬스터 등급]`
-  - 며칠 자동 진행 요약: `npm run days -- [일수] [시드]`
+  - 며칠 자동 진행 요약: `npm run days -- [일수] [시드] [--no-outer] [--no-train]` (외곽 임무 끔 / 남는 계약자를 훈련소에 넣지 않음)
   - 레벨·등급별 승률 표: `npm run balance -- [시드 수]`
   - 상태 효과를 뺀 데이터와 승률 비교(지시서 020): `npm run status-impact -- [시드 수]`
   - 역할별 계약자 스탯 분포(성장률 전후, 지시서 021): `npm run growth-spread -- [레벨,레벨,...]`

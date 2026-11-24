@@ -20,7 +20,7 @@ function start(): GameState {
     seed: 'omen',
     guildName: '징조 길드',
     baseCityId: 'newyork',
-    protagonist: { mode: 'guildMaster', name: 'gm', background: 'heir' },
+    protagonist: { name: 'gm' },
   });
 }
 

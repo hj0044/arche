@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { tables } from '../data';
+
+import { legacyTables as tables } from '../testing/legacyTables';
 import { advanceDay, dispatch, newGame, type GameState, type PartyMember } from '../engine/game';
 import { createSaveFile, parseSave, serializeSave } from '../storage/saveFile';
 
@@ -13,14 +14,14 @@ function start(party: PartyMember[]): GameState {
     seed: 'audit-20261120',
     guildName: '검수 길드',
     baseCityId: 'seoul',
-    protagonist: { mode: 'opener', name: '검수자', element: 'fire', role: 'warrior', background: 'survivor' },
+    protagonist: { name: '검수자' },
   });
   return dispatch(tables, s, 'r1', party);
 }
 
 describe.each([
-  ['주인공 포함', [{ mercId: 'hero', row: 'front' }, { mercId: 'm02', row: 'back' }, { mercId: 'm03', row: 'back' }, { mercId: 'm04', row: 'back' }]],
-  ['주인공 제외', [{ mercId: 'm02', row: 'back' }, { mercId: 'm03', row: 'back' }, { mercId: 'm04', row: 'back' }]],
+  ['4인 파티', [{ mercId: 'm01', row: 'front' }, { mercId: 'm02', row: 'back' }, { mercId: 'm03', row: 'back' }, { mercId: 'm04', row: 'back' }]],
+  ['3인 파티', [{ mercId: 'm02', row: 'back' }, { mercId: 'm03', row: 'back' }, { mercId: 'm04', row: 'back' }]],
 ] as [string, PartyMember[]][])('결정성 회귀(%s)', (_label, party) => {
   it('메모리 상태와 저장 왕복 상태를 10일 진행하면 매일 상태·이벤트가 같다', () => {
     const origin = start(party);
@@ -96,7 +97,7 @@ describe('결정성 회귀(대기 하락·무소속 이동)', () => {
 describe('결정성 회귀(거점 시설: 건설 진행과 훈련 배치)', () => {
   it('건설 진행과 훈련 배치가 있는 길드를 15일 동안 매일 저장 왕복해도 상태·이벤트가 같다', async () => {
     const { startConstruction, assignToFacility } = await import('../engine/game');
-    let origin = start([{ mercId: 'hero', row: 'front' }]);
+    let origin = start([{ mercId: 'm01', row: 'front' }]);
     origin = { ...origin, resources: { ...origin.resources, zero: 5000 }, facilities: { ...origin.facilities, levels: { ...origin.facilities.levels, training: 2 } } };
     origin = startConstruction(tables, origin, 'infirmary');
     origin = assignToFacility(tables, assignToFacility(tables, origin, 'training', 'm02'), 'training', 'm03');

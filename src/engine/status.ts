@@ -24,7 +24,7 @@ import {
 import type { Rift } from './rift';
 
 export interface GuildStatusSummary {
-  /** 길드 소속 인원(주인공 포함) */
+  /** 길드 소속 인원 */
   total: number;
   /** 지금 출전 가능한 인원 */
   available: number;

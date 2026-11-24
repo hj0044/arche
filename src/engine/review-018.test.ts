@@ -37,7 +37,7 @@ describe('018 1-1: 파티 전투력은 전투 시작과 같은 방식으로 아�
 
 describe('018 1-2: 위험도 캐시 키에 특성이 들어간다', () => {
   it('risk_cache_trait_key: 같은 스탯에 특성만 더해도 캐시를 비운 결과와 같다(power:cache:15:84)', () => {
-    const save = newGame(tables, { seed: 'days', guildName: '검수 길드', baseCityId: 'seoul', protagonist: { mode: 'opener', name: '주인공', element: 'fire', role: 'warrior', background: 'survivor' } });
+    const save = newGame(tables, { seed: 'days', guildName: '검수 길드', baseCityId: 'seoul', protagonist: { name: '마스터' } });
     const base = generic('mage', 15, 'cache');
     const a: CombatSlot = { ...base, unit: { ...base.unit, stats: { ...base.unit.stats, eAtk: 84 } } };
     const buffed = withTraits(a, ['focus']);
@@ -91,7 +91,7 @@ describe('018 3: 위험도 상세 평가', () => {
     expect(tables.combatPower.simulations).toBe(12);
     expect(tables.combatPower.detailSimulations).toBe(96);
     const party = [generic('warrior', 12, 'w'), generic('healer', 12, 'h')];
-    const save = newGame(tables, { seed: 'days', guildName: 'x', baseCityId: 'seoul', protagonist: { mode: 'opener', name: 'p', element: 'fire', role: 'warrior', background: 'survivor' } });
+    const save = newGame(tables, { seed: 'days', guildName: 'x', baseCityId: 'seoul', protagonist: { name: 'p' } });
     const reward = { zero: [0, 0] as [number, number], arche: [0, 0] as [number, number], materials: {} };
     const visible: VisibleRift = {
       riftId: 'detail', grade: 'mid', tier: 'gate', scouting: scoutingRow(tables, save.facilities),

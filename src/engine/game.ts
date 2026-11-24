@@ -1,6 +1,6 @@
 import { getRiftTier, travelDays, type GameTables, type Outcome, type Row, type Stats, type UnlockRule } from '../data';
 import { activeTraits, newlyUnlockedTraits, roleBaseStats, statsAtLevel, type GrowthRates } from './stats';
-import { compositionGroup, resolveCombat, validateParty, type CombatEvent, type CombatSlot } from './combat';
+import { resolveCombat, validateParty, type CombatEvent, type CombatSlot } from './combat';
 import { rollInjuries, type Injury } from './injury';
 import { rollPreemption } from './preemption';
 import { expShare, generateRift, riftEnemySlots, riftModifiers, riftReward, type Rift, type RiftReward } from './rift';
@@ -17,7 +17,8 @@ import {
   trainingExp,
   type FacilitiesState,
 } from './facilities';
-import { applyLoyalty, isLoyaltySimulated, loyaltyTier, newLoyalty, type LoyaltyState } from './loyalty';
+import { applyLoyalty, isLoyaltySimulated, loyaltyDelta, loyaltyTier, newLoyalty, type LoyaltyState } from './loyalty';
+import { planOuterMissions, type OuterResult } from './outer';
 import { MERC_ACTIVE_COUNT, roleDefaultSkills, type Affiliation, type Unit } from './unit';
 
 export class GameError extends Error {}
@@ -38,10 +39,9 @@ export interface MercenaryState {
   affiliation: Affiliation;
   /** recoverDay가 되면 회복한다. 복귀 당일은 부상 일수에 세지 않는다. */
   injury?: { severity: string; recoverDay: number };
-  isProtagonist?: boolean;
   /** 유지비 미납 누적(2단계부터 충성도 하락 요인) */
   unpaidUpkeep?: { days: number; zero: number };
-  /** 충성도. 주인공을 뺀 모든 용병이 같은 틀로 갖는다. 시뮬레이션은 데이터가 정한 소속만(지금은 길드). */
+  /** 충성도. 모든 계약자가 같은 틀로 갖는다. 시뮬레이션은 데이터가 정한 소속만(지금은 길드). */
   loyalty?: LoyaltyState;
   /** 충성도로 길드를 이탈한 날(무소속 이동 보호 기간 판정) */
   departedDay?: number;
@@ -61,18 +61,15 @@ export interface MercProfile {
   race: string;
 }
 
-export type ProtagonistSetup =
-  | { mode: 'opener'; name: string; element: string; role: string; background: string }
-  | { mode: 'guildMaster'; name: string; background: string };
-
+/**
+ * 플레이어(길드 마스터, 지시서 022). 전투에 참여하지 않고 계약자 목록·파티에 없다.
+ * background는 저장만 하고 효과 없음(화면에서 고르지 않는다).
+ */
 export interface Protagonist {
-  mode: 'opener' | 'guildMaster';
   name: string;
-  /** 1단계는 저장만 하고 효과 없음 */
   background: string;
-  /** 개방자 모드일 때 전투에 참여하는 용병 id */
-  mercId?: string;
 }
+export type ProtagonistSetup = { name: string; background?: string };
 
 export interface PartyMember {
   mercId: string;
@@ -128,6 +125,8 @@ export interface GameState {
   records: { victories: number; victoriesByTier: Record<string, number> };
   /** 거점(시작 도시 한 곳)의 시설 */
   facilities: FacilitiesState;
+  /** 세이브에 저장하는 게임 설정(지시서 022). autoOuter: 쉬는 계약자 외곽 임무 자동 배치 */
+  settings: { autoOuter: boolean };
 }
 
 export type DayEvent =
@@ -144,7 +143,9 @@ export type DayEvent =
   | { type: 'trained'; facilityId: string; mercId: string; exp: number }
   | { type: 'unassigned'; facilityId: string; mercId: string; reason: string }
   | { type: 'poached'; mercId: string; fromFactionId: string; toFactionId: string; wasDeparted: boolean }
-  | { type: 'refused'; mercId: string };
+  | { type: 'refused'; mercId: string }
+  /** 외곽 임무(지시서 022): 자동 배치 결과와 충성도 변동(불만) */
+  | { type: 'outerMission'; results: (OuterResult & { loyaltyDelta: number })[] };
 
 export interface NewGameOptions {
   seed: string;
@@ -189,9 +190,8 @@ export function levelUpCost(tables: GameTables, level: number): number {
   return base + perLevel * (level - 1);
 }
 
-/** 하루 유지비. 주인공은 데이터 설정에 따라 뺀다. */
+/** 하루 유지비 */
 export function upkeepPerDay(tables: GameTables, m: MercenaryState): number {
-  if (m.isProtagonist && !tables.progression.protagonistUpkeep) return 0;
   const { base, perLevel } = tables.progression.upkeepZeroPerDay;
   return base + perLevel * m.level;
 }
@@ -259,18 +259,18 @@ export function recruitInfo(tables: GameTables, state: GameState, mercId: string
   };
 }
 
-/** 계약자의 기본 스탯(레벨 1): 계약자별 baseStats, 없으면(주인공 등) 역할 기본값 */
+/** 계약자의 기본 스탯(레벨 1): 계약자별 baseStats, 없으면 역할 기본값 */
 export function mercBaseStats(tables: GameTables, m: MercenaryState): Stats {
   return tables.roster.find((r) => r.id === m.id)?.baseStats ?? roleBaseStats(tables, m.role);
 }
 
-/** 계약자의 레벨당 성장률(roster.json growthRates, 지시서 021). 주인공 등 값이 없으면 undefined(기본 성장률) */
+/** 계약자의 레벨당 성장률(roster.json growthRates, 지시서 021). 값이 없으면 undefined(기본 성장률) */
 export const mercGrowthRates = (tables: GameTables, m: { id: string }): GrowthRates | undefined => tables.roster.find((r) => r.id === m.id)?.growthRates;
 
-/** 계약자의 특성 슬롯 목록(roster.json traits, 주인공은 없음) */
+/** 계약자의 특성 슬롯 목록(roster.json traits) */
 export const mercTraitIds = (tables: GameTables, m: MercenaryState): string[] => tables.roster.find((r) => r.id === m.id)?.traits ?? [];
 
-/** 계약자의 액티브 스킬 3개(roster.json skills, 주인공은 역할 풀의 앞 3개, 지시서 020) */
+/** 계약자의 액티브 스킬 3개(roster.json skills, 명단에 없으면 역할 풀의 앞 3개, 지시서 020) */
 export const mercSkillIds = (tables: GameTables, m: { id: string; role: string }): string[] =>
   tables.roster.find((r) => r.id === m.id)?.skills ?? roleDefaultSkills(tables, m.role, MERC_ACTIVE_COUNT).slice(1);
 
@@ -310,21 +310,6 @@ export function mercToUnit(tables: GameTables, m: MercenaryState): Unit {
 
 // ── 새 게임 ───────────────────────────────────────────
 
-const PROTAGONIST_ID = 'hero';
-
-/**
- * 개방자 모드에서 시작 후보 4명 중 빠질 1명.
- * 같은 역할 → 같은 분류(전위·딜러·지원) → 후보 목록의 마지막 순서로 고른다.
- * 주인공이 그 분류를 채우므로 시작 구성의 전위·딜러·지원은 그대로 갖춰진다.
- */
-export function pickCandidateToLeave(tables: GameTables, protagonistRole: string): string | undefined {
-  const candidates = tables.roster.filter((r) => r.startingCandidate);
-  const group = (role: string) => compositionGroup(tables, role);
-  const sameRole = candidates.filter((c) => c.role === protagonistRole);
-  const sameGroup = candidates.filter((c) => group(c.role) === group(protagonistRole));
-  return (sameRole.at(-1) ?? sameGroup.at(-1) ?? candidates.at(-1))?.id;
-}
-
 function spawnRiftInto(
   tables: GameTables,
   state: GameState,
@@ -359,36 +344,10 @@ export function newGame(tables: GameTables, opts: NewGameOptions): GameState {
     loyalty: newLoyalty(tables),
   }));
 
+  // 플레이어는 길드 마스터 전용(지시서 022): 시작 후보 4명이 모두 시작 계약자다
   const p = opts.protagonist;
-  if (!p.name.trim()) throw new GameError('주인공 이름이 비어 있다');
-  const protagonist: Protagonist = { mode: p.mode, name: p.name.trim(), background: p.background };
-  if (p.mode === 'opener') {
-    const role = tables.roles.find((r) => r.id === p.role);
-    if (!role?.enabled) throw new GameError(`고를 수 없는 역할: ${p.role}`);
-    if (!tables.elements.some((e) => e.id === p.element)) throw new GameError(`없는 속성: ${p.element}`);
-    const g = tables.progression.protagonistGrowth;
-    mercenaries.unshift({
-      id: PROTAGONIST_ID,
-      name: p.name.trim(),
-      element: p.element,
-      role: p.role,
-      level: g.initialLevel,
-      exp: 0,
-      growth: { cap: g.cap },
-      initialLevel: g.initialLevel,
-      profile: { background: p.background, hometown: opts.baseCityId, world: 'earth', race: 'human' },
-      affiliation: { kind: 'guild' },
-      isProtagonist: true,
-    });
-    protagonist.mercId = PROTAGONIST_ID;
-    // 주인공 역할과 겹치는 시작 후보 1명은 무소속으로 남는다.
-    const left = pickCandidateToLeave(tables, p.role);
-    const merc = mercenaries.find((m) => m.id === left);
-    if (merc) {
-      merc.affiliation = { kind: 'faction', factionId: tables.progression.openerLeftoverFaction };
-      merc.loyalty = newLoyalty(tables);
-    }
-  }
+  if (!p.name.trim()) throw new GameError('마스터 이름이 비어 있다');
+  const protagonist: Protagonist = { name: p.name.trim(), background: p.background ?? tables.progression.masterBackground };
 
   const state: GameState = {
     seed: opts.seed,
@@ -405,6 +364,7 @@ export function newGame(tables: GameTables, opts: NewGameOptions): GameState {
     counters: { rift: 0, expedition: 0 },
     records: { victories: 0, victoriesByTier: {} },
     facilities: initialFacilities(tables),
+    settings: { autoOuter: tables.outerMissions.autoOuterDefault },
   };
   for (const city of tables.cities) {
     for (let i = 0; i < city.riftSpawn.initialCount; i++) {
@@ -543,7 +503,6 @@ export function startConstruction(tables: GameTables, prev: GameState, facilityI
 export function assignBlockReason(tables: GameTables, state: GameState, facilityId: string, mercId: string): string | null {
   const m = getMerc(state, mercId);
   if (!isGuildMember(m)) return '길드 소속이 아님';
-  if (m.isProtagonist) return '주인공';
   if (m.injury) return '부상 중';
   if (isOnExpedition(state, mercId)) return '파견 중';
   const other = assignedFacility(state.facilities, mercId);
@@ -690,6 +649,24 @@ export function advanceDay(tables: GameTables, prev: GameState): { state: GameSt
       .filter((m) => simulated(m) && !m.injury && !isOnExpedition(state, m.id) && !assignedFacility(state.facilities, m.id))
       .map((m) => m.id),
   );
+  // ── 외곽 임무(지시서 022): 쉬는 길드 계약자를 자동 배치한다(설정이 켜져 있을 때). 간 사람은 쉰 날이 아니다.
+  const outer = state.settings.autoOuter
+    ? planOuterMissions(
+        tables,
+        state.seed,
+        state.day,
+        state.mercenaries
+          .filter((m) => isGuildMember(m) && !m.injury && !isOnExpedition(state, m.id) && !assignedFacility(state.facilities, m.id))
+          .map((m) => ({ id: m.id, level: m.level, cap: m.growth.cap, loyaltyValue: m.loyalty?.value })),
+      )
+    : [];
+  const outerIds = new Set(outer.map((r) => r.mercId));
+  for (const r of outer) {
+    const m = getMerc(state, r.mercId);
+    m.exp += r.exp;
+    state.resources.zero += r.zero;
+    state.resources.arche += r.arche;
+  }
   // 훈련 경험치: 오늘(넘기기 전 날짜) 배치된 용병이 하루 정산에서 받는다. 성장 한계면 받지 않는다.
   for (const [facilityId, ids] of Object.entries(state.facilities.assignments)) {
     const exp = trainingExp(tables, state.facilities, facilityId);
@@ -764,10 +741,27 @@ export function advanceDay(tables: GameTables, prev: GameState): { state: GameSt
       if (report.injuries.some((i) => i.unitId === m.id)) applyLoyalty(tables, m.loyalty, m.profile.background, 'injury', changeDay);
     }
   }
+  // 외곽 임무: 경상(기존 부상 규칙·injury 변동)과 성향별 불만. 쉬는 날·노는 날로 세지 않고 연속 쉰 일수는 그대로 둔다.
+  const outerResults: (OuterResult & { loyaltyDelta: number })[] = [];
+  for (const r of outer) {
+    const m = getMerc(state, r.mercId);
+    let outerDelta = 0;
+    if (r.injuryDays !== undefined) {
+      m.injury = { severity: tables.outerMissions.injury.severity, recoverDay: state.day + r.injuryDays + 1 };
+      if (m.loyalty && simulatedIds.includes(m.id)) applyLoyalty(tables, m.loyalty, m.profile.background, 'injury', changeDay);
+    }
+    // 변동이 0인 성향은 기록도 남기지 않는다
+    if (m.loyalty && simulatedIds.includes(m.id) && loyaltyDelta(tables, m.profile.background, 'outerMission') !== 0) {
+      outerDelta = applyLoyalty(tables, m.loyalty, m.profile.background, 'outerMission', changeDay);
+    }
+    outerResults.push({ ...r, loyaltyDelta: outerDelta });
+  }
+  if (outerResults.length) events.push({ type: 'outerMission', results: outerResults });
   // 쉰 날: 연속 쉰 일수가 restMaxDays 이하면 쉬는 날 상승, 넘기면 대기 하락. 파견·부상이면 연속 일수 0.
   for (const id of simulatedIds) {
     const m = getMerc(state, id);
     if (!m.loyalty) continue;
+    if (outerIds.has(id)) continue;
     if (!restedIds.has(id)) {
       m.loyalty.restStreak = 0;
       continue;
@@ -814,7 +808,7 @@ export function advanceDay(tables: GameTables, prev: GameState): { state: GameSt
   // ── 무소속 용병의 다른 세력 영입 이동(하루가 끝날 때, 이탈 판정 뒤). 영구 소멸 없음.
   const poach = tables.poaching;
   for (const m of state.mercenaries) {
-    if (m.isProtagonist || m.affiliation.kind !== 'faction' || !poach.fromFactions.includes(m.affiliation.factionId)) continue;
+    if (m.affiliation.kind !== 'faction' || !poach.fromFactions.includes(m.affiliation.factionId)) continue;
     if (m.departedDay !== undefined && state.day - m.departedDay <= poach.protectionDaysAfterDeparture) continue;
     const prng = createRng(`${state.seed}:poach:${state.day}:${m.id}`);
     if (!prng.chance(poach.dailyChance)) continue;

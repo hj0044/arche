@@ -44,7 +44,7 @@ export function MercDetail({ ctx, mercId }: { ctx: Ctx; mercId: string }) {
   const m = s.mercenaries.find((x) => x.id === mercId);
   if (!m) return null;
   const unit = mercToUnit(tables, m);
-  // 레벨당 성장률(지시서 021): 계약자 값, 없으면(주인공) 기본값
+  // 레벨당 성장률(지시서 021): 계약자 값, 없으면 기본값
   const rates = { ...tables.stats.levelGrowthRate, ...mercGrowthRates(tables, m) };
   // 최종 스탯 계산 한 곳(stats.ts): 전투 시작 상황, 체력 가득, 기본 열
   const finalStats = computeEffectiveStats(tables, unit, { round: 1, hpRatio: 1, row: getRole(tables, m.role).defaultRow, allyAuras: allyAuraRows(tables, unit) });
@@ -63,7 +63,7 @@ export function MercDetail({ ctx, mercId }: { ctx: Ctx; mercId: string }) {
   const info = recruitInfo(tables, s, m.id);
   const outlook = recruitUpkeepOutlook(tables, s, m.id);
   const tendency = tendencyOf(tables, m.profile.background);
-  const training = isGuild && !m.isProtagonist ? trainingAccess(tables, s, m.id) : null;
+  const training = isGuild ? trainingAccess(tables, s, m.id) : null;
 
   const run = (fn: () => void) => {
     try {
@@ -282,12 +282,11 @@ export function MercDetail({ ctx, mercId }: { ctx: Ctx; mercId: string }) {
         <Sheet title={`${m.name} 프로필`} onClose={() => setSheet(null)}>
           <dl className="kv-list">
             {status && <Kv k="상태" v={status} />}
-            {m.isProtagonist && <Kv k="구분" v="주인공" />}
             {m.profile.age !== undefined && <Kv k="나이" v={`${m.profile.age}세`} />}
             {m.profile.gender && <Kv k="성별" v={m.profile.gender} />}
             {m.profile.hometown && <Kv k="고향" v={cityName(m.profile.hometown)} />}
             <Kv k="배경" v={backgroundShort(m.profile.background)} />
-            {!m.isProtagonist && tendency && <Kv k="계약 성향" v={`${tendency.name}형 · ${tendency.description}`} />}
+            {tendency && <Kv k="계약 성향" v={`${tendency.name}형 · ${tendency.description}`} />}
             <Kv k="세계" v={worldName(m.profile.world)} />
             <Kv k="최초 레벨" v={`${m.initialLevel}`} />
             {isGuild && <Kv k="경험치" v={`${num(m.exp)} / ${num(need)}`} />}

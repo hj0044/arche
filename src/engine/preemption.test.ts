@@ -6,7 +6,7 @@ import { generateRift, pickTerritoryFaction, type Rift } from './rift';
 import { createRng, seedFromString } from './rng';
 
 const opener = (seed = 'pre') =>
-  newGame(tables, { seed, guildName: 'g', baseCityId: 'seoul', protagonist: { mode: 'opener', name: 'p', element: 'fire', role: 'warrior', background: 'soldier' } });
+  newGame(tables, { seed, guildName: 'g', baseCityId: 'seoul', protagonist: { name: 'p' } });
 
 const rift = (id: string, patch: Partial<Rift> = {}): Rift => ({
   id,
@@ -91,7 +91,7 @@ describe('하루 정산의 선점', () => {
 
   it('출발한 리프트, 안정화된 통로, 그날 생긴 리프트는 선점되지 않는다', () => {
     let s: GameState = { ...opener(), rifts: [rift('GO', { durationDays: 3 }), rift('ST', { deadlineDay: null, stable: true })] };
-    s = dispatch(always, s, 'GO', [{ mercId: 'hero', row: 'front' }]);
+    s = dispatch(always, s, 'GO', [{ mercId: 'm01', row: 'front' }]);
     const { state, events } = advanceDay(always, s);
     expect(state.rifts.some((r) => r.id === 'ST')).toBe(true);
     expect(state.expeditions.some((e) => e.rift.id === 'GO')).toBe(true);
@@ -171,7 +171,7 @@ describe('합성 데이터(새 등급·새 세력)', () => {
       factions: [...tables.factions, { ...tables.factions[0], id: 'newco', name: '새 회사', cityInfluence: { seoul: 5, tokyo: 5, newyork: 5 } }],
       riftPreemption: { ...tables.riftPreemption, baseChanceByTier: { abyss: 0.3 } },
     };
-    let s = newGame(t, { seed: 'syn', guildName: 'g', baseCityId: 'seoul', protagonist: { mode: 'opener', name: 'p', element: 'fire', role: 'warrior', background: 'soldier' } });
+    let s = newGame(t, { seed: 'syn', guildName: 'g', baseCityId: 'seoul', protagonist: { name: 'p' } });
     let preempted = 0;
     const factionsSeen = new Set<string | null>();
     for (let i = 0; i < 20; i++) {

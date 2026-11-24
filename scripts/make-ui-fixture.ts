@@ -18,7 +18,7 @@ let s: GameState = newGame(t, {
   seed: 'ui-fixture',
   guildName: '새벽 길드',
   baseCityId: 'seoul',
-  protagonist: { mode: 'guildMaster', name: '길드장', background: 'heir' },
+  protagonist: { name: '길드장' },
 });
 
 // ── 계약자 20명: 로스터 앞 20명을 길드로, 레벨은 시작값 + 조금씩

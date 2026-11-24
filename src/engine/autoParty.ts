@@ -27,9 +27,8 @@ export function autoPartyScore(tables: GameTables, m: MercenaryState, enemyEleme
 
 /**
  * 자동 편성(순수 함수). 가용 용병(길드 소속, 부상·파견 중 아님)에서 고른다.
- * 1) 주인공이 가용하면 먼저 넣는다(데이터 includeProtagonist).
- * 2) 구성 분류(전위·딜러·지원) 중 빠진 분류를 점수가 가장 높은 후보로 하나씩 채운다.
- * 3) 남은 자리를 점수 순으로 채운다. 동점은 용병 id 순.
+ * 1) 구성 분류(전위·딜러·지원) 중 빠진 분류를 점수가 가장 높은 후보로 하나씩 채운다.
+ * 2) 남은 자리를 점수 순으로 채운다. 동점은 용병 id 순.
  * 열은 역할의 기본 위치다. 가용 인원이 모자라면 있는 만큼만 넣는다.
  */
 export function autoParty(tables: GameTables, state: GameState, rift: Rift): PartyMember[] {
@@ -50,7 +49,6 @@ export function autoParty(tables: GameTables, state: GameState, rift: Rift): Par
   const take = (m: MercenaryState | undefined) => {
     if (m && picked.length < max && !picked.includes(m)) picked.push(m);
   };
-  if (cfg.includeProtagonist) take(pool.find((m) => m.isProtagonist));
   if (cfg.fillGroupsFirst) {
     for (const group of tables.combat.composition.groups) {
       if (picked.some((m) => compositionGroup(tables, m.role) === group)) continue;

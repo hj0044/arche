@@ -17,6 +17,8 @@ async function open(page: Page, screen: string) {
 
 // 계약에는 있지만 아직 지시서가 구현하지 않은 구역. 해당 지시서에서 구현하면 이 목록에서 지운다.
 const PENDING: Record<string, string[]> = {};
+// 계약이 이미 다음 지시서 기준으로 바뀌어 구역 검사를 미루는 화면(그 지시서에서 지운다)
+const REBUILD: Record<string, string> = { Recruit: '지시서 023에서 영입 화면을 새 계약대로 다시 만든다' };
 // 서브 탭 화면에서 같이 보이는 부모 화면 구역
 const PARENT_SECTIONS = ['header', 'subtabs'];
 
@@ -29,6 +31,7 @@ for (const sc of SCREENS) {
     test('구역 계약: 순서와 이름', async ({ page }) => {
       // 제안 화면(탑·보스·영입)은 콘텐츠의 서브 탭이고 계약에 구역이 없다
       test.skip(spec.sections.length === 0, '계약에 구역이 없는 제안 화면');
+      test.skip(!!REBUILD[cname], REBUILD[cname]);
       // 구역 이름은 '화면.구역'(대문자 시작). 소문자로 시작하는 data-ui(예: recruit.level)는 요소 표시라 구역이 아니다
       const found: string[] = (await page.$$eval('[data-ui]', (els) => els.map((e) => e.getAttribute('data-ui')!))).filter((x) => /^[A-Z]/.test(x));
       const prefix = `${cname}.`;
@@ -195,6 +198,39 @@ test('성장 속도가 화면에 남지 않는다', async ({ page }) => {
   await open(page, 'mercs');
   await page.getByRole('button', { name: /필터/ }).first().click();
   expect(await page.locator('body').innerText()).not.toMatch(banned);
+});
+
+// 022: 하루 결과 외곽 임무 카드, 설정 자동 배치 토글, 주인공·개방자 문구 없음(새 게임 화면 포함)
+test('외곽 임무 카드와 자동 배치 토글', async ({ page }) => {
+  await open(page, 'dayResult');
+  const card = page.locator('[data-ui="Result.outer"]');
+  await expect(card).toBeVisible();
+  await expect(card).toContainText('외곽 임무');
+  await expect(card).toContainText(/자동 배치 \d+명/);
+  await open(page, 'saves');
+  const row = page.locator('[data-ui="settings.autoOuter"]');
+  await expect(row).toContainText('자동 배치');
+  const sw = row.getByRole('switch');
+  await expect(sw).toHaveAttribute('aria-checked', 'true');
+  await sw.click();
+  await expect(sw).toHaveAttribute('aria-checked', 'false');
+});
+
+test('주인공·개방자 문구가 화면에 없다(새 게임 포함)', async ({ page }) => {
+  const banned = /주인공|개방자 모드|길드 마스터 모드|주인공 유형/;
+  for (const sc of SCREENS) {
+    await open(page, sc.screen);
+    expect(await page.locator('body').innerText(), sc.name).not.toMatch(banned);
+  }
+  await open(page, 'saves');
+  await page.locator('[data-ui="Settings.danger"]').click();
+  const confirm = page.getByRole('dialog').getByRole('button', { name: '새 게임' });
+  if (await confirm.count()) await confirm.click();
+  await expect(page.getByLabel('마스터 이름')).toBeVisible();
+  await expect(page.getByLabel('길드 이름')).toBeVisible();
+  const text = await page.locator('body').innerText();
+  expect(text).not.toMatch(banned);
+  expect(text).not.toMatch(/속성|역할/);
 });
 
 // 017c: 영입 가능·진행 중 카드마다 '레벨/성장 한계' 배지(숫자/숫자), 잠김 카드에는 없다

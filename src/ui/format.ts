@@ -97,5 +97,5 @@ export const traitName = (id: string) => tables.traits.traits.find((t) => t.id =
 /** 특성 종류 이름 */
 export const traitCategoryName: Record<string, string> = { common: '공통', role: '역할', background: '배경', race: '종족', element: '속성', unique: '고유' };
 
-/** 카드용 짧은 이름(roster.json shortName, 지시서 017b). 명단에 없으면(주인공 등) 이름 그대로 */
+/** 카드용 짧은 이름(roster.json shortName, 지시서 017b). 명단에 없으면 이름 그대로 */
 export const cardName = (m: { id: string; name: string }) => tables.roster.find((r) => r.id === m.id)?.shortName ?? m.name;

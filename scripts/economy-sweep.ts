@@ -1,6 +1,6 @@
 // 경제·성장 값 조합별 시뮬레이션 비교표(마크다운). 데이터 파일은 바꾸지 않고 메모리에서만 값을 바꾼다.
 // 사용: npm run economy-sweep -- [일수] [시드 수]
-// 자동 플레이 정책은 loyalty-sweep과 같다(서울 개방자 시작, 3명 이상이면 최저 레벨 리프트, 제로 ≥ 영입비+300이면 영입, 가능하면 레벨업).
+// 자동 플레이 정책은 loyalty-sweep과 같다(서울 시작, 3명 이상이면 최저 레벨 리프트, 제로 ≥ 영입비+300이면 영입, 가능하면 레벨업).
 import { tables as base, type GameTables } from '../src/data';
 import { advanceDay, canLevelUp, dispatch, isAvailable, levelUp, newGame, recruit, recruitInfo, riftLevel, type GameState } from '../src/engine/game';
 
@@ -21,7 +21,7 @@ const combos: Combo[] = [
 
 
 function play(t: GameTables, seed: string) {
-  let s: GameState = newGame(t, { seed, guildName: '시험 길드', baseCityId: 'seoul', protagonist: { mode: 'opener', name: '주인공', element: 'fire', role: 'warrior', background: 'survivor' } });
+  let s: GameState = newGame(t, { seed, guildName: '시험 길드', baseCityId: 'seoul', protagonist: { name: '마스터' } });
   const rowOf = (role: string) => t.roles.find((r) => r.id === role)!.defaultRow;
   const o = { wins: 0, defeats: 0, unpaid: 0, minZero: Infinity, tier: {} as Record<string, [number, number]> };
   const tierOf = new Map<string, string>();

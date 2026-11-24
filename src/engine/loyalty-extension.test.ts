@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { tables, type GameTables } from '../data';
+import { type GameTables } from '../data';
+import { legacyTables as tables } from '../testing/legacyTables';
 import { advanceDay, dispatch, getMerc, newGame, recruit, recruitInfo, type DayEvent, type GameState } from './game';
 import { isLoyaltySimulated, loyaltyDelta } from './loyalty';
 import type { Rift } from './rift';
@@ -7,9 +8,9 @@ import type { Rift } from './rift';
 const L = tables.loyalty;
 const P = tables.poaching;
 const gm = (seed = 'ext') =>
-  newGame(tables, { seed, guildName: 'g', baseCityId: 'seoul', protagonist: { mode: 'guildMaster', name: 'gm', background: 'heir' } });
+  newGame(tables, { seed, guildName: 'g', baseCityId: 'seoul', protagonist: { name: 'gm' } });
 const opener = (seed = 'ext') =>
-  newGame(tables, { seed, guildName: 'g', baseCityId: 'seoul', protagonist: { mode: 'opener', name: 'p', element: 'fire', role: 'warrior', background: 'soldier' } });
+  newGame(tables, { seed, guildName: 'g', baseCityId: 'seoul', protagonist: { name: 'p' } });
 const rich = (s: GameState): GameState => ({ ...s, resources: { ...s.resources, zero: 999999 } });
 const patch = (s: GameState, id: string, f: (m: GameState['mercenaries'][number]) => object): GameState => ({
   ...s,
@@ -83,10 +84,9 @@ describe('대기 하락', () => {
     expect(getMerc(s, 'm04').loyalty!.value).toBe(L.range[0]);
   });
 
-  it('주인공에는 적용되지 않고, 길드 밖 용병도 시뮬레이션하지 않는다', () => {
+  it('길드 밖 용병은 시뮬레이션하지 않는다', () => {
     let s = opener();
     for (let i = 0; i < 12; i++) s = advanceDay(tables, rich(s)).state;
-    expect(getMerc(s, 'hero').loyalty).toBeUndefined();
     expect(getMerc(s, 'm05').loyalty!.restStreak).toBe(0);
     expect(isLoyaltySimulated(tables, { kind: 'guild' })).toBe(true);
     expect(isLoyaltySimulated(tables, { kind: 'faction', factionId: 'rrb' })).toBe(false);
@@ -116,7 +116,7 @@ describe('무소속 용병 영입 이동', () => {
     expect(run(withPoach(0.3), gm('same'), 15)).toEqual(run(withPoach(0.3), gm('same'), 15));
   });
 
-  it('무소속만 대상이고, 길드·주인공·다른 세력은 이동하지 않으며, 영구 소멸 없음', () => {
+  it('무소속만 대상이고, 길드·다른 세력은 이동하지 않으며, 영구 소멸 없음', () => {
     const start = opener('poach');
     const { s, events } = run(withPoach(1), start, 3);
     const moved = events.filter((e): e is Extract<DayEvent, { type: 'poached' }> => e.type === 'poached');
@@ -127,20 +127,12 @@ describe('무소속 용병 영입 이동', () => {
       expect(P.excludeTargets).not.toContain(e.toFactionId);
     }
     expect(s.mercenaries).toHaveLength(start.mercenaries.length);
-    expect(getMerc(s, 'hero').affiliation).toEqual({ kind: 'guild' });
+    expect(getMerc(s, 'm01').affiliation).toEqual({ kind: 'guild' });
     for (const m of start.mercenaries.filter((x) => x.affiliation.kind === 'guild')) expect(getMerc(s, m.id).affiliation).toEqual({ kind: 'guild' });
     for (const m of start.mercenaries.filter((x) => x.affiliation.kind === 'faction' && x.affiliation.factionId !== 'free')) {
       expect(getMerc(s, m.id).affiliation).toEqual(m.affiliation);
     }
     expect(freeIds(s)).toEqual([]);
-  });
-
-  it('개방자 모드에서 빠진 후보도 같은 규칙을 따른다', () => {
-    const start = opener('left'); // 투사 주인공 → 강태산(m01)이 무소속
-    expect(getMerc(start, 'm01').affiliation).toEqual({ kind: 'faction', factionId: 'free' });
-    const { s } = run(withPoach(1), start, 1);
-    expect(getMerc(s, 'm01').affiliation.kind).toBe('faction');
-    expect(getMerc(s, 'm01').affiliation).not.toEqual({ kind: 'faction', factionId: 'free' });
   });
 
   it('이동하면 소속만 바뀌고 다시 영입할 수 있으며, 영입비는 새 세력 배율로 달라진다', () => {

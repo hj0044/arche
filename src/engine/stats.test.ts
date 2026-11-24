@@ -208,7 +208,7 @@ describe('특성 동작', () => {
     expect(activeTraits(tables, ids, l1).map((x) => x.id)).toEqual(['a']);
     expect(activeTraits(tables, ids, l2).map((x) => x.id)).toEqual(['a', 'b']);
     // 실제 계약자: m01은 슬롯1(강건함)이 Lv5에 열린다
-    let s = newGame(tables, { seed: 'tr', guildName: 'g', baseCityId: 'seoul', protagonist: { mode: 'guildMaster', name: 'g', background: 'heir' } });
+    let s = newGame(tables, { seed: 'tr', guildName: 'g', baseCityId: 'seoul', protagonist: { name: 'g' } });
     const m = getMerc(s, 'm02');
     s = { ...s, resources: { ...s.resources, arche: 999 }, mercenaries: s.mercenaries.map((x) => (x.id === 'm02' ? { ...x, level: l1 - 1, exp: 9999 } : x)) };
     expect(newTraitsOnLevelUp(tables, { ...m, level: l1 - 1 }, l1 - 1, l1)).toEqual([tables.roster.find((r) => r.id === 'm02')!.traits![0]]);
@@ -274,7 +274,7 @@ describe('특성 동작', () => {
 
 describe('최종 스탯 계산 한 곳', () => {
   it('전투력은 최종 스탯(특성 포함)으로 계산하고, 위험도·전투와 같은 함수다', () => {
-    let s = newGame(tables, { seed: 'one', guildName: 'g', baseCityId: 'seoul', protagonist: { mode: 'guildMaster', name: 'g', background: 'heir' } });
+    let s = newGame(tables, { seed: 'one', guildName: 'g', baseCityId: 'seoul', protagonist: { name: 'g' } });
     s = { ...s, mercenaries: s.mercenaries.map((m) => (m.id === 'm02' ? { ...m, level: 30 } : m)) };
     const u = mercToUnit(tables, getMerc(s, 'm02'));
     expect(u.traits.length).toBeGreaterThan(0);

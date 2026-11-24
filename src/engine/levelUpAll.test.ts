@@ -6,7 +6,7 @@ import { generateRift, type Rift } from './rift';
 import { createRng } from './rng';
 import { levelUpOverview } from './status';
 
-const gm = () => newGame(tables, { seed: 'lua', guildName: 'g', baseCityId: 'seoul', protagonist: { mode: 'guildMaster', name: 'g', background: 'heir' } });
+const gm = () => newGame(tables, { seed: 'lua', guildName: 'g', baseCityId: 'seoul', protagonist: { name: 'g' } });
 /** 용병에게 경험치를 levels 단계만큼 넣는다 */
 function give(s: GameState, id: string, levels: number): GameState {
   const m = getMerc(s, id);

@@ -49,7 +49,7 @@ describe('리프트 등급 변형(지시서 015)', () => {
     expect(riftModifiers(tables, base)).toEqual({ reward: 1, injuryDays: 1 });
     expect(riftModifiers(t, base)).toEqual({ reward: 3, injuryDays: 3 });
     expect(riftReward(t, base, 'victory').zero).toBeGreaterThan(riftReward(tables, base, 'victory').zero * 2.9);
-    const g = newGame(tables, { seed: 'u', guildName: 'g', baseCityId: 'seoul', protagonist: { mode: 'guildMaster', name: 'g', background: 'heir' } });
+    const g = newGame(tables, { seed: 'u', guildName: 'g', baseCityId: 'seoul', protagonist: { name: 'g' } });
     const unit = mercToUnit(tables, getMerc(g, 'm02'));
     const a = rollInjuries(tables, [unit], [unit.id], 'defeat', createRng('inj'), 0, 1)[0];
     const b = rollInjuries(tables, [unit], [unit.id], 'defeat', createRng('inj'), 0, 3)[0];

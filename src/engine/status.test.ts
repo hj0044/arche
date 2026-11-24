@@ -6,7 +6,7 @@ import type { Rift } from './rift';
 import { guildStatusSummary, levelUpCandidates, riftAutoRisk } from './status';
 
 const opener = () =>
-  newGame(tables, { seed: 'stat', guildName: 'g', baseCityId: 'seoul', protagonist: { mode: 'opener', name: 'p', element: 'fire', role: 'warrior', background: 'soldier' } });
+  newGame(tables, { seed: 'stat', guildName: 'g', baseCityId: 'seoul', protagonist: { name: 'p' } });
 const rift = (id: string, patch: Partial<Rift> = {}): Rift => ({
   id,
   cityId: 'seoul',
@@ -26,13 +26,13 @@ const rift = (id: string, patch: Partial<Rift> = {}): Rift => ({
 });
 const patch = (s: GameState, id: string, p: object): GameState => ({ ...s, mercenaries: s.mercenaries.map((m) => (m.id === id ? { ...m, ...p } : m)) });
 
-/** 부상·파견·훈련·거부가 섞인 길드(주인공 + m02 m03 m04 + 영입 m05 m06) */
+/** 부상·파견·훈련·거부가 섞인 길드(m01~m04 + 영입 m05 m06) */
 function mixed(): GameState {
   let s = opener();
   s = { ...s, resources: { ...s.resources, zero: 9999 }, facilities: { ...s.facilities, levels: { ...s.facilities.levels, training: 1 } }, rifts: [rift('A')] };
   s = patch(s, 'm05', { affiliation: { kind: 'guild' } });
   s = patch(s, 'm06', { affiliation: { kind: 'guild' } });
-  s = dispatch(tables, s, 'A', [{ mercId: 'hero', row: 'front' }]); // 4일차 복귀
+  s = dispatch(tables, s, 'A', [{ mercId: 'm01', row: 'front' }]); // 4일차 복귀
   s = patch(s, 'm02', { injury: { severity: 'heavy', recoverDay: 6 } });
   s = patch(s, 'm03', { injury: { severity: 'light', recoverDay: 3 } });
   s = assignToFacility(tables, s, 'training', 'm04');
@@ -116,7 +116,7 @@ describe('리프트 목록 위험도', () => {
   });
 
   it('위험도 계산이 세이브 상태와 실제 전투 결과를 바꾸지 않는다', () => {
-    const start = () => dispatch(tables, { ...opener(), rifts: [rift('A'), rift('B')] }, 'A', ['hero', 'm02', 'm03', 'm04'].map((mercId) => ({ mercId, row: getRole(tables, getMerc(opener(), mercId).role).defaultRow })));
+    const start = () => dispatch(tables, { ...opener(), rifts: [rift('A'), rift('B')] }, 'A', ['m01', 'm02', 'm03', 'm04'].map((mercId) => ({ mercId, row: getRole(tables, getMerc(opener(), mercId).role).defaultRow })));
     const plain = advanceDay(tables, start());
     const s = start();
     const snap = structuredClone(s);

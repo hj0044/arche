@@ -129,5 +129,12 @@
     "heir": "ambition",
     "citizen": "stability",
     "researcher": "stability"
+  },
+  "outerMission": {
+    "_note": "지시서 022 [확정]: 외곽 임무에 간 날의 하루 변동(성향 id별, 없으면 default). 안 좋은 쪽만 있다. 그날은 쉬는 날·노는 날로 세지 않고 연속 쉰 일수도 그대로 둔다",
+    "byTendency": {
+      "stability": -0.5
+    },
+    "default": 0
   }
 }

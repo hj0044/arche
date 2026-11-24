@@ -58,13 +58,13 @@ export function autoplayDay(t: GameTables, start: GameState, log: (line: string)
     log(`${s.day}일 출발: ${target.name}(${getRiftTier(t, target.tier).name}, Lv${riftLevel(target)}) ← ${free.slice(0, 5).map((m) => m.name).join(' ')}`);
   }
 
-  // 3) 남은 가용 용병(주인공 제외)을 배치형 시설 칸에 넣는다
+  // 3) 남은 가용 계약자를 배치형 시설 칸에 넣는다
   if (policy.assignIdleToTraining) {
     for (const f of t.facilities.facilities) {
       let room = facilitySlots(t, s.facilities, f.id) - (s.facilities.assignments[f.id] ?? []).length;
       for (const m of s.mercenaries) {
         if (room <= 0) break;
-        if (m.isProtagonist || !isAvailable(s, m.id)) continue;
+        if (!isAvailable(s, m.id)) continue;
         s = assignToFacility(t, s, f.id, m.id);
         room--;
       }

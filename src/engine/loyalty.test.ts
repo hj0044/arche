@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { getRole, tables } from '../data';
+import { getRole } from '../data';
+import { legacyTables as tables } from '../testing/legacyTables';
 import { autoParty } from './autoParty';
 import {
   advanceDay,
@@ -17,13 +18,10 @@ import {
 import { applyLoyalty, loyaltyDelta, loyaltyTier, tendencyOf } from './loyalty';
 import type { Rift } from './rift';
 import { statsAtLevel } from './stats';
-import { statsForLevel } from './unit';
 
 const L = tables.loyalty;
 const gm = (seed = 'loyal') =>
-  newGame(tables, { seed, guildName: 'g', baseCityId: 'seoul', protagonist: { mode: 'guildMaster', name: 'gm', background: 'heir' } });
-const opener = () =>
-  newGame(tables, { seed: 'loyal', guildName: 'g', baseCityId: 'seoul', protagonist: { mode: 'opener', name: 'p', element: 'fire', role: 'warrior', background: 'soldier' } });
+  newGame(tables, { seed, guildName: 'g', baseCityId: 'seoul', protagonist: { name: 'gm' } });
 
 /** 용병 충성도를 직접 바꾼 상태 */
 const setLoyalty = (s: GameState, id: string, patch: object): GameState => ({
@@ -68,17 +66,7 @@ describe('충성도 구간', () => {
     }
   });
 
-  it('개방자 주인공은 충성도가 없고 능력 배율도 없다', () => {
-    const s = opener();
-    const hero = getMerc(s, 'hero');
-    expect(hero.loyalty).toBeUndefined();
-    expect(mercToUnit(tables, hero).stats).toEqual(statsForLevel(tables, hero.role, hero.level));
-    expect(mercToUnit(tables, hero).usesLoyalty).toBe(false);
-    expect(() => paySalaryBonus(tables, s, 'hero')).toThrow(/충성도/);
-    for (let i = 0; i < 3; i++) expect(advanceDay(tables, s).state.mercenaries.find((m) => m.id === 'hero')!.loyalty).toBeUndefined();
-  });
-
-  it('주인공을 뺀 모든 용병이 같은 틀로 충성도를 갖고, 길드 밖 용병은 시작값을 보관만 한다', () => {
+  it('모든 계약자가 같은 틀로 충성도를 갖고, 길드 밖 용병은 시작값을 보관만 한다', () => {
     let s = gm();
     expect(value(s, 'm01')).toBe(L.start);
     expect(value(s, 'm05')).toBe(L.start);

@@ -54,7 +54,6 @@ const mercenary: Schema = {
   optional: {
     injury: { fields: { severity: 'string', recoverDay: 'number' } },
     unpaidUpkeep: { fields: { days: 'number', zero: 'number' } },
-    isProtagonist: 'boolean',
     departedDay: 'number',
     traitRanks: { record: 'number' },
     loyalty: {
@@ -76,7 +75,7 @@ const state: Schema = {
     day: 'number',
     guildName: 'string',
     baseCityId: 'string',
-    protagonist: { fields: { mode: { oneOf: ['opener', 'guildMaster'] }, name: 'string', background: 'string' } },
+    protagonist: { fields: { name: 'string', background: 'string' } },
     resources: { fields: { zero: 'number', arche: 'number', materials: { record: 'number' } } },
     mercenaries: { arrayOf: mercenary },
     rifts: { arrayOf: rift },
@@ -111,6 +110,7 @@ const state: Schema = {
         assignments: { record: { arrayOf: 'string' } },
       },
     },
+    settings: { fields: { autoOuter: 'boolean' } },
   },
 };
 
