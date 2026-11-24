@@ -1,6 +1,6 @@
 {
  "format": "arche-save",
- "version": 10,
+ "version": 11,
  "savedAt": "2026-11-23T00:00:00.000Z",
  "kind": "manual",
  "summary": {
@@ -14,7 +14,6 @@
   "guildName": "새벽 길드",
   "baseCityId": "seoul",
   "protagonist": {
-   "mode": "guildMaster",
    "name": "길드장",
    "background": "heir"
   },
@@ -2478,6 +2477,9 @@
      "m14"
     ]
    }
+  },
+  "settings": {
+   "autoOuter": true
   }
  }
 }

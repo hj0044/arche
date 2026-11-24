@@ -22,7 +22,7 @@ const rift = (id: string, patch: Partial<Rift> = {}): Rift => ({
 
 /** 탐지소 Lv3(정확한 값)으로 고정한 상태 */
 const state = (rifts: Rift[], day = 5): GameState => {
-  const s = newGame(tables, { seed: 'rf', guildName: 'g', baseCityId: 'seoul', protagonist: { mode: 'guildMaster', name: 'g', background: 'heir' } });
+  const s = newGame(tables, { seed: 'rf', guildName: 'g', baseCityId: 'seoul', protagonist: { name: 'g' } });
   return { ...s, day, rifts, facilities: { ...s.facilities, levels: { ...s.facilities.levels, scout: 3 } } };
 };
 const tier = (id: string) => tables.combatPower.riskTiers.find((t) => t.id === id)!;

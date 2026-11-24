@@ -42,7 +42,7 @@ describe('전투력', () => {
     const crit = 1 + u.crit * (u.critDmg - 1);
     const expected = (u.hp * w.hp) / (1 - u.eva) + (u.pAtk * w.pAtk + u.eAtk * w.eAtk) * crit + u.pDef * w.pDef + u.eDef * w.eDef + u.spd * w.spd;
     expect(combatPower(tables, p)).toBe(Math.round(expected));
-    const s = newGame(tables, { seed: 'cp', guildName: 'g', baseCityId: 'seoul', protagonist: { mode: 'guildMaster', name: 'g', background: 'heir' } });
+    const s = newGame(tables, { seed: 'cp', guildName: 'g', baseCityId: 'seoul', protagonist: { name: 'g' } });
     const m = s.mercenaries.find((x) => x.id === 'm01')!;
     const high = mercToUnit(tables, { ...m, loyalty: { ...m.loyalty!, value: 90 } });
     const low = mercToUnit(tables, { ...m, loyalty: { ...m.loyalty!, value: 5 } });
@@ -138,7 +138,7 @@ describe('예상 위험도', () => {
 
   it('위험도 계산 전후로 세이브 상태와 실제 전투 결과가 같다', () => {
     const start = (): GameState => {
-      let s = newGame(tables, { seed: 'risk', guildName: 'g', baseCityId: 'seoul', protagonist: { mode: 'guildMaster', name: 'g', background: 'heir' } });
+      let s = newGame(tables, { seed: 'risk', guildName: 'g', baseCityId: 'seoul', protagonist: { name: 'g' } });
       s = { ...s, rifts: [rift()] };
       return dispatch(tables, s, 'R1', ['m01', 'm02', 'm03', 'm04'].map((mercId) => ({ mercId, row: getRole(tables, s.mercenaries.find((m) => m.id === mercId)!.role).defaultRow })));
     };

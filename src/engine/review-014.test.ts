@@ -1,6 +1,7 @@
 // 지시서 014: Codex 3차 검수(충성도·거점 시설) 반영 테스트
 import { describe, expect, it } from 'vitest';
-import { saveLimits, tables, type GameTables } from '../data';
+import { saveLimits, type GameTables } from '../data';
+import { legacyTables as tables } from '../testing/legacyTables';
 import { createSaveFile, parseSave, serializeSave } from '../storage/saveFile';
 import { initialFacilities, visibleRift } from './facilities';
 import { advanceDay, assignToFacility, dispatch, getMerc, newGame, upkeepPerDay, type GameState } from './game';
@@ -9,7 +10,7 @@ import { generateRift, type Rift } from './rift';
 import { createRng } from './rng';
 
 const gm = (seed = 'r014') =>
-  newGame(tables, { seed, guildName: 'g', baseCityId: 'seoul', protagonist: { mode: 'guildMaster', name: 'gm', background: 'heir' } });
+  newGame(tables, { seed, guildName: 'g', baseCityId: 'seoul', protagonist: { name: 'gm' } });
 const guildIds = (s: GameState) => s.mercenaries.filter((m) => m.affiliation.kind === 'guild').map((m) => m.id);
 const withZero = (s: GameState, zero: number): GameState => ({ ...s, resources: { ...s.resources, zero } });
 const setLoyaltyValue = (s: GameState, values: Record<string, number>): GameState => ({

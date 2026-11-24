@@ -1,0 +1,40 @@
+{
+  "_note": "외곽 임무(지시서 022, 설계서 [확정] 자동 배치·충성도 반응, 이름·수치 [제안] 임시값). 쉬는 계약자(파견·부상·시설 배치가 아니고 충성도 excludeLoyaltyTiers 구간이 아닌 길드 계약자)를 하루가 끝날 때 자동 배치한다. 종류는 weight로 시드 추첨(행 추가로 늘림). exp: 레벨 × perLevel + base(성장 한계면 0). zero: base + 레벨 × perLevel. arche: chance 확률로 amount 범위. 경상: injury.chance 확률, injuries.json의 severity 일수 범위. 충성도는 loyalty.json outerMission. autoOuterDefault: 새 게임의 자동 배치 설정 기본값(설정 > 게임 > 자동 배치).",
+  "autoOuterDefault": true,
+  "excludeLoyaltyTiers": [
+    "danger"
+  ],
+  "injury": {
+    "chance": 0.05,
+    "severity": "light"
+  },
+  "types": [
+    {
+      "id": "sweep",
+      "name": "소탕",
+      "place": "균열 외곽",
+      "weight": 1,
+      "exp": {
+        "base": 0,
+        "perLevel": 4
+      }
+    },
+    {
+      "id": "salvage",
+      "name": "회수",
+      "place": "폐창고",
+      "weight": 1,
+      "zero": {
+        "base": 8,
+        "perLevel": 2
+      },
+      "arche": {
+        "chance": 0.1,
+        "amount": [
+          1,
+          2
+        ]
+      }
+    }
+  ]
+}

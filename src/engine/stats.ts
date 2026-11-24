@@ -37,7 +37,7 @@ export function statsAtLevel(tables: GameTables, base: Stats, level: number, mul
   return out;
 }
 
-/** 역할 기본값(레벨 1). 몬스터·일반병사, 그리고 baseStats가 없는 주인공이 쓴다 */
+/** 역할 기본값(레벨 1). 몬스터·일반병사, 그리고 baseStats가 없는 유닛이 쓴다 */
 export function roleBaseStats(tables: GameTables, roleId: string): Stats {
   const row = tables.stats.roleBase[roleId];
   if (!row) throw new Error(`역할 스탯 표에 없는 역할: ${roleId}`);

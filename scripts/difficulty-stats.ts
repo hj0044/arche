@@ -78,7 +78,7 @@ export function difficultyStats(t: GameTables, days: number, seedCount: number):
   let fights = 0;
 
   for (const seed of seeds) {
-    let s: GameState = newGame(t, { seed, guildName: '시험 길드', baseCityId: 'seoul', protagonist: { mode: 'opener', name: '주인공', element: 'fire', role: 'warrior', background: 'survivor' } });
+    let s: GameState = newGame(t, { seed, guildName: '시험 길드', baseCityId: 'seoul', protagonist: { name: '마스터' } });
     for (let d = 0; d < days; d++) {
       injuredMercDays += s.mercenaries.filter((m) => m.affiliation.kind === 'guild' && m.injury).length;
       const sendable = s.rifts.filter((r) => r.deadlineDay === null || s.day + travelDays(t, s.baseCityId, r.cityId) <= r.deadlineDay);

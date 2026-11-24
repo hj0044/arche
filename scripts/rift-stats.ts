@@ -21,7 +21,7 @@ const fate = new Map<string, { spawned: number; preempted: number; expired: numb
 const byFaction = new Map<string, number>();
 
 for (const seed of seeds) {
-  let s: GameState = newGame(t, { seed, guildName: '시험 길드', baseCityId: 'seoul', protagonist: { mode: 'opener', name: '주인공', element: 'fire', role: 'warrior', background: 'survivor' } });
+  let s: GameState = newGame(t, { seed, guildName: '시험 길드', baseCityId: 'seoul', protagonist: { name: '마스터' } });
   const tierOf = new Map<string, string>(s.rifts.map((r) => [r.id, r.tier]));
   for (const r of s.rifts) fate.get(r.tier)!.spawned++;
   for (let d = 0; d < days; d++) {

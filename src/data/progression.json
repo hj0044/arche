@@ -32,10 +32,6 @@
     "perLevel": 15,
     "capBaseline": 30
   },
-  "protagonistGrowth": {
-    "cap": 50,
-    "initialLevel": 5
-  },
   "reportHistoryLimit": 20,
   "stablePassageRewardRatio": 0.5,
   "rewardLevelScale": 0.05,
@@ -43,11 +39,10 @@
     "base": 3,
     "perLevel": 1
   },
-  "protagonistUpkeep": false,
   "expLevelScale": 0.05,
-  "openerLeftoverFaction": "free",
   "expShare": {
     "basePartySize": 5,
     "soloCapMultiplier": 2
-  }
+  },
+  "masterBackground": "heir"
 }

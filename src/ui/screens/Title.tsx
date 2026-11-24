@@ -47,7 +47,7 @@ export function Title({ onNew, onLoad, onOpenSaves }: TitleProps) {
         )}
         <button className="card-button" onClick={onNew}>
           <span className="card-title">새 게임</span>
-          <span className="card-desc">주인공과 길드, 시작 도시를 정한다.</span>
+          <span className="card-desc">길드 이름과 마스터 이름, 거점 도시를 정한다.</span>
         </button>
         <button className="card-button" onClick={onOpenSaves}>
           <span className="card-title">불러오기</span>

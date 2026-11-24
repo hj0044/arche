@@ -1,6 +1,6 @@
 import type { GameTables, LoyaltyChangeKey, LoyaltyTierRow, LoyaltyWeightKey, TendencyRow } from '../data';
 
-/** 용병 한 명의 충성도 상태. 개방자 주인공과 길드 밖 용병에는 없다. */
+/** 계약자 한 명의 충성도 상태 */
 export interface LoyaltyState {
   value: number;
   /** 위험 구간에서 하루를 마친 연속 일수 */
@@ -39,6 +39,11 @@ export function tendencyOf(tables: GameTables, backgroundId: string): TendencyRo
 
 /** 성향 가중치를 곱한 변동량. 상급 이상 리프트 승리는 victoryHard 가중치(없으면 victory)를 쓴다. */
 export function loyaltyDelta(tables: GameTables, backgroundId: string, key: LoyaltyChangeKey, hardRift = false): number {
+  // 외곽 임무(지시서 022): 성향별 고정 값(가중치가 아니라 값 자체)
+  if (key === 'outerMission') {
+    const o = tables.loyalty.outerMission;
+    return o.byTendency[tendencyOf(tables, backgroundId)?.id ?? ''] ?? o.default;
+  }
   const w = tendencyOf(tables, backgroundId)?.weights ?? {};
   const weightKey: LoyaltyWeightKey = key === 'victory' && hardRift && w.victoryHard !== undefined ? 'victoryHard' : key;
   return tables.loyalty.changes[key] * (w[weightKey] ?? 1);

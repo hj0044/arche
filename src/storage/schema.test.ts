@@ -12,10 +12,10 @@ function auditFile() {
     seed: 'audit-20261120',
     guildName: '검수 길드',
     baseCityId: 'seoul',
-    protagonist: { mode: 'opener', name: '검수자', element: 'fire', role: 'warrior', background: 'survivor' },
+    protagonist: { name: '검수자' },
   });
   // 파견·복귀 보고까지 들어간 상태도 스키마를 통과해야 한다.
-  state = dispatch(tables, state, 'r1', [{ mercId: 'hero', row: 'front' }, { mercId: 'm02', row: 'back' }]);
+  state = dispatch(tables, state, 'r1', [{ mercId: 'm01', row: 'front' }, { mercId: 'm02', row: 'back' }]);
   for (let i = 0; i < 3; i++) state = advanceDay(tables, state).state;
   return JSON.parse(serializeSave(createSaveFile(state, 'manual', new Date('2026-11-20T00:00:00Z'))));
 }

@@ -8,7 +8,7 @@ const opener = () =>
     seed: 'audit-20261120',
     guildName: '검수 길드',
     baseCityId: 'seoul',
-    protagonist: { mode: 'opener', name: '검수자', element: 'fire', role: 'warrior', background: 'survivor' },
+    protagonist: { name: '검수자' },
   });
 
 const easyRift = (id: string, patch: Partial<Rift> = {}): Rift => ({
@@ -28,27 +28,27 @@ const easyRift = (id: string, patch: Partial<Rift> = {}): Rift => ({
 
 const add = (s: GameState, ...rifts: Rift[]): GameState => ({ ...s, rifts: [...s.rifts, ...rifts] });
 
-describe('주인공 파견 규칙(2026-11-20 확정)', () => {
-  it('주인공 없이도 파견할 수 있다', () => {
+describe('파견 규칙(2026-11-20 확정)', () => {
+  it('일부 계약자만으로도 파견할 수 있다', () => {
     const s = dispatch(tables, add(opener(), easyRift('A')), 'A', [
       { mercId: 'm02', row: 'back' },
       { mercId: 'm03', row: 'back' },
     ]);
     expect(s.expeditions[0].party.map((p) => p.mercId)).toEqual(['m02', 'm03']);
-    expect(isAvailable(s, 'hero')).toBe(true);
+    expect(isAvailable(s, 'm01')).toBe(true);
   });
 
-  it('주인공이 파견 중이면 다른 파티에 넣을 수 없고, 복귀하면 다시 넣을 수 있다', () => {
+  it('파견 중인 계약자는 다른 파티에 넣을 수 없고, 복귀하면 다시 넣을 수 있다', () => {
     let s = add(opener(), easyRift('A'), easyRift('B'));
-    s = dispatch(tables, s, 'A', [{ mercId: 'hero', row: 'front' }, { mercId: 'm02', row: 'back' }]);
-    expect(isAvailable(s, 'hero')).toBe(false);
-    expect(() => dispatch(tables, s, 'B', [{ mercId: 'hero', row: 'front' }])).toThrow(/이미 파견/);
+    s = dispatch(tables, s, 'A', [{ mercId: 'm01', row: 'front' }, { mercId: 'm02', row: 'back' }]);
+    expect(isAvailable(s, 'm01')).toBe(false);
+    expect(() => dispatch(tables, s, 'B', [{ mercId: 'm01', row: 'front' }])).toThrow(/이미 파견/);
     s = advanceDay(tables, s).state;
     expect(s.reports[0].outcome).toBe('victory');
-    const hero = getMerc(s, 'hero');
+    const hero = getMerc(s, 'm01');
     expect(hero.injury).toBeUndefined();
-    expect(isAvailable(s, 'hero')).toBe(true);
-    expect(dispatch(tables, s, 'B', [{ mercId: 'hero', row: 'front' }]).expeditions).toHaveLength(1);
+    expect(isAvailable(s, 'm01')).toBe(true);
+    expect(dispatch(tables, s, 'B', [{ mercId: 'm01', row: 'front' }]).expeditions).toHaveLength(1);
   });
 });
 
@@ -57,7 +57,7 @@ describe('리프트 카드 보상 = 승리 정산', () => {
     let s = add(opener(), rift);
     const before = s.resources;
     s = dispatch(tables, s, rift.id, [
-      { mercId: 'hero', row: 'front' },
+      { mercId: 'm01', row: 'front' },
       { mercId: 'm02', row: 'back' },
       { mercId: 'm03', row: 'back' },
       { mercId: 'm04', row: 'back' },
@@ -96,7 +96,7 @@ describe('레벨업 규칙(2026-11-20 확정)', () => {
 
   it('파견 중에는 거부하고, 복귀하면 허용한다', () => {
     let s = ready(add(opener(), easyRift('A')), 'm02');
-    s = dispatch(tables, s, 'A', [{ mercId: 'hero', row: 'front' }, { mercId: 'm02', row: 'back' }]);
+    s = dispatch(tables, s, 'A', [{ mercId: 'm01', row: 'front' }, { mercId: 'm02', row: 'back' }]);
     expect(() => levelUp(tables, s, 'm02')).toThrow(GameError);
     expect(() => levelUp(tables, s, 'm02')).toThrow('파견 중에는 레벨업할 수 없음');
     s = advanceDay(tables, s).state;
@@ -112,18 +112,18 @@ describe('레벨업 규칙(2026-11-20 확정)', () => {
 });
 
 describe('이름 길이(2026-11-20 확정: 제한 없음)', () => {
-  it('아주 긴 길드·주인공 이름도 받고, 빈 이름만 막는다', () => {
+  it('아주 긴 길드·마스터 이름도 받고, 빈 이름만 막는다', () => {
     const long = '가'.repeat(200);
     const s = newGame(tables, {
       seed: 'n',
       guildName: long,
       baseCityId: 'seoul',
-      protagonist: { mode: 'opener', name: long, element: 'fire', role: 'warrior', background: 'survivor' },
+      protagonist: { name: long },
     });
     expect(s.guildName).toBe(long);
-    expect(getMerc(s, 'hero').name).toBe(long);
-    const base = { seed: 'n', baseCityId: 'seoul', protagonist: { mode: 'guildMaster' as const, name: 'gm', background: 'heir' } };
+    expect(s.protagonist.name).toBe(long);
+    const base = { seed: 'n', baseCityId: 'seoul', protagonist: { name: 'gm' } };
     expect(() => newGame(tables, { ...base, guildName: '   ' })).toThrow(/길드 이름/);
-    expect(() => newGame(tables, { ...base, guildName: 'g', protagonist: { ...base.protagonist, name: ' ' } })).toThrow(/주인공 이름/);
+    expect(() => newGame(tables, { ...base, guildName: 'g', protagonist: { ...base.protagonist, name: ' ' } })).toThrow(/마스터 이름/);
   });
 });

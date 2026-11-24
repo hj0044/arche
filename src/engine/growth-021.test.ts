@@ -25,15 +25,15 @@ describe('021 스탯 계산', () => {
     expect(statsAtLevel(tables, b, 1, 1, fast)).toEqual(statsAtLevel(tables, b, 1));
   });
 
-  it('계약자 유닛은 roster의 성장률을, 몬스터와 주인공은 기본 성장률을 쓴다', () => {
-    const s = newGame(tables, { seed: 'g', guildName: 'g', baseCityId: 'seoul', protagonist: { mode: 'opener', name: 'p', element: 'fire', role: 'warrior', background: 'survivor' } });
+  it('계약자 유닛은 roster의 성장률을, 몬스터와 명단에 없는 유닛은 기본 성장률을 쓴다', () => {
+    const s = newGame(tables, { seed: 'g', guildName: 'g', baseCityId: 'seoul', protagonist: { name: 'p' } });
     const m = { ...getMerc(s, 'm02'), level: 40, loyalty: undefined };
     const row = tables.roster.find((r) => r.id === 'm02')!;
     const u = mercToUnit(tables, m);
     expect(u.stats.hp).toBe(Math.round(row.baseStats!.hp * Math.pow(1 + row.growthRates!.hp, 39)));
     expect(u.stats.spd).toBeCloseTo(row.baseStats!.spd * Math.pow(1 + row.growthRates!.spd, 39), 1);
-    const hero = { ...getMerc(s, 'hero'), level: 20 };
-    expect(mercToUnit(tables, hero).stats).toEqual(statsAtLevel(tables, roleBaseStats(tables, 'warrior'), 20));
+    const stray = { ...getMerc(s, 'm02'), id: 'x99', role: 'warrior', level: 20, loyalty: undefined };
+    expect(mercToUnit(tables, stray).stats).toEqual(statsAtLevel(tables, roleBaseStats(tables, 'warrior'), 20));
     const mon = createMonster(tables, { id: 'x', name: 'x', element: 'void', role: 'mage', grade: 'mid', level: 25 });
     expect(mon.stats).toEqual(statsAtLevel(tables, roleBaseStats(tables, 'mage'), 25));
   });
@@ -82,10 +82,9 @@ describe('021 데이터 검증(36명)', () => {
     expect(diff).toEqual([]);
   });
 
-  it('성장 속도 체계가 없다: 표·계약자·주인공에 속도 값이 없고 필요 경험치는 레벨만으로 정해진다', () => {
+  it('성장 속도 체계가 없다: 표·계약자에 속도 값이 없고 필요 경험치는 레벨만으로 정해진다', () => {
     expect('growthSpeeds' in tables).toBe(false);
     for (const r of tables.roster) expect(Object.keys(r.growth)).toEqual(['cap']);
-    expect('speed' in tables.progression.protagonistGrowth).toBe(false);
     expect(expToNextLevel.length).toBe(2);
   });
 });

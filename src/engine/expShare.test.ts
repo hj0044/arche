@@ -54,7 +54,7 @@ describe('파견 경험치 나누기', () => {
 
   /** 같은 리프트에 인원만 다르게 보내 정산한다 */
   function settle(ids: string[]) {
-    let s: GameState = newGame(tables, { seed: 'share', guildName: 'g', baseCityId: 'seoul', protagonist: { mode: 'opener', name: 'p', element: 'light', role: 'warrior', background: 'soldier' } });
+    let s: GameState = newGame(tables, { seed: 'share', guildName: 'g', baseCityId: 'seoul', protagonist: { name: 'p' } });
     s = { ...s, mercenaries: s.mercenaries.map((m) => (['m05', 'm06'].includes(m.id) ? { ...m, affiliation: { kind: 'guild' as const }, loyalty: m.loyalty } : m)) };
     const easy: Rift = { ...rift, tier: 'crack', enemies: [{ monsterId: 'void_hound', grade: 'low', level: 1, row: 'front' }] };
     const party: PartyMember[] = ids.map((mercId) => ({ mercId, row: tables.roles.find((r) => r.id === getMerc(s, mercId).role)!.defaultRow }));
@@ -63,8 +63,8 @@ describe('파견 경험치 나누기', () => {
     return { report: after.reports[0], per: expPerMember(tables, easy, 'victory'), after };
   }
 
-  it('정산 보고서에는 나눈 뒤의 값이 기록되고 실제로 쌓인다(주인공 포함, 인원 = 파견 전원)', () => {
-    for (const ids of [['hero', 'm02', 'm03', 'm04', 'm05'], ['hero', 'm02', 'm03'], ['m02']]) {
+  it('정산 보고서에는 나눈 뒤의 값이 기록되고 실제로 쌓인다(인원 = 파견 전원)', () => {
+    for (const ids of [['m01', 'm02', 'm03', 'm04', 'm05'], ['m01', 'm02', 'm03'], ['m02']]) {
       const { report, per: p, after } = settle(ids);
       expect(report.outcome).toBe('victory');
       const expected = expShare(tables, { ...rift, tier: 'crack', enemies: [{ monsterId: 'void_hound', grade: 'low', level: 1, row: 'front' }] }, 'victory', ids.length);
@@ -76,6 +76,6 @@ describe('파견 경험치 나누기', () => {
   });
 
   it('같은 입력이면 두 번 돌려도 같다', () => {
-    expect(settle(['hero', 'm02', 'm03'])).toEqual(settle(['hero', 'm02', 'm03']));
+    expect(settle(['m01', 'm02', 'm03'])).toEqual(settle(['m01', 'm02', 'm03']));
   });
 });

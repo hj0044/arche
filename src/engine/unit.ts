@@ -33,7 +33,7 @@ export interface Unit {
   dropTableId?: string;
   usesGrowth: boolean;
   usesInjury: boolean;
-  /** 충성도 사용 여부(길드 용병만, 주인공·몬스터는 false) */
+  /** 충성도 사용 여부(길드 계약자만, 몬스터는 false) */
   usesLoyalty?: boolean;
   /** 조합 축 "세계"와 종족(시너지는 2단계). 몬스터는 비워 둔다. */
   world?: string;

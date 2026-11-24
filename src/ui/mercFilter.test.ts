@@ -4,7 +4,7 @@ import { assignToFacility, newGame, type GameState } from '../engine/game';
 import { choseong, emptySheetFilter, filterAndSort, filterChips, matchesQuery, mercStatuses, sheetFilterCount, type MercListOptions } from './mercFilter';
 
 const s0 = (): GameState => {
-  const s = newGame(tables, { seed: 'flt', guildName: 'g', baseCityId: 'seoul', protagonist: { mode: 'guildMaster', name: 'g', background: 'heir' } });
+  const s = newGame(tables, { seed: 'flt', guildName: 'g', baseCityId: 'seoul', protagonist: { name: 'g' } });
   return { ...s, mercenaries: s.mercenaries.map((m) => (['m05', 'm06', 'm07', 'm10'].includes(m.id) ? { ...m, affiliation: { kind: 'guild' as const } } : m)) };
 };
 const guild = (s: GameState) => s.mercenaries.filter((m) => m.affiliation.kind === 'guild');

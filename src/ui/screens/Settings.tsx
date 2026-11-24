@@ -226,6 +226,18 @@ export function Settings({ ctx, back, onLoad, onNewGame }: { ctx: Ctx; back?: Ro
             </div>
             <Toggle label="중요 행동 확인" checked={settings.confirmImportant} onChange={(v) => deviceSettings.set({ confirmImportant: v })} />
           </div>
+          {/* 지시서 022: 세이브에 저장하는 게임 설정(기기 설정이 아님) */}
+          <div className="set-row" data-ui="settings.autoOuter">
+            <div className="set-label">
+              <span>자동 배치</span>
+              <span className="sub">쉬는 계약자를 외곽 임무에 보냄</span>
+            </div>
+            <Toggle
+              label="자동 배치"
+              checked={game.state.settings.autoOuter}
+              onChange={(v) => ctx.setState({ ...game.state, settings: { ...game.state.settings, autoOuter: v } })}
+            />
+          </div>
           <div className="set-row" data-ui="Settings.help">
             <div className="set-label">
               <span>도움말</span>

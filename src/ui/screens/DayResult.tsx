@@ -1,11 +1,12 @@
 /**
- * 하루 결과(시안 Result, 지시서 017). 구역 순서: header · events · report · levelup · upkeep · actions.
+ * 하루 결과(시안 Result, 지시서 017·022). 구역 순서: header · events · report · levelup · outer · upkeep · actions.
  * 사건은 종류마다 색 띠가 있는 카드로, 복귀 보고는 결과 배너(누르면 전투 재생)와 보고 카드로 보인다.
  */
 import { tables } from '../../data';
 import type { DayEvent } from '../../engine/game';
 import { levelUpAll } from '../../engine/game';
 import { levelUpCandidates } from '../../engine/status';
+import { tendencyOf } from '../../engine/loyalty';
 import { VICTORY_BANNER } from '../art/fallback';
 import { Art, Avatar, Card, Icon, LogoRow, Screen, type IconName } from '../components';
 import { factionName, josa, loyaltyTierName, materialName, num, outcomeName, severityName } from '../format';
@@ -25,6 +26,7 @@ export function DayResult({ ctx, events }: { ctx: Ctx; events: DayEvent[] }) {
   const facName = (id: string) => tables.facilities.facilities.find((f) => f.id === id)?.name ?? id;
   const returned = events.flatMap((e) => (e.type === 'returned' ? [s.reports.find((r) => r.expeditionId === e.expeditionId)!] : []));
   const upkeep = events.find((e) => e.type === 'upkeep');
+  const outer = events.find((e): e is Extract<DayEvent, { type: 'outerMission' }> => e.type === 'outerMission');
 
   // ── 사건 카드(종류마다 색)
   const cards: EventCard[] = [];
@@ -159,6 +161,7 @@ export function DayResult({ ctx, events }: { ctx: Ctx; events: DayEvent[] }) {
             </button>
           </Card>
         )}
+        {outer && outer.results.length > 0 && <OuterCard results={outer.results} background={(id) => s.mercenaries.find((m) => m.id === id)?.profile.background ?? ''} />}
         <div className="row between t13 dim" style={{ padding: '0 4px' }} data-ui="Result.upkeep">
           <span>오늘 유지비 -{num(upkeep?.type === 'upkeep' ? upkeep.paid : 0)} 제로</span>
           <span>
@@ -168,6 +171,49 @@ export function DayResult({ ctx, events }: { ctx: Ctx; events: DayEvent[] }) {
       </div>
       <div className="grow" />
     </Screen>
+  );
+}
+
+/** 외곽 임무 카드(시안 result.outer, 지시서 022): 자동 배치 인원, 종류별 합계, 경상·성향별 불만과 충성도 변동 합 */
+function OuterCard({ results, background }: { results: Extract<DayEvent, { type: 'outerMission' }>['results']; background: (mercId: string) => string }) {
+  const rows = tables.outerMissions.types
+    .map((t) => {
+      const mine = results.filter((r) => r.missionId === t.id);
+      const sum = (k: 'exp' | 'zero' | 'arche') => mine.reduce((a, r) => a + r[k], 0);
+      const parts = [sum('exp') ? `경험치 +${num(sum('exp'))}` : '', sum('zero') ? `제로 +${num(sum('zero'))}` : '', sum('arche') ? `아르케 +${num(sum('arche'))}` : ''].filter(Boolean);
+      return { t, n: mine.length, text: parts.join(' · ') || '성과 없음' };
+    })
+    .filter((x) => x.n > 0);
+  const hurt = results.filter((r) => r.injuryDays !== undefined).length;
+  const unhappy = new Map<string, number>();
+  for (const r of results) {
+    if (r.loyaltyDelta >= 0) continue;
+    const name = tendencyOf(tables, background(r.mercId))?.name ?? '';
+    unhappy.set(name, (unhappy.get(name) ?? 0) + 1);
+  }
+  const delta = Math.round(results.reduce((a, r) => a + r.loyaltyDelta, 0) * 100) / 100;
+  const warn = [hurt ? `경상 ${hurt}명` : '', ...[...unhappy].map(([n, c]) => `${n}형 불만 ${c}명`)].filter(Boolean);
+  return (
+    <div className="outer-card" data-ui="Result.outer">
+      <div className="row between">
+        <span style={{ fontSize: 15, fontWeight: 500 }}>외곽 임무</span>
+        <span className="sub">자동 배치 {results.length}명</span>
+      </div>
+      {rows.map(({ t, text }) => (
+        <div key={t.id} className="row between t13">
+          <span>
+            {t.name} · {t.place}
+          </span>
+          <span className="gold">{text}</span>
+        </div>
+      ))}
+      {(warn.length > 0 || delta !== 0) && (
+        <div className="row between outer-warn">
+          <span>{warn.join(' · ')}</span>
+          {delta !== 0 && <span>충성도 {delta > 0 ? '+' : ''}{delta}</span>}
+        </div>
+      )}
+    </div>
   );
 }
 

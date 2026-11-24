@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { makeAuditSaveFile } from '../app/auditSave';
-import { saveLimits, tables } from '../data';
+import { saveLimits } from '../data';
+import { legacyTables as tables } from '../testing/legacyTables';
 import { advanceDay, dispatch } from '../engine/game';
 import { MemorySaveRepository } from './repository';
 import { createSaveFile, parseSave, serializeSave, SaveFormatError } from './saveFile';
@@ -11,8 +12,9 @@ const semantic = { ...tables, limits: saveLimits };
 /** 검수용 고정 세이브의 JSON 사본(파견·복귀 보고가 든 상태도 만든다) */
 const audit = (played = false) => {
   const file = makeAuditSaveFile();
+  file.state.settings.autoOuter = false; // 022 이전 진행을 고정(자동 배치 끔)
   if (played) {
-    let s = dispatch(tables, file.state, 'r1', [{ mercId: 'hero', row: 'front' }, { mercId: 'm02', row: 'back' }]);
+    let s = dispatch(tables, file.state, 'r1', [{ mercId: 'm01', row: 'front' }, { mercId: 'm02', row: 'back' }]);
     s = advanceDay(tables, s).state;
     s = dispatch(tables, s, s.rifts[0].id, [{ mercId: 'm03', row: 'back' }, { mercId: 'm04', row: 'back' }]);
     return JSON.parse(serializeSave(createSaveFile(s, 'manual')));
@@ -98,7 +100,6 @@ describe('세이브 의미 검증', () => {
     ['배경', (r: any) => (r.state.mercenaries[1].profile.background = 'pirate'), 'state.mercenaries[1].profile.background: 없는 배경 id "pirate"'],
     ['파견 리프트가 목록에도 있음', (r: any) => r.state.rifts.push(structuredClone(r.state.expeditions[0].rift)), /state\.expeditions\[0\]\.rift\.id: 파견 중인 리프트 "[^"]+"가 리프트 목록에도 있음/],
     ['복귀 보고의 리프트 손상', (r: any) => (r.state.reports[0].rift.enemies = []), 'state.reports[0].rift.enemies 비어 있음'],
-    ['주인공 용병 없음', (r: any) => (r.state.protagonist.mercId = 'nobody'), `state.protagonist.mercId: 세이브에 없는 ${tables.terms.merc} "nobody"`],
   ])('참조: %s', (_label, damage, expected) => {
     const raw = audit(true);
     damage(raw);

@@ -25,6 +25,7 @@ import savePolicyJson from './save-policy.json';
 import autoPartyJson from './auto-party.json';
 import saveLimitsJson from './save-limits.json';
 import loyaltyJson from './loyalty.json';
+import outerMissionsJson from './outerMissions.json';
 import poachingJson from './poaching.json';
 import facilitiesJson from './facilities.json';
 import autoplayJson from './autoplay.json';
@@ -218,18 +219,16 @@ export interface ProgressionTable {
   levelUpArcheCost: { base: number; perLevel: number };
   /** 영입비 = (base + perCapAbove30 × (한계 − capBaseline) + perLevel × (레벨 − 1)) × 세력 배율 × 도시 배율 */
   recruitZeroCost: { base: number; perCapAbove30: number; perLevel: number; capBaseline: number };
-  protagonistGrowth: { cap: number; initialLevel: number };
   /** 보상 = 등급 보상 × (1 + rewardLevelScale × 몬스터 레벨) */
   rewardLevelScale: number;
   /** 경험치 = 결과별 경험치 × 등급 배율 × (1 + expLevelScale × 몬스터 레벨) */
   expLevelScale: number;
   /** 하루 유지비 = base + perLevel × 레벨 */
   upkeepZeroPerDay: { base: number; perLevel: number };
-  protagonistUpkeep: boolean;
   /** 파견 경험치 나누기: 총량 = 한 명당 경험치 × basePartySize, 한 명당 몫 = 총량 ÷ 인원(상한 한 명당 × soloCapMultiplier) */
   expShare: { basePartySize: number; soloCapMultiplier: number };
-  /** 개방자 모드에서 시작 길드에 합류하지 않는 후보가 들어갈 세력 id */
-  openerLeftoverFaction: string;
+  /** 길드 마스터의 배경 기본값(화면에서 고르지 않음, 지시서 022) */
+  masterBackground: string;
   /** 전투 로그까지 보관하는 최근 복귀 보고 수 */
   reportHistoryLimit: number;
   /** 안정화된 통로를 다시 공략할 때 보상 배율 */
@@ -351,6 +350,7 @@ export interface GameTables {
   omens: OmenRow[];
   autoParty: AutoPartyTable;
   loyalty: LoyaltyTable;
+  outerMissions: OuterMissionsTable;
   poaching: PoachingTable;
   facilities: FacilitiesTable;
   autoplay: AutoplayPolicy;
@@ -497,7 +497,7 @@ export interface PoachingTable {
 }
 
 /** 충성도 변동 요인 키. victoryHard는 상급 이상 몬스터가 나오는 리프트의 승리(성향 가중치 전용, 기본값은 victory) */
-export type LoyaltyChangeKey = 'victory' | 'defeat' | 'injury' | 'unpaidDay' | 'restDay' | 'idleDecay' | 'salaryBonus';
+export type LoyaltyChangeKey = 'victory' | 'defeat' | 'injury' | 'unpaidDay' | 'restDay' | 'idleDecay' | 'salaryBonus' | 'outerMission';
 export type LoyaltyWeightKey = LoyaltyChangeKey | 'victoryHard';
 
 export interface LoyaltyTierRow {
@@ -528,7 +528,9 @@ export interface LoyaltyTable {
   restMaxDays: number;
   tiers: LoyaltyTierRow[];
   departure: { tier: string; afterConsecutiveDays: number; chance: number; toFaction: string; excludeOnExpedition: boolean };
-  changes: Record<LoyaltyChangeKey, number>;
+  changes: Record<Exclude<LoyaltyChangeKey, 'outerMission'>, number>;
+  /** 외곽 임무에 간 날의 변동(지시서 022): 성향 id별, 없으면 default */
+  outerMission: { byTendency: Record<string, number>; default: number };
   hardRiftGrades: string[];
   salaryBonus: { costPerLevel: number };
   recentLogSize: number;
@@ -537,9 +539,27 @@ export interface LoyaltyTable {
   backgroundTendency: Record<string, string>;
 }
 
+/** 외곽 임무(지시서 022, outerMissions.json) */
+export interface OuterMissionRow {
+  id: string;
+  name: string;
+  /** 결과 화면에 붙는 장소 이름 */
+  place: string;
+  weight: number;
+  exp?: { base: number; perLevel: number };
+  zero?: { base: number; perLevel: number };
+  arche?: { chance: number; amount: Range };
+}
+export interface OuterMissionsTable {
+  /** 새 게임의 자동 배치 기본값 */
+  autoOuterDefault: boolean;
+  excludeLoyaltyTiers: string[];
+  injury: { chance: number; severity: string };
+  types: OuterMissionRow[];
+}
+
 /** 자동 편성 규칙(제안) */
 export interface AutoPartyTable {
-  includeProtagonist: boolean;
   /** 전위·딜러·지원을 먼저 하나씩 채운다 */
   fillGroupsFirst: boolean;
   weights: { level: number; elementAdvantage: number; elementDisadvantage: number };
@@ -609,6 +629,7 @@ export const tables: GameTables = {
   omens: omensJson,
   autoParty: autoPartyJson,
   loyalty: loyaltyJson as unknown as LoyaltyTable,
+  outerMissions: outerMissionsJson as unknown as OuterMissionsTable,
   poaching: poachingJson,
   facilities: facilitiesJson as unknown as FacilitiesTable,
   autoplay: autoplayJson,

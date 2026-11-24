@@ -140,7 +140,7 @@ export function App() {
 
 /** 픽스처 화면 이름 → 경로(개발 전용) */
 function fixtureRoute(screen: string, s: GameState, events?: DayEvent[]): Route {
-  const guild = s.mercenaries.filter((m) => m.affiliation.kind === 'guild' && !m.isProtagonist);
+  const guild = s.mercenaries.filter((m) => m.affiliation.kind === 'guild');
   const baseRifts = s.rifts.filter((r) => r.cityId === s.baseCityId);
   switch (screen) {
     case 'rifts':

@@ -33,10 +33,10 @@ describe('출발 마감 표기(지시서 015)', () => {
     }
   });
   it('엔진 판정과 맞다: 그날까지는 보낼 수 있고 다음 날은 못 보낸다', () => {
-    const s0 = newGame(tables, { seed: 'dl', guildName: 'g', baseCityId: 'seoul', protagonist: { mode: 'opener', name: 'p', element: 'fire', role: 'warrior', background: 'soldier' } });
+    const s0 = newGame(tables, { seed: 'dl', guildName: 'g', baseCityId: 'seoul', protagonist: { name: 'p' } });
     const r = rift({ cityId: 'newyork', deadlineDay: 6 });
     const last = latestDeparture(tables, fsAt(3), r, 'seoul')!.day[0];
-    const party = [{ mercId: 'hero', row: 'front' as const }];
+    const party = [{ mercId: 'm01', row: 'front' as const }];
     expect(() => dispatch(tables, { ...s0, day: last, rifts: [r] }, 'X', party)).not.toThrow();
     expect(() => dispatch(tables, { ...s0, day: last + 1, rifts: [r] }, 'X', party)).toThrow(GameError);
   });

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { tables, type GameTables } from '../data';
+import { type GameTables } from '../data';
+import { legacyTables as tables } from '../testing/legacyTables';
 import { makeAuditSaveFile } from '../app/auditSave';
 import { autoParty } from './autoParty';
 import {
@@ -33,9 +34,9 @@ import { createRng } from './rng';
 
 const FT = tables.facilities;
 const gm = (seed = 'fac') =>
-  newGame(tables, { seed, guildName: 'g', baseCityId: 'seoul', protagonist: { mode: 'guildMaster', name: 'gm', background: 'heir' } });
+  newGame(tables, { seed, guildName: 'g', baseCityId: 'seoul', protagonist: { name: 'gm' } });
 const opener = () =>
-  newGame(tables, { seed: 'fac', guildName: 'g', baseCityId: 'seoul', protagonist: { mode: 'opener', name: 'p', element: 'fire', role: 'warrior', background: 'soldier' } });
+  newGame(tables, { seed: 'fac', guildName: 'g', baseCityId: 'seoul', protagonist: { name: 'p' } });
 const rich = (s: GameState, zero = 99999): GameState => ({ ...s, resources: { ...s.resources, zero } });
 const withLevels = (s: GameState, levels: Record<string, number>): GameState => ({
   ...s,
@@ -103,7 +104,7 @@ describe('레벨 확장(코드가 레벨 3개·시설 3개를 가정하지 않�
   });
 
   it('새 시설은 데이터 행만으로 추가되고, 같은 효과 종류는 합산된다', () => {
-    let s = newGame(synthetic, { seed: 'syn', guildName: 'g', baseCityId: 'seoul', protagonist: { mode: 'guildMaster', name: 'gm', background: 'heir' } });
+    let s = newGame(synthetic, { seed: 'syn', guildName: 'g', baseCityId: 'seoul', protagonist: { name: 'gm' } });
     expect(s.facilities.levels).toHaveProperty('clinic2', 0);
     s = rich(s);
     for (let lv = 1; lv <= 7; lv++) {
@@ -175,13 +176,12 @@ describe('의무실', () => {
 describe('훈련소', () => {
   const ready = () => withLevels(rich(opener()), { training: 2 });
 
-  it('배치 조건: 부상·파견 중·주인공·칸 수·길드 밖', () => {
+  it('배치 조건: 부상·파견 중·칸 수·길드 밖', () => {
     let s = ready();
     s = { ...s, mercenaries: s.mercenaries.map((m) => (m.id === 'm03' ? { ...m, injury: { severity: 'light', recoverDay: 5 } } : m)) };
     s = dispatch(tables, { ...s, rifts: [rift('A')] }, 'A', [{ mercId: 'm04', row: 'back' }]);
     expect(assignBlockReason(tables, s, 'training', 'm03')).toBe('부상 중');
     expect(assignBlockReason(tables, s, 'training', 'm04')).toBe('파견 중');
-    expect(assignBlockReason(tables, s, 'training', 'hero')).toBe('주인공');
     expect(assignBlockReason(tables, s, 'training', 'm05')).toBe('길드 소속이 아님');
     s = assignToFacility(tables, s, 'training', 'm02');
     s = { ...s, mercenaries: s.mercenaries.map((m) => (m.id === 'm05' ? { ...m, affiliation: { kind: 'guild' } } : m)) };
@@ -314,7 +314,7 @@ describe('세이브', () => {
     expect(back.facilities).toEqual(s.facilities);
   });
 
-  it('의미 검증: 없는 시설, 최대 레벨 초과, 주인공·부상 용병 배치, 칸 초과를 잡는다', async () => {
+  it('의미 검증: 없는 시설, 최대 레벨 초과, 부상 용병 배치, 칸 초과를 잡는다', async () => {
     const { parseSave, serializeSave, createSaveFile, SaveFormatError } = await import('../storage/saveFile');
     const { saveLimits } = await import('../data');
     const sem = { ...tables, limits: saveLimits };
@@ -330,7 +330,6 @@ describe('세이브', () => {
     };
     expect(problems((r) => (r.state.facilities.levels.lab = 1))).toContain('state.facilities.levels.lab: 없는 시설 id "lab"');
     expect(problems((r) => (r.state.facilities.levels.scout = 9)).some((p: string) => p.includes('state.facilities.levels.scout: 범위'))).toBe(true);
-    expect(problems((r) => (r.state.facilities.assignments.training = ['hero']))).toContain('state.facilities.assignments.training[0]: 주인공은 배치할 수 없음');
     expect(problems((r) => (r.state.facilities.assignments.training = ['m02', 'm03'])).some((p: string) => p.includes('칸 수'))).toBe(true);
   });
 });
