@@ -293,11 +293,18 @@ describe('시작 구성', () => {
   const start = (protagonist: Parameters<typeof newGame>[1]['protagonist']) =>
     newGame(tables, { seed: 's', guildName: 'g', baseCityId: 'seoul', protagonist });
   const guildIds = (s: GameState) => s.mercenaries.filter((m) => m.affiliation.kind === 'guild').map((m) => m.id);
+  // 구성 분류(지시서 020: combat.json composition.groupAlias로 자객의 mobility는 딜러)
+  const alias = tables.combat.composition.groupAlias ?? {};
   const groups = (s: GameState) =>
-    new Set(s.mercenaries.filter((m) => m.affiliation.kind === 'guild').map((m) => tables.roles.find((r) => r.id === m.role)!.group));
+    new Set(
+      s.mercenaries
+        .filter((m) => m.affiliation.kind === 'guild')
+        .map((m) => tables.roles.find((r) => r.id === m.role)!.group)
+        .map((g) => alias[g] ?? g),
+    );
 
-  it('용병 30명이 모두 존재한다', () => {
-    expect(start({ mode: 'guildMaster', name: 'gm', background: 'heir' }).mercenaries).toHaveLength(30);
+  it('계약자 36명이 모두 존재한다', () => {
+    expect(start({ mode: 'guildMaster', name: 'gm', background: 'heir' }).mercenaries).toHaveLength(36);
   });
 
   it('길드 마스터 모드는 시작 후보 4명 전부로 시작한다', () => {

@@ -2,7 +2,9 @@ import {
   getElement,
   getRole,
   getSkill,
+  getStatusEffect,
   type GameTables,
+  type StatusEffectKind,
   type Row,
   type Side,
   type SkillRow,
@@ -25,15 +27,20 @@ export interface CombatInput {
 
 export type CombatOutcome = 'victory' | 'defeat' | 'retreat';
 
-export type StatusType = 'taunt' | 'buff';
+/** taunt·buff는 스킬 자체 상태(라운드 끝에 줄어듦), 나머지는 상태 효과 5종(지시서 020, 받은 유닛의 행동이 끝날 때 줄어듦) */
+export type StatusType = 'taunt' | 'buff' | StatusEffectKind;
 
 export interface Status {
   type: StatusType;
   skillId: string;
   stats?: StatId[];
   amount?: number;
-  /** 남은 라운드 수. 라운드가 끝날 때 1씩 준다. */
+  /** 남은 라운드 수 */
   remaining: number;
+  /** 상태 효과 id(statusEffects.json). 있으면 받은 유닛의 행동이 끝날 때 줄어든다 */
+  effectId?: string;
+  /** 지속 피해: 한 번의 피해량(걸 때 정함), 보호막: 남은 흡수량 */
+  value?: number;
 }
 
 /** 전투 로그에서 유닛을 가리키는 키. 아군은 a0.., 적은 e0.. */
@@ -65,9 +72,23 @@ export type CombatEffect =
       evaded?: boolean;
       /** 치명타 */
       crit?: boolean;
+      /** 보호막이 흡수한 양(amount에 포함, 체력은 amount − absorbed만큼 줄었다) */
+      absorbed?: number;
     }
   | { kind: 'heal'; target: CombatantKey; amount: number; hpAfter: number }
-  | { kind: 'status'; target: CombatantKey; status: StatusType; stats?: StatId[]; amount?: number; duration: number };
+  | {
+      kind: 'status';
+      target: CombatantKey;
+      status: StatusType;
+      stats?: StatId[];
+      amount?: number;
+      duration: number;
+      /** 지속 피해량 또는 보호막 양 */
+      value?: number;
+      /** 기절 면역이라 걸리지 않음(연속 기절 방지) */
+      immune?: boolean;
+    }
+  | { kind: 'cleanse'; target: CombatantKey; removed: StatusType[] };
 
 export type CombatEvent =
   | {
@@ -79,6 +100,10 @@ export type CombatEvent =
   | { type: 'round'; round: number; order: CombatantKey[] }
   | { type: 'action'; round: number; actor: CombatantKey; skillId: string; effects: CombatEffect[] }
   | { type: 'expire'; round: number; target: CombatantKey; status: StatusType; skillId: string }
+  /** 기절로 행동을 건너뜀 */
+  | { type: 'skip'; round: number; actor: CombatantKey; reason: 'stun' }
+  /** 지속 피해(자기 차례 시작) */
+  | { type: 'tick'; round: number; target: CombatantKey; status: 'dot'; amount: number; absorbed?: number; hpAfter: number; downed: boolean }
   | { type: 'end'; outcome: CombatOutcome; rounds: number };
 
 export interface CombatResult {
@@ -104,6 +129,8 @@ interface Combatant {
   downed: boolean;
   /** 이번 전투에서 행동한 횟수(firstAction 특성) */
   actions: number;
+  /** 이 라운드까지는 기절에 걸리지 않는다(연속 기절 방지) */
+  stunImmuneUntil: number;
 }
 
 /** 파티 편성 규칙 검사. 문제가 없으면 빈 배열. */
@@ -143,10 +170,16 @@ export function elementMultiplier(tables: GameTables, attacker: string, defender
   return neutral;
 }
 
+/** 구성 보너스에서 세는 분류(역할 group에 groupAlias 적용, 지시서 020: 자객 mobility → 딜러) */
+export function compositionGroup(tables: GameTables, roleId: string): string {
+  const g = getRole(tables, roleId).group;
+  return tables.combat.composition.groupAlias?.[g] ?? g;
+}
+
 /** 파티 구성 배율: 있는 분류마다 +보너스, 없는 분류마다 -약점. */
 export function compositionMultiplier(tables: GameTables, roleIds: string[]): number {
   const { groups, bonusPerPresentGroup, penaltyPerMissingGroup } = tables.combat.composition;
-  const present = new Set(roleIds.map((r) => getRole(tables, r).group));
+  const present = new Set(roleIds.map((r) => compositionGroup(tables, r)));
   let m = 1;
   for (const g of groups) m += present.has(g) ? bonusPerPresentGroup : -penaltyPerMissingGroup;
   return Math.round(m * 1e6) / 1e6; // 부동소수 오차 정리
@@ -160,6 +193,15 @@ function buffMultiplier(c: Combatant, stat: StatId): number {
 }
 
 const isTaunting = (c: Combatant) => c.statuses.some((s) => s.type === 'taunt');
+const hasStatus = (c: Combatant, type: StatusType) => c.statuses.some((s) => s.type === type);
+const statusOf = (c: Combatant, type: StatusType) => c.statuses.find((s) => s.type === type);
+const hpRatio = (c: Combatant) => (c.maxHp > 0 ? c.hp / c.maxHp : 1);
+/** 후열 직격 타깃(지시서 020) */
+const BACK_TARGETS = ['enemyBackLowest', 'enemyBackRow'];
+/** 스킬이 도발을 무시하는가. 데이터에 없으면 후열 직격 타깃은 무시(설계서 §전투: 후열 직격은 도발을 무시) */
+export const ignoresTaunt = (skill: SkillRow) => skill.ignoreTaunt ?? BACK_TARGETS.includes(skill.target);
+/** 같은 대상에게 다시 걸 필요가 없는 상태(대상 선택·쓸모 판정에서 '아직 걸리지 않은 대상'을 고른다) */
+const PREFER_FRESH: StatusType[] = ['mark', 'weaken'];
 
 export function resolveCombat(tables: GameTables, input: CombatInput): CombatResult {
   const errors = validateParty(tables, input.allies);
@@ -186,6 +228,7 @@ export function resolveCombat(tables: GameTables, input: CombatInput): CombatRes
     statuses: [],
     downed: false,
     actions: 0,
+    stunImmuneUntil: 0,
   });
   const all: Combatant[] = [
     ...input.allies.map((s, i) => toCombatant(s, 'ally', i)),
@@ -245,11 +288,65 @@ export function resolveCombat(tables: GameTables, input: CombatInput): CombatRes
   const opponentSide = (side: Side): Side => (side === 'ally' ? 'enemy' : 'ally');
   const exposedRow = (cs: Combatant[]) => (cs.some((c) => c.row === 'front') ? cs.filter((c) => c.row === 'front') : cs);
 
-  const pickSingleTarget = (side: Side, r: Rng): Combatant | undefined => {
+  /** 이 스킬이 거는 상태 중 '아직 걸리지 않은 대상'을 고를 것(표식·약화) */
+  const freshStatuses = (skill: SkillRow): StatusType[] =>
+    (skill.applies ?? []).map((a) => getStatusEffect(tables, a.status).kind).filter((k) => PREFER_FRESH.includes(k));
+  const isFresh = (c: Combatant, kinds: StatusType[]) => kinds.some((k) => !hasStatus(c, k));
+
+  /** 단일 대상 후보: 도발 중인 적(도발 무시가 아니면) → 전열 → 후열 */
+  const singleCandidates = (side: Side, skill?: SkillRow): Combatant[] => {
+    const foes = alive(opponentSide(side));
+    const taunters = skill && ignoresTaunt(skill) ? [] : foes.filter(isTaunting);
+    return taunters.length ? taunters : exposedRow(foes);
+  };
+
+  const pickSingleTarget = (side: Side, r: Rng, skill?: SkillRow): Combatant | undefined => {
+    const list = singleCandidates(side, skill);
+    if (list.length === 0) return undefined;
+    // 표식·약화를 거는 스킬은 아직 걸리지 않은 대상을 먼저(지시서 020 [제안]). 뽑기 횟수는 같다
+    const fresh = skill ? freshStatuses(skill) : [];
+    const pool = fresh.length ? list.filter((c) => isFresh(c, fresh)) : [];
+    return r.pick(pool.length ? pool : list);
+  };
+
+  /** 후열 직격: 후열(없으면 전열) 중 체력 비율이 가장 낮은 적. 도발을 무시하지 않는 스킬이면 도발 중인 적 */
+  const pickBackLowest = (side: Side, r: Rng, skill: SkillRow): Combatant | undefined => {
     const foes = alive(opponentSide(side));
     if (foes.length === 0) return undefined;
-    const taunters = foes.filter(isTaunting);
-    return r.pick(taunters.length ? taunters : exposedRow(foes));
+    const taunters = ignoresTaunt(skill) ? [] : foes.filter(isTaunting);
+    if (taunters.length) return r.pick(taunters);
+    const back = foes.filter((c) => c.row === 'back');
+    const pool = back.length ? back : foes;
+    return pool.reduce((best, c) => (hpRatio(c) < hpRatio(best) ? c : best));
+  };
+  const backRow = (side: Side): Combatant[] => {
+    const foes = alive(opponentSide(side));
+    const back = foes.filter((c) => c.row === 'back');
+    return back.length ? back : foes;
+  };
+
+  /** 피해를 보호막부터 깎는다. 체력이 0이면 쓰러진다 */
+  const takeDamage = (target: Combatant, amount: number): number => {
+    let rest = amount;
+    let absorbed = 0;
+    const sh = statusOf(target, 'shield');
+    if (sh && (sh.value ?? 0) > 0 && rest > 0) {
+      absorbed = Math.min(sh.value!, rest);
+      sh.value! -= absorbed;
+      rest -= absorbed;
+      if (sh.value! <= 0) target.statuses = target.statuses.filter((s) => s !== sh);
+    }
+    target.hp = Math.max(0, target.hp - rest);
+    if (target.hp === 0) {
+      target.downed = true;
+      target.statuses = [];
+    }
+    return absorbed;
+  };
+
+  const effectMul = (c: Combatant, type: 'mark' | 'weaken') => {
+    const st = statusOf(c, type);
+    return st ? getStatusEffect(tables, st.effectId!).multiplier ?? 1 : 1;
   };
 
   const dealDamage = (actor: Combatant, target: Combatant, skill: SkillRow): CombatEffect => {
@@ -258,13 +355,17 @@ export function resolveCombat(tables: GameTables, input: CombatInput): CombatRes
     const atkStat = energy ? 'eAtk' : 'pAtk';
     const defStat = energy ? 'eDef' : 'pDef';
     const first = actor.actions === 0;
+    const tHp = hpRatio(target);
     const a = eff(actor, { opponentElement: target.unit.element, firstAction: first });
     const d = eff(target, { opponentElement: actor.unit.element });
     const k = cfg.damage.defenseConstant * levelScale(tables, defStat, actor.unit.level);
     const elem = elementMultiplier(tables, actor.unit.element, target.unit.element);
     let dmg = a[atkStat] * buffMultiplier(actor, atkStat) * (skill.power ?? 1) * (k / (k + d[defStat] * buffMultiplier(target, defStat)));
     dmg *= elem * comp[actor.side];
-    dmg *= traitMultiplier(tables, actor.unit, 'damageMul', ctxOf(actor, { opponentElement: target.unit.element, firstAction: first }));
+    dmg *= traitMultiplier(tables, actor.unit, 'damageMul', ctxOf(actor, { opponentElement: target.unit.element, firstAction: first, targetHpRatio: tHp }));
+    // 지시서 020: 낮은 체력 보너스(즉사 없음), 표식(받는 피해), 약화(주는 피해)
+    if (skill.lowHpBonus) dmg *= 1 + skill.lowHpBonus * (1 - tHp);
+    dmg *= effectMul(target, 'mark') * effectMul(actor, 'weaken');
     dmg *= traitMultiplier(tables, target.unit, 'damageTakenMul', ctxOf(target, { opponentElement: actor.unit.element }));
     if (actor.offRow) dmg *= cfg.offRow.damageDealtMultiplier;
     if (target.offRow) dmg *= cfg.offRow.damageTakenMultiplier;
@@ -272,11 +373,7 @@ export function resolveCombat(tables: GameTables, input: CombatInput): CombatRes
     dmg *= variance;
     if (crit) dmg *= a.critDmg;
     const amount = evaded ? 0 : Math.max(cfg.damage.minimum, Math.round(dmg));
-    target.hp = Math.max(0, target.hp - amount);
-    if (target.hp === 0) {
-      target.downed = true;
-      target.statuses = [];
-    }
+    const absorbed = takeDamage(target, amount);
     return {
       kind: 'damage',
       target: target.key,
@@ -286,6 +383,7 @@ export function resolveCombat(tables: GameTables, input: CombatInput): CombatRes
       downed: target.downed,
       ...(evaded ? { evaded: true } : {}),
       ...(crit ? { crit: true } : {}),
+      ...(absorbed ? { absorbed } : {}),
     };
   };
 
@@ -293,7 +391,12 @@ export function resolveCombat(tables: GameTables, input: CombatInput): CombatRes
   const heal = (actor: Combatant, target: Combatant, skill: SkillRow): CombatEffect => {
     const stat = skill.scaleStat ?? 'eAtk';
     const targetHp = target.maxHp > 0 ? target.hp / target.maxHp : 1;
-    const power = eff(actor)[stat] * buffMultiplier(actor, stat) * (skill.power ?? 1) * traitMultiplier(tables, actor.unit, 'healMul', ctxOf(actor, { healTargetHpRatio: targetHp }));
+    const power =
+      eff(actor)[stat] *
+      buffMultiplier(actor, stat) *
+      (skill.power ?? 1) *
+      traitMultiplier(tables, actor.unit, 'healMul', ctxOf(actor, { healTargetHpRatio: targetHp })) *
+      effectMul(actor, 'weaken');
     const amount = Math.min(target.maxHp - target.hp, Math.round(power));
     target.hp += amount;
     return { kind: 'heal', target: target.key, amount, hpAfter: target.hp };
@@ -306,13 +409,66 @@ export function resolveCombat(tables: GameTables, input: CombatInput): CombatRes
     return { kind: 'status', target: target.key, status: type, stats: skill.stats, amount: skill.amount, duration };
   };
 
+  /** 상태 효과 걸기(지시서 020). 같은 효과는 겹치지 않고 지속·값 중 큰 쪽을 채택한다 */
+  const applyEffect = (actor: Combatant, target: Combatant, skill: SkillRow, statusId: string, duration?: number): CombatEffect => {
+    const row = getStatusEffect(tables, statusId);
+    const dur = duration ?? (row.kind === 'shield' ? skill.duration : undefined) ?? row.defaultDuration;
+    if (row.kind === 'stun' && round <= target.stunImmuneUntil) return { kind: 'status', target: target.key, status: 'stun', duration: 0, immune: true };
+    let value: number | undefined;
+    if (row.kind === 'dot') {
+      // 걸 때의 공격 × 위력을 방어로 줄인 값(변동·치명타 없음)으로 정해 둔다
+      const energy = skill.damageType === 'energy';
+      const atkStat = energy ? 'eAtk' : 'pAtk';
+      const defStat = energy ? 'eDef' : 'pDef';
+      const k = cfg.damage.defenseConstant * levelScale(tables, defStat, actor.unit.level);
+      const atk = eff(actor)[atkStat] * buffMultiplier(actor, atkStat);
+      const def = eff(target)[defStat] * buffMultiplier(target, defStat);
+      value = Math.max(cfg.damage.minimum, Math.round(atk * (skill.power ?? 1) * (k / (k + def)) * (row.powerMultiplier ?? 1)));
+    }
+    if (row.kind === 'shield' && skill.shield) {
+      const st = skill.shield.scaleStat;
+      const base = st === 'hp' ? actor.maxHp : eff(actor)[st] * buffMultiplier(actor, st);
+      value = Math.round(base * skill.shield.ratio);
+    }
+    const old = statusOf(target, row.kind);
+    if (old) {
+      old.remaining = Math.max(old.remaining, dur);
+      if (value !== undefined) old.value = Math.max(old.value ?? 0, value);
+      old.skillId = skill.id;
+    } else target.statuses.push({ type: row.kind, skillId: skill.id, remaining: dur, effectId: row.id, ...(value !== undefined ? { value } : {}) });
+    return { kind: 'status', target: target.key, status: row.kind, duration: dur, ...(value !== undefined ? { value } : {}) };
+  };
+
+  const applyAll = (actor: Combatant, target: Combatant, skill: SkillRow, effects: CombatEffect[]) => {
+    if (target.downed) return;
+    for (const a of skill.applies ?? []) effects.push(applyEffect(actor, target, skill, a.status, a.duration));
+  };
+
+  const cleanse = (target: Combatant): CombatEffect | undefined => {
+    const removed = target.statuses.filter((s) => s.effectId && getStatusEffect(tables, s.effectId).cleansable);
+    if (!removed.length) return undefined;
+    target.statuses = target.statuses.filter((s) => !removed.includes(s));
+    return { kind: 'cleanse', target: target.key, removed: removed.map((s) => s.type) };
+  };
+
+  /** 보호막 대상: 보호막이 없는 아군 중 체력 비율이 가장 낮은 쪽 */
+  const shieldCandidates = (side: Side) => alive(side).filter((c) => !hasStatus(c, 'shield'));
+
   const isUseful = (actor: Combatant, skill: SkillRow): boolean => {
     const allies = alive(actor.side);
     switch (skill.kind) {
       case 'attack':
         return true;
       case 'heal':
-        return allies.some((c) => c.hp / c.maxHp < cfg.ai.healThreshold);
+        return allies.some((c) => hpRatio(c) <= (skill.cleanse ? cfg.ai.cleanseThreshold : cfg.ai.healThreshold));
+      case 'shield':
+        return shieldCandidates(actor.side).length > 0;
+      case 'debuff': {
+        const kinds = (skill.applies ?? []).map((a) => getStatusEffect(tables, a.status).kind);
+        const targets =
+          skill.target === 'enemyAll' ? alive(opponentSide(actor.side)) : skill.target === 'enemyRow' ? exposedRow(alive(opponentSide(actor.side))) : singleCandidates(actor.side, skill);
+        return targets.some((c) => isFresh(c, kinds));
+      }
       case 'taunt':
         return !isTaunting(actor);
       case 'buff': {
@@ -338,37 +494,78 @@ export function resolveCombat(tables: GameTables, input: CombatInput): CombatRes
     actor.cooldowns[skill.id] = skill.cooldown;
     const effects: CombatEffect[] = [];
 
-    switch (skill.target) {
-      case 'enemy': {
-        let target = pickSingleTarget(actor.side, rng);
-        for (let h = 0; h < (skill.hits ?? 1) && target; h++) {
-          effects.push(dealDamage(actor, target, skill));
-          if (target.downed) target = pickSingleTarget(actor.side, rng);
+    /** 적 한 명에게: 공격이면 피해 후 상태 효과, debuff면 상태 효과만 */
+    const hitEnemy = (t: Combatant) => {
+      if (skill.kind !== 'debuff') effects.push(dealDamage(actor, t, skill));
+      applyAll(actor, t, skill, effects);
+    };
+    /** 아군 한 명에게: 치유(+정화), 보호막, 강화 */
+    const helpAlly = (t: Combatant) => {
+      if (skill.kind === 'heal') {
+        effects.push(heal(actor, t, skill));
+        if (skill.cleanse) {
+          const c = cleanse(t);
+          if (c) effects.push(c);
         }
-        break;
+      } else if (skill.kind === 'shield') effects.push(applyEffect(actor, t, skill, 'shield', skill.duration));
+      else effects.push(addStatus(t, skill, 'buff'));
+    };
+    const multiHit = (pick: () => Combatant | undefined) => {
+      let target = pick();
+      for (let h = 0; h < (skill.hits ?? 1) && target; h++) {
+        hitEnemy(target);
+        if (target.downed) target = pick();
       }
+    };
+
+    switch (skill.target) {
+      case 'enemy':
+        multiHit(() => pickSingleTarget(actor.side, rng, skill));
+        break;
+      case 'enemyBackLowest':
+        multiHit(() => pickBackLowest(actor.side, rng, skill));
+        break;
+      case 'enemyBackRow':
+        for (const t of backRow(actor.side)) hitEnemy(t);
+        break;
       case 'enemyRow':
-        for (const t of exposedRow(alive(opponentSide(actor.side)))) effects.push(dealDamage(actor, t, skill));
+        for (const t of exposedRow(alive(opponentSide(actor.side)))) hitEnemy(t);
         break;
       case 'enemyAll':
-        for (const t of alive(opponentSide(actor.side))) effects.push(dealDamage(actor, t, skill));
+        for (const t of alive(opponentSide(actor.side))) hitEnemy(t);
         break;
       case 'self':
         effects.push(addStatus(actor, skill, skill.kind === 'taunt' ? 'taunt' : 'buff'));
         break;
       case 'allyLowest': {
-        const target = [...alive(actor.side)].sort((a, b) => a.hp / a.maxHp - b.hp / b.maxHp)[0];
-        effects.push(skill.kind === 'heal' ? heal(actor, target, skill) : addStatus(actor, skill, 'buff'));
+        if (skill.kind === 'shield') {
+          const target = [...shieldCandidates(actor.side)].sort((a, b) => hpRatio(a) - hpRatio(b))[0];
+          if (target) helpAlly(target);
+        } else {
+          const target = [...alive(actor.side)].sort((a, b) => hpRatio(a) - hpRatio(b))[0];
+          if (skill.kind === 'heal') helpAlly(target);
+          else effects.push(addStatus(actor, skill, 'buff'));
+        }
         break;
       }
       case 'allyAll':
-        for (const t of alive(actor.side)) {
-          effects.push(skill.kind === 'heal' ? heal(actor, t, skill) : addStatus(t, skill, 'buff'));
-        }
+        for (const t of alive(actor.side)) helpAlly(t);
         break;
     }
     actor.actions += 1;
     events.push({ type: 'action', round, actor: actor.key, skillId: skill.id, effects });
+  };
+
+  /** 상태 효과의 지속은 받은 유닛의 행동이 끝날 때(기절로 건너뛴 차례 포함) 1씩 준다 */
+  const endTurn = (c: Combatant) => {
+    if (c.downed) return;
+    const fx = c.statuses.filter((s) => s.effectId);
+    for (const s of fx) s.remaining -= 1;
+    for (const s of fx.filter((s) => s.remaining <= 0)) {
+      events.push({ type: 'expire', round, target: c.key, status: s.type, skillId: s.skillId });
+      if (s.type === 'stun') c.stunImmuneUntil = round + (getStatusEffect(tables, s.effectId!).immuneRoundsAfter ?? 1);
+    }
+    c.statuses = c.statuses.filter((s) => s.remaining > 0);
   };
 
   const decided = (): CombatOutcome | undefined => {
@@ -398,15 +595,31 @@ export function resolveCombat(tables: GameTables, input: CombatInput): CombatRes
 
     for (const actor of order) {
       if (actor.downed) continue;
-      act(actor, round);
-      outcome = decided();
+      // 지속 피해: 자기 차례가 시작될 때(지시서 020)
+      const dot = statusOf(actor, 'dot');
+      if (dot) {
+        const amount = dot.value ?? 0;
+        const absorbed = takeDamage(actor, amount);
+        events.push({ type: 'tick', round, target: actor.key, status: 'dot', amount, ...(absorbed ? { absorbed } : {}), hpAfter: actor.hp, downed: actor.downed });
+        outcome = decided();
+        if (outcome) break;
+        if (actor.downed) continue;
+      }
+      if (hasStatus(actor, 'stun')) events.push({ type: 'skip', round, actor: actor.key, reason: 'stun' });
+      else {
+        act(actor, round);
+        outcome = decided();
+      }
+      endTurn(actor);
       if (outcome) break;
     }
     if (outcome) break;
 
+    // 스킬 자체 상태(도발·강화)는 라운드가 끝날 때 줄어든다
     for (const c of all) {
-      for (const s of c.statuses) s.remaining -= 1;
-      for (const s of c.statuses.filter((s) => s.remaining <= 0)) {
+      const own = c.statuses.filter((s) => !s.effectId);
+      for (const s of own) s.remaining -= 1;
+      for (const s of own.filter((s) => s.remaining <= 0)) {
         events.push({ type: 'expire', round, target: c.key, status: s.type, skillId: s.skillId });
       }
       c.statuses = c.statuses.filter((s) => s.remaining > 0);

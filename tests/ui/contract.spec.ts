@@ -17,15 +17,14 @@ async function open(page: Page, screen: string) {
 
 // 계약에는 있지만 아직 지시서가 구현하지 않은 구역. 해당 지시서에서 구현하면 이 목록에서 지운다.
 const PENDING: Record<string, string[]> = {
-  MercDetail: ['growth', 'skills'], // 021 성장률, 020 스킬
-  Battle: ['statusIcons'], // 020 상태 효과
-  Settings: ['help'], // 020 도움말
+  MercDetail: ['growth'], // 021 성장률
 };
 // 서브 탭 화면에서 같이 보이는 부모 화면 구역
 const PARENT_SECTIONS = ['header', 'subtabs'];
 
 for (const sc of SCREENS) {
-  const spec = contract.screens[sc.name];
+  const cname = sc.contractOf ?? sc.name;
+  const spec = contract.screens[cname];
   test.describe(sc.name, () => {
     test.beforeEach(async ({ page }) => open(page, sc.screen));
 
@@ -34,7 +33,7 @@ for (const sc of SCREENS) {
       test.skip(spec.sections.length === 0, '계약에 구역이 없는 제안 화면');
       // 구역 이름은 '화면.구역'(대문자 시작). 소문자로 시작하는 data-ui(예: recruit.level)는 요소 표시라 구역이 아니다
       const found: string[] = (await page.$$eval('[data-ui]', (els) => els.map((e) => e.getAttribute('data-ui')!))).filter((x) => /^[A-Z]/.test(x));
-      const prefix = `${sc.name}.`;
+      const prefix = `${cname}.`;
       const mine = found.filter((x) => x.startsWith(prefix)).map((x) => x.slice(prefix.length));
       const parentIds = sc.parent ? PARENT_SECTIONS.map((id) => `${sc.parent}.${id}`) : [];
       const others = found.filter((x) => !x.startsWith(prefix) && !parentIds.includes(x));
@@ -42,7 +41,7 @@ for (const sc of SCREENS) {
       const ids: string[] = spec.sections.map((s: { id: string }) => s.id);
       const unknown = mine.filter((x) => !ids.includes(x));
       expect(unknown, '계약에 없는 구역').toEqual([]);
-      const pending = PENDING[sc.name] ?? [];
+      const pending = PENDING[cname] ?? [];
       const required = spec.sections
         .filter((s: { optionalChildren?: boolean }) => !s.optionalChildren)
         .map((s: { id: string }) => s.id)
@@ -109,6 +108,61 @@ for (const sc of SCREENS) {
     });
   });
 }
+
+// 020: 계약자 상세 스킬 구역(기본 공격 1 + 액티브 3, 쿨다운 칩, 설명 안의 상태 아이콘), 스크롤 영역
+test('계약자 상세 스킬 구역', async ({ page }) => {
+  await open(page, 'merc');
+  const rows = page.locator('[data-ui="MercDetail.skills"] .skill-row');
+  await expect(rows).toHaveCount(4);
+  await expect(rows.first().locator('.kind')).toHaveText('기본');
+  await expect(rows.first().locator('.cd')).toHaveText('쿨 없음');
+  for (let i = 1; i < 4; i++) {
+    await expect(rows.nth(i).locator('.kind')).toHaveText('액티브');
+    await expect(rows.nth(i).locator('.cd')).toHaveText(/^쿨 \d+$/);
+  }
+  // 픽스처 첫 계약자(강태산: 방패 강타)의 설명에 기절 아이콘
+  await expect(page.locator('[data-ui="MercDetail.skills"] [data-status=stun]')).toHaveCount(1);
+  // 헤더·하단 버튼은 고정, 가운데만 스크롤
+  const sc = await page.$eval('[data-ui="merc.scroll"] .md-scroll-in', (e) => ({ h: e.clientHeight, sh: e.scrollHeight, ov: getComputedStyle(e).overflowY }));
+  expect(sc.ov).toBe('auto');
+  expect(sc.sh).toBeGreaterThan(sc.h);
+});
+
+// 020: 전투 상태 아이콘(초상당 최대 4개 + N), 누르면 설명 시트, 도움말 열기
+test('전투 상태 아이콘과 설명 시트', async ({ page }) => {
+  await open(page, 'replay');
+  const groups = page.locator('[data-ui="battle.status"]');
+  expect(await groups.count()).toBeGreaterThan(0);
+  const counts = await groups.evaluateAll((els) => els.map((e) => e.querySelectorAll('[data-status]').length));
+  for (const n of counts) expect(n).toBeLessThanOrEqual(4);
+  const size = await groups.first().locator('[data-status]').first().boundingBox();
+  expect(Math.round(size!.width)).toBe(16);
+  await groups.first().click();
+  const sheet = page.locator('[data-ui="help.sheet"]');
+  await expect(sheet).toBeVisible();
+  await expect(sheet).toContainText('라운드 남음');
+  await sheet.getByRole('button', { name: '도움말 열기' }).click();
+  await expect(page.locator('[data-ui="Help.topics"]')).toBeVisible();
+  await expect(page.locator('.help-sec-head[aria-expanded=true]')).toContainText('상태 효과');
+});
+
+// 020: 도움말 — 항목은 help.json, 펼친 항목은 하나, 상태 효과 5행, 검색은 부분 일치, 설정에서 진입
+test('도움말 화면', async ({ page }) => {
+  await open(page, 'saves');
+  await page.locator('[data-ui="Settings.help"] button').click();
+  await expect(page.locator('[data-ui="help.section"]')).toHaveCount(6);
+  await expect(page.locator('.help-sec-head[aria-expanded=true]')).toHaveCount(0);
+  await page.locator('.help-sec-head').first().click();
+  await expect(page.locator('.help-body [data-status]')).toHaveCount(5);
+  await page.locator('.help-sec-head').nth(2).click();
+  await expect(page.locator('.help-sec-head[aria-expanded=true]')).toHaveCount(1);
+  await expect(page.locator('.help-sec-head[aria-expanded=true]')).toContainText('역할');
+  await expect(page.locator('.help-body .help-item')).toHaveCount(8);
+  await page.getByRole('searchbox', { name: '용어 검색' }).fill('도발');
+  const titles = await page.locator('.help-sec-head .t').allInnerTexts();
+  expect(titles).toContain('전열과 후열');
+  expect(titles).not.toContain('위험도');
+});
 
 // 017c: 영입 가능·진행 중 카드마다 '레벨/성장 한계' 배지(숫자/숫자), 잠김 카드에는 없다
 test('영입 카드 레벨/성장 한계 배지', async ({ page }) => {

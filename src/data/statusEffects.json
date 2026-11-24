@@ -1,0 +1,49 @@
+{
+  "_note": "지시서 020 상태 효과 5종(초안 skills-draft.json statusEffects). 전투 안에서만 유지. defaultDuration은 스킬 applies에 duration이 없을 때. multiplier: 표식은 받는 피해 배율, 약화는 주는 피해·치유 배율. dot.powerMultiplier: 걸 때 정한 피해(공격 × 스킬 위력 × 방어 감쇠)에 곱하는 값(임시 1.0). stun.immuneRoundsAfter: 풀린 뒤 기절에 걸리지 않는 라운드 수. cleanse가 지우는 효과는 cleansable. 수치는 임시값. description은 화면 문구(시안 Help.html 문구를 따름).",
+  "effects": [
+    {
+      "id": "stun",
+      "name": "기절",
+      "kind": "stun",
+      "defaultDuration": 1,
+      "description": "행동하지 못한다. 풀린 뒤 한 라운드는 다시 걸리지 않는다.",
+      "immuneRoundsAfter": 1,
+      "cleansable": false
+    },
+    {
+      "id": "dot",
+      "name": "지속 피해",
+      "kind": "dot",
+      "defaultDuration": 3,
+      "description": "자기 차례가 시작될 때마다 피해를 입는다(방어 적용).",
+      "powerMultiplier": 1.0,
+      "cleansable": true
+    },
+    {
+      "id": "shield",
+      "name": "보호막",
+      "kind": "shield",
+      "defaultDuration": 3,
+      "description": "체력보다 먼저 피해를 흡수한다. 시간이 끝나면 사라진다.",
+      "cleansable": false
+    },
+    {
+      "id": "mark",
+      "name": "표식",
+      "kind": "mark",
+      "defaultDuration": 2,
+      "multiplier": 1.25,
+      "description": "받는 피해가 25% 늘어난다.",
+      "cleansable": true
+    },
+    {
+      "id": "weaken",
+      "name": "약화",
+      "kind": "weaken",
+      "defaultDuration": 2,
+      "multiplier": 0.75,
+      "description": "주는 피해와 치유량이 25% 줄어든다.",
+      "cleansable": true
+    }
+  ]
+}

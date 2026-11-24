@@ -8,11 +8,11 @@
     "refRetakeMismatch": 0.0049
   },
   "Recruit": {
-    "mismatchRatio": 0.1491,
+    "mismatchRatio": 0.1363,
     "refRetakeMismatch": 0.0081
   },
   "Party": {
-    "mismatchRatio": 0.0529,
+    "mismatchRatio": 0.0527,
     "refRetakeMismatch": 0.0309
   },
   "Result": {
@@ -24,20 +24,20 @@
     "refRetakeMismatch": 0.0255
   },
   "MercDetail": {
-    "mismatchRatio": 0.0399,
-    "refRetakeMismatch": 0.0062
+    "mismatchRatio": 0.0608,
+    "refRetakeMismatch": 0.0176
   },
   "Battle": {
-    "mismatchRatio": 0.0593,
-    "refRetakeMismatch": 0.0076
+    "mismatchRatio": 0.0616,
+    "refRetakeMismatch": 0.0077
   },
   "Base": {
     "mismatchRatio": 0.0274,
     "refRetakeMismatch": 0.01
   },
   "Settings": {
-    "mismatchRatio": 0.0427,
-    "refRetakeMismatch": 0.0186
+    "mismatchRatio": 0.045,
+    "refRetakeMismatch": 0.0201
   },
   "Tower": {
     "mismatchRatio": 0.0769,
@@ -46,5 +46,13 @@
   "Boss": {
     "mismatchRatio": 0.0785,
     "refRetakeMismatch": 0.0026
+  },
+  "Help": {
+    "mismatchRatio": 0.0381,
+    "refRetakeMismatch": 0.0101
+  },
+  "HelpSheet": {
+    "mismatchRatio": 0.0422,
+    "refRetakeMismatch": 0.0065
   }
 }

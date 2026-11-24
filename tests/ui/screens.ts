@@ -6,6 +6,8 @@ export interface ScreenDef {
   screen: string;
   /** 서브 탭 화면이면 부모 화면 이름. 부모의 머리 구역(header·subtabs)은 같이 보인다 */
   parent?: string;
+  /** contract.json에서 이 화면 대신 볼 화면 이름(오버레이 시안) */
+  contractOf?: string;
 }
 
 export const SCREENS: ScreenDef[] = [
@@ -21,6 +23,9 @@ export const SCREENS: ScreenDef[] = [
   { name: 'Tower', screen: 'tower', parent: 'Content' },
   { name: 'Boss', screen: 'boss', parent: 'Content' },
   { name: 'Recruit', screen: 'recruit', parent: 'Content' },
+  { name: 'Help', screen: 'help' },
+  // 시안 HelpSheet: 전투 위의 상태 설명 시트(계약은 Battle 구역을 따른다)
+  { name: 'HelpSheet', screen: 'helpSheet', contractOf: 'Battle' },
 ];
 
 export const appUrl = (port: number, s: ScreenDef) => `http://localhost:${port}/?fixture=ui&screen=${s.screen}`;

@@ -84,10 +84,12 @@ export interface StatContext {
   allyAuras?: TraitEffectRow[];
   /** 치유 대상의 체력 비율(healMul의 hpBelow 판정용) */
   healTargetHpRatio?: number;
+  /** 공격 대상의 체력 비율(targetHpBelow 판정용, 지시서 020). 없으면 가득 */
+  targetHpRatio?: number;
 }
 
 /** 특성 효과 검증에 쓰는 이름 목록(알 수 없는 값은 실패) */
-export const TRAIT_TRIGGERS = ['always', 'battleStart', 'firstAction', 'hpBelow', 'roundStack', 'fromRound'] as const;
+export const TRAIT_TRIGGERS = ['always', 'battleStart', 'firstAction', 'hpBelow', 'targetHpBelow', 'roundStack', 'fromRound'] as const;
 export const TRAIT_CONDITIONS = ['advantage', 'disadvantage', 'enemyElement', 'row'] as const;
 export const TRAIT_EFFECT_KINDS = ['statMul', 'statAdd', 'damageMul', 'damageTakenMul', 'healMul'] as const;
 
@@ -112,6 +114,9 @@ function activeValue(tables: GameTables, row: TraitEffectRow, selfElement: strin
       if ((hp ?? 1) > tr.threshold) return null;
       break;
     }
+    case 'targetHpBelow':
+      if ((ctx.targetHpRatio ?? 1) > tr.threshold) return null;
+      break;
     case 'roundStack':
       value = Math.min(tr.perRound * round, tr.max);
       break;

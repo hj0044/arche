@@ -1,6 +1,6 @@
 {
  "format": "arche-save",
- "version": 8,
+ "version": 9,
  "savedAt": "2026-11-23T00:00:00.000Z",
  "kind": "manual",
  "summary": {
@@ -999,6 +999,204 @@
      "bonusDay": null,
      "recent": []
     }
+   },
+   {
+    "id": "m31",
+    "name": "이설화",
+    "element": "frost",
+    "role": "assassin",
+    "level": 5,
+    "exp": 0,
+    "growth": {
+     "cap": 50,
+     "speed": "normal"
+    },
+    "initialLevel": 5,
+    "profile": {
+     "age": 26,
+     "gender": "여",
+     "hometown": "seoul",
+     "background": "freelancer",
+     "world": "earth",
+     "race": "human"
+    },
+    "affiliation": {
+     "kind": "faction",
+     "factionId": "free"
+    },
+    "loyalty": {
+     "value": 60,
+     "dangerDays": 0,
+     "restStreak": 0,
+     "refusedOnDay": null,
+     "bonusDay": null,
+     "recent": []
+    }
+   },
+   {
+    "id": "m32",
+    "name": "사이토 류",
+    "element": "lightning",
+    "role": "assassin",
+    "level": 2,
+    "exp": 0,
+    "growth": {
+     "cap": 65,
+     "speed": "normal"
+    },
+    "initialLevel": 2,
+    "profile": {
+     "age": 29,
+     "gender": "남",
+     "hometown": "tokyo",
+     "background": "agent",
+     "world": "earth",
+     "race": "human"
+    },
+    "affiliation": {
+     "kind": "faction",
+     "factionId": "waypoint"
+    },
+    "loyalty": {
+     "value": 60,
+     "dangerDays": 0,
+     "restStreak": 0,
+     "refusedOnDay": null,
+     "bonusDay": null,
+     "recent": []
+    }
+   },
+   {
+    "id": "m33",
+    "name": "엘레나 크루즈",
+    "element": "void",
+    "role": "assassin",
+    "level": 4,
+    "exp": 0,
+    "growth": {
+     "cap": 55,
+     "speed": "normal"
+    },
+    "initialLevel": 4,
+    "profile": {
+     "age": 31,
+     "gender": "여",
+     "hometown": "newyork",
+     "background": "mercenary_company",
+     "world": "earth",
+     "race": "human"
+    },
+    "affiliation": {
+     "kind": "faction",
+     "factionId": "dokkaebi"
+    },
+    "loyalty": {
+     "value": 60,
+     "dangerDays": 0,
+     "restStreak": 0,
+     "refusedOnDay": null,
+     "bonusDay": null,
+     "recent": []
+    }
+   },
+   {
+    "id": "m34",
+    "name": "문지안",
+    "element": "wind",
+    "role": "disruptor",
+    "level": 6,
+    "exp": 0,
+    "growth": {
+     "cap": 50,
+     "speed": "normal"
+    },
+    "initialLevel": 6,
+    "profile": {
+     "age": 27,
+     "gender": "여",
+     "hometown": "seoul",
+     "background": "researcher",
+     "world": "earth",
+     "race": "human"
+    },
+    "affiliation": {
+     "kind": "faction",
+     "factionId": "rrb"
+    },
+    "loyalty": {
+     "value": 60,
+     "dangerDays": 0,
+     "restStreak": 0,
+     "refusedOnDay": null,
+     "bonusDay": null,
+     "recent": []
+    }
+   },
+   {
+    "id": "m35",
+    "name": "후지와라 사쿠",
+    "element": "earth",
+    "role": "disruptor",
+    "level": 3,
+    "exp": 0,
+    "growth": {
+     "cap": 60,
+     "speed": "normal"
+    },
+    "initialLevel": 3,
+    "profile": {
+     "age": 33,
+     "gender": "남",
+     "hometown": "tokyo",
+     "background": "corporate",
+     "world": "earth",
+     "race": "human"
+    },
+    "affiliation": {
+     "kind": "faction",
+     "factionId": "archon"
+    },
+    "loyalty": {
+     "value": 60,
+     "dangerDays": 0,
+     "restStreak": 0,
+     "refusedOnDay": null,
+     "bonusDay": null,
+     "recent": []
+    }
+   },
+   {
+    "id": "m36",
+    "name": "레이첼 애덤스",
+    "element": "fire",
+    "role": "disruptor",
+    "level": 5,
+    "exp": 0,
+    "growth": {
+     "cap": 45,
+     "speed": "normal"
+    },
+    "initialLevel": 5,
+    "profile": {
+     "age": 30,
+     "gender": "여",
+     "hometown": "newyork",
+     "background": "citizen",
+     "world": "earth",
+     "race": "human"
+    },
+    "affiliation": {
+     "kind": "faction",
+     "factionId": "free"
+    },
+    "loyalty": {
+     "value": 60,
+     "dangerDays": 0,
+     "restStreak": 0,
+     "refusedOnDay": null,
+     "bonusDay": null,
+     "recent": []
+    }
    }
   ],
   "rifts": [
@@ -1039,7 +1237,7 @@
     "variant": "small"
    },
    {
-    "id": "r120",
+    "id": "r118",
     "cityId": "seoul",
     "tier": "crack",
     "name": "서울 골목 끝 균열",
@@ -1050,20 +1248,14 @@
      {
       "monsterId": "void_hound",
       "grade": "mid",
-      "level": 15,
+      "level": 29,
       "row": "front"
      },
      {
       "monsterId": "husk_guard",
       "grade": "mid",
-      "level": 15,
+      "level": 29,
       "row": "front"
-     },
-     {
-      "monsterId": "spore_spitter",
-      "grade": "mid",
-      "level": 15,
-      "row": "back"
      }
     ],
     "reward": {
@@ -1084,48 +1276,12 @@
     }
    },
    {
-    "id": "r119",
+    "id": "r122",
     "cityId": "seoul",
     "tier": "crack",
     "name": "서울 지하 배수로 균열",
     "appearedDay": 10,
     "deadlineDay": 17,
-    "durationDays": 2,
-    "enemies": [
-     {
-      "monsterId": "void_hound",
-      "grade": "mid",
-      "level": 30,
-      "row": "front"
-     },
-     {
-      "monsterId": "husk_guard",
-      "grade": "mid",
-      "level": 30,
-      "row": "front"
-     }
-    ],
-    "reward": {
-     "zero": 130,
-     "arche": 17,
-     "materials": {}
-    },
-    "fog": {
-     "deadlineOffset": 2,
-     "levelOffset": 1,
-     "countOffset": 1,
-     "rewardU": 0.265
-    },
-    "territoryFactionId": "rrb",
-    "variant": "upper"
-   },
-   {
-    "id": "r122",
-    "cityId": "seoul",
-    "tier": "crack",
-    "name": "서울 공사장 가림막 균열",
-    "appearedDay": 10,
-    "deadlineDay": 18,
     "durationDays": 2,
     "enemies": [
      {
@@ -1165,9 +1321,9 @@
     "id": "r124",
     "cityId": "seoul",
     "tier": "crack",
-    "name": "서울 옥상 물탱크 균열",
+    "name": "서울 공사장 가림막 균열",
     "appearedDay": 10,
-    "deadlineDay": 19,
+    "deadlineDay": 18,
     "durationDays": 2,
     "enemies": [
      {
@@ -1205,6 +1361,48 @@
    },
    {
     "id": "r125",
+    "cityId": "seoul",
+    "tier": "crack",
+    "name": "서울 옥상 물탱크 균열",
+    "appearedDay": 10,
+    "deadlineDay": 19,
+    "durationDays": 2,
+    "enemies": [
+     {
+      "monsterId": "void_hound",
+      "grade": "mid",
+      "level": 20,
+      "row": "front"
+     },
+     {
+      "monsterId": "husk_guard",
+      "grade": "mid",
+      "level": 20,
+      "row": "front"
+     },
+     {
+      "monsterId": "spore_spitter",
+      "grade": "mid",
+      "level": 20,
+      "row": "back"
+     }
+    ],
+    "reward": {
+     "zero": 130,
+     "arche": 17,
+     "materials": {}
+    },
+    "fog": {
+     "deadlineOffset": 2,
+     "levelOffset": 1,
+     "countOffset": 1,
+     "rewardU": 0.265
+    },
+    "territoryFactionId": "rrb",
+    "variant": "upper"
+   },
+   {
+    "id": "r126",
     "cityId": "tokyo",
     "tier": "crack",
     "name": "도쿄 지하 배수로 균열",
@@ -1240,7 +1438,7 @@
     "variant": "small"
    },
    {
-    "id": "r126",
+    "id": "r127",
     "cityId": "tokyo",
     "tier": "crack",
     "name": "도쿄 골목 끝 균열",
@@ -1276,7 +1474,7 @@
     "variant": "base"
    },
    {
-    "id": "r127",
+    "id": "r128",
     "cityId": "tokyo",
     "tier": "gate",
     "name": "도쿄 불 꺼진 항만 관문",
@@ -1320,7 +1518,7 @@
     "variant": "lower"
    },
    {
-    "id": "r128",
+    "id": "r129",
     "cityId": "newyork",
     "tier": "crack",
     "name": "뉴욕 심야 편의점 뒷문 균열",
@@ -1362,7 +1560,7 @@
     "variant": "base"
    },
    {
-    "id": "r129",
+    "id": "r130",
     "cityId": "newyork",
     "tier": "route",
     "name": "뉴욕 가라앉은 도시 항로",
@@ -1728,13 +1926,13 @@
       "type": "action",
       "round": 1,
       "actor": "a2",
-      "skillId": "healer_strike",
+      "skillId": "healer_smite",
       "effects": [
        {
         "kind": "damage",
         "target": "e1",
-        "amount": 9,
-        "hpAfter": 218,
+        "amount": 19,
+        "hpAfter": 208,
         "elementMultiplier": 1,
         "downed": false
        }
@@ -1750,7 +1948,7 @@
         "kind": "damage",
         "target": "e1",
         "amount": 39,
-        "hpAfter": 179,
+        "hpAfter": 169,
         "elementMultiplier": 1,
         "downed": false
        }
@@ -1869,23 +2067,21 @@
       "type": "action",
       "round": 2,
       "actor": "a1",
-      "skillId": "archer_double",
+      "skillId": "archer_mark",
       "effects": [
        {
         "kind": "damage",
         "target": "e1",
-        "amount": 17,
-        "hpAfter": 162,
+        "amount": 11,
+        "hpAfter": 158,
         "elementMultiplier": 1,
         "downed": false
        },
        {
-        "kind": "damage",
+        "kind": "status",
         "target": "e1",
-        "amount": 18,
-        "hpAfter": 144,
-        "elementMultiplier": 1,
-        "downed": false
+        "status": "mark",
+        "duration": 2
        }
       ]
      },
@@ -1928,16 +2124,16 @@
        {
         "kind": "damage",
         "target": "a0",
-        "amount": 31,
-        "hpAfter": 124,
+        "amount": 35,
+        "hpAfter": 120,
         "elementMultiplier": 1,
         "downed": false
        },
        {
         "kind": "damage",
         "target": "a1",
-        "amount": 36,
-        "hpAfter": 48,
+        "amount": 34,
+        "hpAfter": 50,
         "elementMultiplier": 1,
         "downed": false
        }
@@ -1952,16 +2148,16 @@
        {
         "kind": "damage",
         "target": "a0",
-        "amount": 30,
-        "hpAfter": 94,
+        "amount": 32,
+        "hpAfter": 88,
         "elementMultiplier": 1,
         "downed": false
        },
        {
         "kind": "damage",
         "target": "a1",
-        "amount": 34,
-        "hpAfter": 14,
+        "amount": 31,
+        "hpAfter": 19,
         "elementMultiplier": 1,
         "downed": false
        }
@@ -2022,15 +2218,22 @@
       "type": "action",
       "round": 3,
       "actor": "a1",
-      "skillId": "archer_shot",
+      "skillId": "archer_poison",
       "effects": [
        {
         "kind": "damage",
         "target": "e0",
-        "amount": 21,
-        "hpAfter": 165,
+        "amount": 12,
+        "hpAfter": 174,
         "elementMultiplier": 1,
         "downed": false
+       },
+       {
+        "kind": "status",
+        "target": "e0",
+        "status": "dot",
+        "duration": 3,
+        "value": 15
        }
       ]
      },
@@ -2038,15 +2241,13 @@
       "type": "action",
       "round": 3,
       "actor": "a0",
-      "skillId": "commander_strike",
+      "skillId": "commander_analyze",
       "effects": [
        {
-        "kind": "damage",
-        "target": "e1",
-        "amount": 11,
-        "hpAfter": 133,
-        "elementMultiplier": 1,
-        "downed": false
+        "kind": "status",
+        "target": "e0",
+        "status": "mark",
+        "duration": 2
        }
       ]
      },
@@ -2059,12 +2260,21 @@
        {
         "kind": "damage",
         "target": "a0",
-        "amount": 35,
-        "hpAfter": 59,
+        "amount": 37,
+        "hpAfter": 51,
         "elementMultiplier": 1,
         "downed": false
        }
       ]
+     },
+     {
+      "type": "tick",
+      "round": 3,
+      "target": "e0",
+      "status": "dot",
+      "amount": 15,
+      "hpAfter": 159,
+      "downed": false
      },
      {
       "type": "action",
@@ -2075,8 +2285,8 @@
        {
         "kind": "damage",
         "target": "a0",
-        "amount": 37,
-        "hpAfter": 22,
+        "amount": 33,
+        "hpAfter": 18,
         "elementMultiplier": 1,
         "downed": false
        }
@@ -2092,11 +2302,18 @@
         "kind": "damage",
         "target": "a0",
         "amount": 17,
-        "hpAfter": 5,
+        "hpAfter": 1,
         "elementMultiplier": 1,
         "downed": false
        }
       ]
+     },
+     {
+      "type": "expire",
+      "round": 3,
+      "target": "e1",
+      "status": "mark",
+      "skillId": "archer_mark"
      },
      {
       "type": "expire",
@@ -2139,8 +2356,8 @@
        {
         "kind": "damage",
         "target": "e0",
-        "amount": 41,
-        "hpAfter": 124,
+        "amount": 53,
+        "hpAfter": 106,
         "elementMultiplier": 1,
         "downed": false
        }
@@ -2155,8 +2372,8 @@
        {
         "kind": "damage",
         "target": "e1",
-        "amount": 13,
-        "hpAfter": 120,
+        "amount": 12,
+        "hpAfter": 146,
         "elementMultiplier": 1,
         "downed": false
        }
@@ -2171,13 +2388,21 @@
        {
         "kind": "damage",
         "target": "a0",
-        "amount": 55,
+        "amount": 38,
         "hpAfter": 0,
         "elementMultiplier": 1,
-        "downed": true,
-        "crit": true
+        "downed": true
        }
       ]
+     },
+     {
+      "type": "tick",
+      "round": 4,
+      "target": "e0",
+      "status": "dot",
+      "amount": 15,
+      "hpAfter": 91,
+      "downed": false
      },
      {
       "type": "action",
@@ -2188,13 +2413,19 @@
        {
         "kind": "damage",
         "target": "a1",
-        "amount": 101,
+        "amount": 73,
         "hpAfter": 0,
         "elementMultiplier": 1,
-        "downed": true,
-        "crit": true
+        "downed": true
        }
       ]
+     },
+     {
+      "type": "expire",
+      "round": 4,
+      "target": "e0",
+      "status": "mark",
+      "skillId": "commander_analyze"
      },
      {
       "type": "end",
@@ -2252,7 +2483,7 @@
   ],
   "stabilizedRoutes": [],
   "counters": {
-   "rift": 129,
+   "rift": 130,
    "expedition": 2
   },
   "records": {

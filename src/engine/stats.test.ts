@@ -12,8 +12,8 @@ const roster = tables.roster;
 const power = (s: Stats) => statsPower(tables, s);
 
 describe('데이터: 계약자 기본 스탯(roster.json baseStats)', () => {
-  it('30명 모두 baseStats가 있고 역할 바운더리 안이다', () => {
-    expect(roster).toHaveLength(30);
+  it('36명 모두 baseStats가 있고 역할 바운더리 안이다', () => {
+    expect(roster).toHaveLength(36);
     const bad: string[] = [];
     for (const r of roster) {
       expect(r.baseStats, r.id).toBeDefined();

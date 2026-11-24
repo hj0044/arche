@@ -23,7 +23,7 @@ export interface Unit {
   stats: Stats;
   /** 켜진 특성(지시서 016). 몬스터는 비어 있다 */
   traits: TraitRef[];
-  /** [기본 공격, 스킬 1, 스킬 2] */
+  /** [기본 공격, 액티브...] (지시서 020: 계약자 액티브 3개, 몬스터 2개) */
   skills: string[];
   affiliation: Affiliation;
   /** 행동 방식(AI) id. 1단계는 'default' 하나. */
@@ -38,6 +38,17 @@ export interface Unit {
   /** 조합 축 "세계"와 종족(시너지는 2단계). 몬스터는 비워 둔다. */
   world?: string;
   race?: string;
+}
+
+/** 몬스터가 쓰는 액티브 수(지시서 020: 역할 풀의 앞 2개) */
+export const MONSTER_ACTIVE_COUNT = 2;
+/** 계약자 액티브 수 */
+export const MERC_ACTIVE_COUNT = 3;
+
+/** 역할 기본 스킬 묶음: [기본 공격, 풀의 앞 count개] */
+export function roleDefaultSkills(tables: GameTables, roleId: string, count: number): string[] {
+  const role = getRole(tables, roleId);
+  return [role.basicSkill, ...role.skillPool.slice(0, count)];
 }
 
 /** 역할 기본 스탯에 레벨 성장 배율을 곱한다. multiplier는 몬스터 등급 등 외부 배율(핵심 6스탯에만). */
@@ -65,7 +76,6 @@ function monsterStats(tables: GameTables, spec: MonsterSpec, gradeMultiplier: nu
 
 export function createMonster(tables: GameTables, spec: MonsterSpec): Unit {
   const grade = getMonsterGrade(tables, spec.grade);
-  const role = getRole(tables, spec.role);
   return {
     id: spec.id,
     name: spec.name,
@@ -74,7 +84,7 @@ export function createMonster(tables: GameTables, spec: MonsterSpec): Unit {
     level: spec.level,
     stats: monsterStats(tables, spec, grade.statMultiplier),
     traits: [],
-    skills: [...role.skills],
+    skills: roleDefaultSkills(tables, spec.role, MONSTER_ACTIVE_COUNT),
     affiliation: { kind: 'monster' },
     ai: 'default',
     grade: spec.grade,
@@ -91,6 +101,8 @@ export interface MercenarySpec {
   role: string;
   level: number;
   affiliation?: Affiliation;
+  /** 액티브 3개(없으면 역할 풀의 앞 3개) */
+  skills?: string[];
 }
 
 /** 역할 기본 스탯으로 만드는 견본 용병(시뮬레이션·밸런스 도구용). 게임의 계약자는 game.ts mercToUnit이 계약자별 스탯·특성으로 만든다. */
@@ -105,7 +117,7 @@ export function createMercenary(tables: GameTables, spec: MercenarySpec): Unit {
     level: spec.level,
     stats: statsForLevel(tables, spec.role, spec.level),
     traits: [],
-    skills: [...role.skills],
+    skills: spec.skills ? [role.basicSkill, ...spec.skills] : roleDefaultSkills(tables, spec.role, MERC_ACTIVE_COUNT),
     affiliation: spec.affiliation ?? { kind: 'guild' },
     ai: 'default',
     usesGrowth: true,

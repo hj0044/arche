@@ -64,6 +64,7 @@
   - 샘플 전투 로그: `npm run sim -- [시드] [몬스터 레벨] [몬스터 등급]`
   - 며칠 자동 진행 요약: `npm run days -- [일수] [시드]`
   - 레벨·등급별 승률 표: `npm run balance -- [시드 수]`
+  - 상태 효과를 뺀 데이터와 승률 비교(지시서 020): `npm run status-impact -- [시드 수]`
   - 용병 표 다시 만들기(CSV → `src/data/roster.json`): `npm run import-roster`
   - 예상 위험도와 실제 승률 비교표: `npm run risk-check -- [실제 승률용 시드 수]`
   - 충성도 값 조합 비교표: `npm run loyalty-sweep -- [일수] [시드 수]`

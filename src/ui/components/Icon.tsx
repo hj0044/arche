@@ -7,6 +7,8 @@ export type IconName =
   | 'logo'
   | 'gear'
   | 'back'
+  | 'chevronDown'
+  | 'chevronUp'
   | 'home'
   | 'compass'
   | 'users'
@@ -47,6 +49,18 @@ export function Icon({ name, size, style, className }: { name: IconName; size?: 
       return (
         <svg width={size ?? 22} height={size ?? 22} viewBox="0 0 24 24" {...stroke} {...common}>
           <path d="M15 5l-7 7 7 7" />
+        </svg>
+      );
+    case 'chevronDown':
+      return (
+        <svg width={size ?? 18} height={size ?? 18} viewBox="0 0 24 24" {...stroke} {...common}>
+          <path d="M6 9l6 6 6-6" />
+        </svg>
+      );
+    case 'chevronUp':
+      return (
+        <svg width={size ?? 18} height={size ?? 18} viewBox="0 0 24 24" {...stroke} {...common}>
+          <path d="M6 15l6-6 6 6" />
         </svg>
       );
     case 'home':

@@ -26,7 +26,8 @@
     "variance-sweep": "tsx scripts/variance-sweep.ts",
     "ui:shots": "tsx scripts/ui-shots.ts",
     "ui:check": "playwright test --config tests/ui/playwright.config.ts",
-    "make-ui-fixture": "tsx scripts/make-ui-fixture.ts"
+    "make-ui-fixture": "tsx scripts/make-ui-fixture.ts",
+    "status-impact": "tsx scripts/status-impact.ts"
   },
   "dependencies": {
     "react": "^19.3.1",

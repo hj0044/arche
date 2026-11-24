@@ -47,7 +47,7 @@ export function balanceTable(tables: GameTables, seeds: number): BalanceRow[] {
   // 시작 조합 4인 표본: 시작 계약자 후보 4명의 속성·역할을 Lv5로 맞춤. 합법 등급 범위의 조건만 쓴다.
   const starters = tables.roster.filter((r) => r.startingCandidate);
   const startParty = starters.map((r) => ({
-    unit: createMercenary(tables, { id: r.id, name: r.name, element: r.element, role: r.role, level: 5 }),
+    unit: createMercenary(tables, { id: r.id, name: r.name, element: r.element, role: r.role, level: 5, skills: r.skills }),
     row: tables.roles.find((x) => x.id === r.role)!.defaultRow,
   }));
   for (const [grade, el, count] of [['low', 12, 3], ['mid', 15, 3], ['mid', 20, 3]] as [string, number, number][]) {
@@ -55,8 +55,24 @@ export function balanceTable(tables: GameTables, seeds: number): BalanceRow[] {
     if (el < range[0] || el > range[1]) throw new Error(`${grade} 범위 밖 레벨: ${el}`);
     rows.push({ key: `시작 4인 Lv5 vs ${gname(grade)} Lv${el}×${count}`, rate: run(startParty, () => enemies(el, grade, count)) });
   }
+  // 지시서 020: 자객·기만자를 넣은 5인(저격수 자리에 자객, 마도사 자리에 기만자, 둘 다)
+  const variants: [string, [string, string, 'front' | 'back'][]][] = [
+    ['기본', partyRoles],
+    ['자객', partyRoles.map((x) => (x[0] === 'archer' ? ['assassin', 'void', 'front'] : x))],
+    ['기만자', partyRoles.map((x) => (x[0] === 'mage' ? ['disruptor', 'wind', 'back'] : x))],
+    ['자객+기만자', partyRoles.map((x) => (x[0] === 'archer' ? ['assassin', 'void', 'front'] : x[0] === 'mage' ? ['disruptor', 'wind', 'back'] : x))],
+  ];
+  for (const [name, roles] of variants)
+    for (const L of [10, 30])
+      for (const [g, c] of [['high', 4], ['extreme', 3], ['extreme', 4]] as [string, number][]) {
+        const allies = roles.map(([role, element, row], i) => ({ unit: createMercenary(tables, { id: `q${i}`, name: role, element, role, level: L }), row }));
+        rows.push({ key: `${name} Lv${L} vs ${gname(g)}×${c}`, rate: run(allies, () => enemies(L, g, c)) });
+      }
   return rows;
 }
+
+/** 지시서 020 표의 변형 이름 */
+export const ROLE_VARIANTS = ['기본', '자객', '기만자', '자객+기만자'];
 
 if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
   const tables = baseTables;
@@ -77,4 +93,8 @@ if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
   console.log(`\n시작 조합 4인(${starters.map((r) => r.name).join('·')}) Lv5`);
   for (const [grade, el, count] of [['low', 12, 3], ['mid', 15, 3], ['mid', 20, 3]] as [string, number, number][])
     console.log(`vs ${gname(grade)} Lv${el}×${count}: ${p(`시작 4인 Lv5 vs ${gname(grade)} Lv${el}×${count}`)}%`);
+  console.log('\n자객·기만자 포함 5인(저격수→자객, 마도사→기만자) 승률 %');
+  console.log('구성\tLv10 상급×4\tLv10 최상급×3\tLv10 최상급×4\tLv30 상급×4\tLv30 최상급×3\tLv30 최상급×4');
+  for (const v of ROLE_VARIANTS)
+    console.log([v, ...[10, 30].flatMap((L) => ([['high', 4], ['extreme', 3], ['extreme', 4]] as [string, number][]).map(([g, c]) => p(`${v} Lv${L} vs ${gname(g)}×${c}`)))].join('\t'));
 }
