@@ -1,5 +1,5 @@
 import { getRole, type GameTables } from '../data';
-import { elementMultiplier } from './combat';
+import { compositionGroup, elementMultiplier } from './combat';
 import { isAvailable, type GameState, type MercenaryState, type PartyMember } from './game';
 import { visibleRift } from './facilities';
 import type { Rift } from './rift';
@@ -53,8 +53,8 @@ export function autoParty(tables: GameTables, state: GameState, rift: Rift): Par
   if (cfg.includeProtagonist) take(pool.find((m) => m.isProtagonist));
   if (cfg.fillGroupsFirst) {
     for (const group of tables.combat.composition.groups) {
-      if (picked.some((m) => getRole(tables, m.role).group === group)) continue;
-      take(pool.find((m) => !picked.includes(m) && getRole(tables, m.role).group === group));
+      if (picked.some((m) => compositionGroup(tables, m.role) === group)) continue;
+      take(pool.find((m) => !picked.includes(m) && compositionGroup(tables, m.role) === group));
     }
   }
   for (const m of pool) take(m);

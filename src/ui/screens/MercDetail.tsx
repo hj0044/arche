@@ -1,6 +1,7 @@
 /**
- * 계약자 상세(시안 MercDetail, 지시서 017). 구역 순서: header · identity · coreStats · subStats · traits · actions.
- * 시안에 자리가 없는 프로필·스킬(이름 영역), 충성도 기록·급료 보너스(충성도 칸), 훈련 배치(훈련 버튼)는 바텀 시트로 흡수했다.
+ * 계약자 상세(시안 MercDetail, 지시서 017·020). 구역 순서: header · identity · coreStats · subStats · (growth: 021) · skills · traits · actions.
+ * 영웅 그림 아래(스탯~특성)는 스크롤(merc.scroll), 헤더와 하단 버튼은 고정이다.
+ * 시안에 자리가 없는 프로필(이름 영역), 충성도 기록·급료 보너스(충성도 칸), 훈련 배치(훈련 버튼)는 바텀 시트로 흡수했다.
  */
 import { useState } from 'react';
 import { getRole, getSkill, tables } from '../../data';
@@ -25,23 +26,15 @@ import {
   unassignFromFacility,
 } from '../../engine/game';
 import { trainingAccess } from '../../engine/status';
-import { Gauge, Portrait, Sheet, StatRow, TraitRow } from '../components';
+import { Gauge, Portrait, Sheet, StatRow, TextWithStatus, TraitRow } from '../components';
 import { Icon } from '../components';
 import { loyaltyDisplay, loyaltyTier, tendencyOf } from '../../engine/loyalty';
 import { allyAuraRows, computeEffectiveStats, getTrait } from '../../engine/stats';
 import { assignedFacility, getFacility } from '../../engine/facilities';
-import { injuryText, loyaltyReasonName, backgroundShort, cityName, factionName, growthSpeedName, num, tierName, worldName, statsLabel, term, statValue, traitName, traitCategoryName, roleName, elementName } from '../format';
+import { injuryText, loyaltyReasonName, backgroundShort, cityName, factionName, growthSpeedName, num, tierName, worldName, term, statValue, traitName, traitCategoryName, roleName, elementName } from '../format';
 import { statBarMax } from '../mercInfo';
 import type { Ctx } from '../nav';
 
-const SKILL_DESC: Record<string, string> = {
-  enemy: '적 하나',
-  enemyRow: '적 한 열',
-  enemyAll: '적 전체',
-  self: '자신',
-  allyLowest: '체력이 가장 낮은 아군',
-  allyAll: '아군 전체',
-};
 
 export function MercDetail({ ctx, mercId }: { ctx: Ctx; mercId: string }) {
   const s = ctx.game.state;
@@ -124,14 +117,14 @@ export function MercDetail({ ctx, mercId }: { ctx: Ctx; mercId: string }) {
 
   return (
     <div className="scr" data-screen="merc">
-      <main className="scr-body shell-body">
+      <main className="scr-body shell-body" style={{ overflow: 'hidden' }}>
         <div className="md-hero">
           <Portrait id={m.id} element={m.element} role={m.role} fill />
           <div className="md-hero-shade" />
           <button className="md-back" aria-label="뒤로" data-ui="MercDetail.header" onClick={() => ctx.go({ name: 'mercs' })}>
             <Icon name="back" />
           </button>
-          <button className="md-id" data-ui="MercDetail.identity" aria-label={`${m.name} 프로필·스킬`} onClick={() => setSheet('profile')}>
+          <button className="md-id" data-ui="MercDetail.identity" aria-label={`${m.name} 프로필`} onClick={() => setSheet('profile')}>
             <span className="col" style={{ gap: 3, minWidth: 0 }}>
               <span className="row" style={{ gap: 6 }}>
                 <span className="md-chip" style={{ ['--chip' as string]: 'var(--c-info)' }}>
@@ -155,7 +148,8 @@ export function MercDetail({ ctx, mercId }: { ctx: Ctx; mercId: string }) {
             </span>
           </button>
         </div>
-        <div className="col" style={{ padding: '8px 16px 0', gap: 6 }} data-role="page">
+        <div className="md-scroll" data-ui="merc.scroll">
+        <div className="md-scroll-in" data-role="page">
           <Gauge ratio={capped ? 1 : m.exp / need} size="h6" color="linear-gradient(90deg, var(--c-ok), var(--c-gold))" />
           <div className="col" style={{ gap: 6 }} data-ui="MercDetail.coreStats">
             <StatRow items={[stat('hp'), stat('spd')]} />
@@ -178,6 +172,31 @@ export function MercDetail({ ctx, mercId }: { ctx: Ctx; mercId: string }) {
                 <b style={tier?.warn ? { color: 'var(--c-warn)' } : undefined}>{tier ? tier.name : '—'}</b>
               </span>
             </button>
+          </div>
+          {/* 지시서 020: 스킬(기본 공격 1 + 액티브 3). 성장률 구역(growth)은 021에서 이 앞에 들어간다 */}
+          <div className="col" style={{ gap: 6 }} data-ui="MercDetail.skills">
+            <div className="row between" style={{ alignItems: 'baseline', marginTop: 2 }}>
+              <span style={{ fontSize: 16, fontWeight: 500 }}>스킬</span>
+              <span className="sub">
+                기본 공격 1 · 액티브 {unit.skills.length - 1}
+              </span>
+            </div>
+            {unit.skills.map((id, i) => {
+              const sk = getSkill(tables, id);
+              const basic = i === 0;
+              return (
+                <div key={id} className="skill-row" style={{ ['--kind' as string]: basic ? 'var(--trait-common)' : 'var(--trait-role)' }}>
+                  <span className="kind">{basic ? '기본' : '액티브'}</span>
+                  <div className="col grow" style={{ minWidth: 0 }}>
+                    <span className="nm">{sk.name}</span>
+                    <span className="ds">
+                      <TextWithStatus text={sk.description ?? ''} />
+                    </span>
+                  </div>
+                  <span className={`cd ${sk.cooldown ? '' : 'none'}`}>{sk.cooldown ? `쿨 ${sk.cooldown}` : '쿨 없음'}</span>
+                </div>
+              );
+            })}
           </div>
           <div className="col" style={{ gap: 6 }} data-ui="MercDetail.traits">
             <div className="row between" style={{ alignItems: 'baseline', marginTop: 2 }}>
@@ -202,7 +221,8 @@ export function MercDetail({ ctx, mercId }: { ctx: Ctx; mercId: string }) {
             })}
           </div>
         </div>
-        <div className="grow" />
+        <div className="md-scroll-fade" />
+        </div>
       </main>
       <div className="foot" style={{ paddingTop: 0, paddingBottom: 12 }} data-ui="MercDetail.actions">
         {isGuild ? (
@@ -239,28 +259,6 @@ export function MercDetail({ ctx, mercId }: { ctx: Ctx; mercId: string }) {
             {m.unpaidUpkeep && <Kv k="유지비 미납" v={`${m.unpaidUpkeep.days}일 · 제로 ${num(m.unpaidUpkeep.zero)}`} />}
             {!isGuild && info.eligible && unlockText && <Kv k="영입 조건" v={`${unlockText} (${info.progress?.current}/${info.progress?.required})`} />}
           </dl>
-          <span className="sec-title" style={{ fontSize: 15 }}>
-            스킬
-          </span>
-          <ul className="col" style={{ gap: 6, margin: 0, padding: 0, listStyle: 'none' }}>
-            {unit.skills.map((id, i) => {
-              const sk = getSkill(tables, id);
-              return (
-                <li key={id} className="col" style={{ gap: 1 }}>
-                  <span className="t14 m">
-                    {sk.name} <span className="sub">{i === 0 ? '기본 공격' : `쿨다운 ${sk.cooldown}`}</span>
-                  </span>
-                  <span className="sub">
-                    {SKILL_DESC[sk.target]}
-                    {sk.power ? ` · 위력 ${sk.power}${sk.hits ? `×${sk.hits}` : ''}` : ''}
-                    {sk.kind === 'taunt' ? ` · 도발 ${sk.duration}라운드` : ''}
-                    {sk.kind === 'buff' ? ` · ${statsLabel(sk.stats)} +${Math.round((sk.amount ?? 0) * 100)}% ${sk.duration}라운드` : ''}
-                    {sk.kind === 'heal' ? ' · 회복' : ''}
-                  </span>
-                </li>
-              );
-            })}
-          </ul>
           <p className="sub" style={{ margin: 0 }}>
             스킬 속성은 {term.merc} 속성을 따릅니다. 능력치는 레벨·충성도와 항상 켜진 특성을 반영한 값이고, 조건이 붙은 특성은 전투 중에만 더해집니다.
           </p>

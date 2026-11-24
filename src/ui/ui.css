@@ -338,3 +338,54 @@ html, body, #root { margin: 0; height: 100%; background: var(--c-page); }
 .filter-count { position: absolute; top: -5px; right: -5px; min-width: 16px; height: 16px; border-radius: 8px; background: var(--c-gold); color: var(--c-gold-ink); font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; padding: 0 3px; }
 .filter-group { display: flex; flex-direction: column; gap: 6px; }
 .filter-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+
+/* ── 지시서 020: 상태 효과 아이콘·스킬 행·도움말 ───────────── */
+.status-icon { flex: none; border-radius: 50%; display: inline-block; }
+.status-inline { white-space: nowrap; }
+.status-inline > .status-icon { vertical-align: -2px; }
+/* 계약자 상세: 영웅 그림 아래는 스크롤, 아래 가장자리 흐림(시안 merc.scroll) */
+.md-scroll { position: relative; flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.md-scroll-in { flex: 1; min-height: 0; overflow-y: auto; padding: 8px 16px 28px; display: flex; flex-direction: column; gap: 6px; }
+.md-scroll-fade { position: absolute; left: 0; right: 0; bottom: 0; height: 28px; background: linear-gradient(180deg, var(--c-scrim-0), var(--c-bg)); pointer-events: none; }
+.skill-row { box-sizing: border-box; background: var(--c-panel); border: 1px solid var(--c-line); border-left: 4px solid var(--kind); border-radius: var(--r-btn); padding: 6px 10px; display: flex; align-items: center; gap: 10px; min-height: 44px; }
+.skill-row .kind { flex: none; font-size: 11px; font-weight: 700; color: var(--kind); background: var(--c-chip-faint); border-radius: 6px; padding: 2px 6px; }
+.skill-row .nm { font-size: 14px; font-weight: 500; }
+.skill-row .ds { font-size: 12px; color: var(--c-text-sub); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.skill-row .cd { flex: none; font-size: 11px; color: var(--c-text-sub); border: 1px solid var(--c-line-dim); border-radius: var(--r-pill); padding: 1px 8px; }
+.skill-row .cd.none { border: 0; padding: 0; color: var(--c-text-faint); }
+/* 전투: 초상 오른쪽 아래 상태 아이콘 묶음 */
+.bt-status { position: absolute; right: 3px; bottom: 3px; display: flex; gap: 2px; padding: 2px; border-radius: var(--r-pill); background: var(--c-scrim-status); z-index: 2; }
+.bt-status-hit { position: absolute; right: -4px; bottom: -4px; min-width: 44px; min-height: 44px; display: flex; align-items: flex-end; justify-content: flex-end; padding: 7px; z-index: 2; }
+.bt-status-hit .bt-status { position: static; }
+.bt-status .more { font-size: 11px; font-weight: 700; line-height: 16px; padding: 0 2px; color: var(--c-text); }
+/* 상태 설명 시트(시안 HelpSheet) */
+.st-dim { position: fixed; inset: 0; background: var(--c-sheet-dim); z-index: 30; display: flex; align-items: flex-end; justify-content: center; }
+.st-sheet { width: 100%; max-width: 430px; box-sizing: border-box; background: var(--c-panel); border-top: 1px solid var(--c-line-dim); border-radius: 20px 20px 0 0; padding: 10px 20px 20px; display: flex; flex-direction: column; gap: 10px; color: var(--c-text); font-family: var(--font); }
+.st-grip { align-self: center; width: 40px; height: 4px; border-radius: 2px; background: var(--c-line-dim); }
+.st-desc { font-size: 14px; color: var(--c-text-banner); line-height: 1.4; }
+.st-other { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--c-text-banner); }
+.st-btn { box-sizing: border-box; flex: 1; height: 48px; border-radius: var(--r-card); font-size: 15px; display: flex; align-items: center; justify-content: center; background: var(--c-panel-2); color: var(--c-text); border: 1px solid var(--c-line-dim); font-family: var(--font); }
+.st-btn.gold { background: var(--c-gold); color: var(--c-gold-ink); font-weight: 700; border: 0; }
+/* 도움말(시안 Help) */
+.help-top { padding: 16px 20px 0; display: flex; flex-direction: column; gap: 8px; }
+.help-search-hit { display: flex; align-items: center; min-height: 44px; }
+.help-search-hit > .help-search { flex: 1; }
+.help-head { display: flex; align-items: center; gap: 8px; height: 40px; }
+.help-head .back { width: 44px; height: 44px; margin-left: -12px; display: flex; align-items: center; justify-content: center; color: var(--c-text); }
+.help-search { box-sizing: border-box; height: 40px; background: var(--c-panel); border: 1px solid var(--c-line); border-radius: var(--r-chip); display: flex; align-items: center; gap: 8px; padding: 0 12px; color: var(--c-text-sub); font-size: 14px; }
+.help-search input { flex: 1; min-width: 0; height: 100%; background: transparent; border: 0; outline: 0; color: var(--c-text); font: inherit; }
+.help-search input::placeholder { color: var(--c-text-sub); }
+.help-list { padding: 8px 20px 20px; display: flex; flex-direction: column; }
+.help-sec { border-top: 1px solid var(--c-line); }
+.help-sec-head { width: 100%; min-height: 52px; display: flex; align-items: center; gap: 10px; padding: 6px 0; text-align: left; color: var(--c-text); }
+.help-sec-head .t { font-size: 15px; font-weight: 400; }
+.help-sec-head[aria-expanded='true'] .t { font-weight: 500; }
+.help-sec-head .s { font-size: 12px; color: var(--c-text-sub); }
+.help-body { padding: 0 0 8px; display: flex; flex-direction: column; }
+.help-item { display: flex; align-items: flex-start; gap: 12px; padding: 8px 0 8px 2px; }
+.help-item .nm { font-size: 14px; font-weight: 700; }
+.help-item .ds { font-size: 12.5px; color: var(--c-text-banner); line-height: 1.35; }
+.help-note { font-size: 12px; color: var(--c-text-sub); padding: 4px 0 0 2px; line-height: 1.4; }
+.help-ul { margin: 0; padding: 4px 0 4px 18px; display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--c-text-banner); line-height: 1.4; }
+.help-dot { flex: none; width: 12px; height: 12px; margin-top: 4px; border-radius: 50%; background: var(--sw, var(--c-line-dim)); }
+.bt-layer { position: absolute; inset: 0; }

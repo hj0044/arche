@@ -162,12 +162,20 @@ describe('세이브 v6(리프트 영역 세력)', () => {
   });
 });
 
+describe('세이브 v9(지시서 020)', () => {
+  it('버전은 9이고 v8 세이브는 지원하지 않는 세이브로 거절한다', () => {
+    expect(SAVE_VERSION).toBe(9);
+    const file = JSON.parse(serializeSave(createSaveFile(playedState(), 'manual')));
+    expect(() => parseSave(JSON.stringify({ ...file, version: 8 }))).toThrow(/지원하지 않는 세이브/);
+  });
+});
+
 describe('세이브 v8(특성 단계)', () => {
   it('traitRanks를 저장하고 불러오면 그대로 돌아오고 의미 검증을 통과한다', () => {
     const s = playedState();
     const withRanks = { ...s, mercenaries: s.mercenaries.map((m) => (m.id === 'm01' ? { ...m, traitRanks: { sturdy: 1 } } : m)) };
     const up = parseSave(serializeSave(createSaveFile(withRanks, 'manual')), { ...tables, limits: saveLimits });
-    expect(SAVE_VERSION).toBe(8);
+    expect(SAVE_VERSION).toBeGreaterThanOrEqual(8);
     expect(up.state.mercenaries.find((m) => m.id === 'm01')?.traitRanks).toEqual({ sturdy: 1 });
   });
   it('없는 특성이나 범위 밖 단계는 거절한다', () => {

@@ -1,6 +1,6 @@
 import { getGrowthSpeed, getRiftTier, travelDays, type GameTables, type Outcome, type Row, type Stats, type UnlockRule } from '../data';
 import { activeTraits, newlyUnlockedTraits, roleBaseStats, statsAtLevel } from './stats';
-import { resolveCombat, validateParty, type CombatEvent, type CombatSlot } from './combat';
+import { compositionGroup, resolveCombat, validateParty, type CombatEvent, type CombatSlot } from './combat';
 import { rollInjuries, type Injury } from './injury';
 import { rollPreemption } from './preemption';
 import { expShare, generateRift, riftEnemySlots, riftModifiers, riftReward, type Rift, type RiftReward } from './rift';
@@ -18,7 +18,7 @@ import {
   type FacilitiesState,
 } from './facilities';
 import { applyLoyalty, isLoyaltySimulated, loyaltyTier, newLoyalty, type LoyaltyState } from './loyalty';
-import type { Affiliation, Unit } from './unit';
+import { MERC_ACTIVE_COUNT, roleDefaultSkills, type Affiliation, type Unit } from './unit';
 
 export class GameError extends Error {}
 
@@ -267,6 +267,10 @@ export function mercBaseStats(tables: GameTables, m: MercenaryState): Stats {
 /** 계약자의 특성 슬롯 목록(roster.json traits, 주인공은 없음) */
 export const mercTraitIds = (tables: GameTables, m: MercenaryState): string[] => tables.roster.find((r) => r.id === m.id)?.traits ?? [];
 
+/** 계약자의 액티브 스킬 3개(roster.json skills, 주인공은 역할 풀의 앞 3개, 지시서 020) */
+export const mercSkillIds = (tables: GameTables, m: { id: string; role: string }): string[] =>
+  tables.roster.find((r) => r.id === m.id)?.skills ?? roleDefaultSkills(tables, m.role, MERC_ACTIVE_COUNT).slice(1);
+
 /**
  * 레벨 성장과 충성도 배율까지 적용한 스탯(특성 전). 충성도 구간 배율은 공격·방어(물리·에너지 모두)에 곱한다.
  */
@@ -290,7 +294,7 @@ export function mercToUnit(tables: GameTables, m: MercenaryState): Unit {
     level: m.level,
     stats: loyaltyAdjustedStats(tables, m),
     traits: activeTraits(tables, mercTraitIds(tables, m), m.level, m.traitRanks),
-    skills: [...role.skills],
+    skills: [role.basicSkill, ...mercSkillIds(tables, m)],
     affiliation: m.affiliation,
     ai: 'default',
     usesLoyalty: !!m.loyalty,
@@ -312,7 +316,7 @@ const PROTAGONIST_ID = 'hero';
  */
 export function pickCandidateToLeave(tables: GameTables, protagonistRole: string): string | undefined {
   const candidates = tables.roster.filter((r) => r.startingCandidate);
-  const group = (role: string) => tables.roles.find((r) => r.id === role)?.group;
+  const group = (role: string) => compositionGroup(tables, role);
   const sameRole = candidates.filter((c) => c.role === protagonistRole);
   const sameGroup = candidates.filter((c) => group(c.role) === group(protagonistRole));
   return (sameRole.at(-1) ?? sameGroup.at(-1) ?? candidates.at(-1))?.id;

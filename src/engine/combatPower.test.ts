@@ -92,14 +92,14 @@ describe('예상 위험도', () => {
     const v = visibleRift(tables, fsAt(1), rift());
     const cases = visibleCases(v);
     expect(cases).toHaveLength(4);
-    // 절벽 근처 레벨을 찾아 구간이 생기는지 본다
+    // 절벽 근처 레벨을 찾아 구간이 생기는지 본다(지시서 020: 액티브 3개로 4인은 Lv1부터 압도라 2인으로 본다)
     const lv = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].find((l) => {
-      const e = estimateRisk(tables, party(l), v);
+      const e = estimateRisk(tables, party(l, 2), v);
       return e.best.id !== e.worst.id;
     });
     expect(lv).toBeDefined();
-    const tiers = cases.map((c) => riskTierOf(tables, simulatedWinRate(tables, party(lv!), estimatedEnemies(tables, v, c.level, c.count), v.riftId)).id);
-    const e = estimateRisk(tables, party(lv!), v);
+    const tiers = cases.map((c) => riskTierOf(tables, simulatedWinRate(tables, party(lv!, 2), estimatedEnemies(tables, v, c.level, c.count), v.riftId)).id);
+    const e = estimateRisk(tables, party(lv!, 2), v);
     expect(e.estimated).toBe(true);
     expect(e.best.id).toBe(order[Math.min(...tiers.map(rank))]);
     expect(e.worst.id).toBe(order[Math.max(...tiers.map(rank))]);

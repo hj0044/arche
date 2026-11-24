@@ -55,7 +55,8 @@ describe('018 5: 행동 순서 흔들림', () => {
   it('speedJitter 0이면 변경 전(main)과 전투 결과가 같다', () => {
     const h = createHash('sha256');
     for (let i = 0; i < 300; i++) h.update(JSON.stringify(resolveCombat(withJitter(0), fightOf(i)).events));
-    expect(h.digest('hex')).toBe('ebfd2fffb044dc1bb8b0cc5217f75595ffc4d866213c562297bc655874aa9c52');
+    // 기준 해시는 지시서 020(스킬 구조·상태 효과)에서 다시 잡았다. 그 뒤로 전투 규칙이 바뀌면 이 값도 바뀐다
+    expect(h.digest('hex')).toBe('f12f7b3b68ff99824503cc132a638a14d8cefa4297149f80774fb5a1f8b7374f');
   });
 
   it('speedJitter > 0에서도 같은 시드 = 같은 결과(2,000개 시드)', () => {

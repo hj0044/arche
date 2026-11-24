@@ -1,5 +1,5 @@
 {
- "_note": "특성(지시서 016 [제안], 효과 수치는 모두 임시값). 한 단계 = effects 배열, 효과 하나 = { trigger, condition?, effect }. trigger: always, battleStart(rounds), firstAction, hpBelow(threshold), roundStack(perRound, max: 값은 min(라운드 × perRound, max)이고 effect.value는 쓰지 않음), fromRound(round). condition: advantage(내 공격이 상성 유리), disadvantage(상대 공격이 나에게 상성 유리), enemyElement(element: 상대 속성), row(row). effect.kind: statMul, statAdd, damageMul, damageTakenMul, healMul. scope: self | allies(allies는 always·battleStart만). hpBelow의 healMul은 치유받는 대상의 체력으로 판정한다. 지시서 017b: 1단계 몬스터가 공허뿐이라 상성 조건 특성이 발동하지 않는 문제로, 속성 친화 7종·공명에 '상시 자기 속성 스킬 피해 +4%'(스킬 속성 = 계약자 속성이라 조건 없는 damageMul), 서리의 결정에 상시 에너지공격 +4%를 더했다(임시값). 적응력·공허의 이해는 그대로.",
+ "_note": "특성(지시서 016 [제안], 효과 수치는 모두 임시값). 한 단계 = effects 배열, 효과 하나 = { trigger, condition?, effect }. trigger: always, battleStart(rounds), firstAction, hpBelow(threshold), roundStack(perRound, max: 값은 min(라운드 × perRound, max)이고 effect.value는 쓰지 않음), fromRound(round). condition: advantage(내 공격이 상성 유리), disadvantage(상대 공격이 나에게 상성 유리), enemyElement(element: 상대 속성), row(row). effect.kind: statMul, statAdd, damageMul, damageTakenMul, healMul. scope: self | allies(allies는 always·battleStart만). hpBelow의 healMul은 치유받는 대상의 체력으로 판정한다. 지시서 017b: 1단계 몬스터가 공허뿐이라 상성 조건 특성이 발동하지 않는 문제로, 속성 친화 7종·공명에 '상시 자기 속성 스킬 피해 +4%'(스킬 속성 = 계약자 속성이라 조건 없는 damageMul), 서리의 결정에 상시 에너지공격 +4%를 더했다(임시값). 적응력·공허의 이해는 그대로. 지시서 020: trigger targetHpBelow(threshold: 공격 대상의 체력 비율 이하, damageMul에서만)를 더했다. 역할 특성 18개·자객·기만자 고유 특성 6개 추가(초안 newTraits).",
  "slotUnlockLevels": [
   5,
   15,
@@ -2117,6 +2117,743 @@
         "scope": "allies",
         "stat": "eDef",
         "value": 0.06
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "iron_wall",
+   "name": "철벽 대열",
+   "category": "role",
+   "description": "받는 피해 −5%",
+   "allowed": {
+    "roles": [
+     "shield"
+    ]
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "damageTakenMul",
+        "scope": "self",
+        "value": -0.05
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "guardian_oath",
+   "name": "수호의 맹세",
+   "category": "role",
+   "description": "아군 전원 물리방어 +4%",
+   "allowed": {
+    "roles": [
+     "shield"
+    ]
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "allies",
+        "stat": "pDef",
+        "value": 0.04
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "berserk_blood",
+   "name": "광전사의 피",
+   "category": "role",
+   "description": "체력 50% 이하에서 피해 +15%",
+   "allowed": {
+    "roles": [
+     "warrior"
+    ]
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "hpBelow",
+        "threshold": 0.5
+       },
+       "effect": {
+        "kind": "damageMul",
+        "scope": "self",
+        "value": 0.15
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "vanguard_charge",
+   "name": "선봉 돌격",
+   "category": "role",
+   "description": "첫 행동 피해 +20%",
+   "allowed": {
+    "roles": [
+     "warrior"
+    ]
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "firstAction"
+       },
+       "effect": {
+        "kind": "damageMul",
+        "scope": "self",
+        "value": 0.2
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "hawk_eye",
+   "name": "매의 눈",
+   "category": "role",
+   "description": "치명타율 +6%p",
+   "allowed": {
+    "roles": [
+     "archer"
+    ]
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statAdd",
+        "scope": "self",
+        "stat": "crit",
+        "value": 0.06
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "hunter_instinct",
+   "name": "사냥꾼의 본능",
+   "category": "role",
+   "description": "체력 50% 이하 적에게 피해 +10%",
+   "allowed": {
+    "roles": [
+     "archer"
+    ]
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "targetHpBelow",
+        "threshold": 0.5
+       },
+       "effect": {
+        "kind": "damageMul",
+        "scope": "self",
+        "value": 0.1
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "arcane_flow",
+   "name": "아르케 순환",
+   "category": "role",
+   "description": "에너지공격 +6%",
+   "allowed": {
+    "roles": [
+     "mage"
+    ]
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "self",
+        "stat": "eAtk",
+        "value": 0.06
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "spell_mastery",
+   "name": "주문 숙련",
+   "category": "role",
+   "description": "피해 +5%",
+   "allowed": {
+    "roles": [
+     "mage"
+    ]
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "damageMul",
+        "scope": "self",
+        "value": 0.05
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "gentle_hands",
+   "name": "따뜻한 손길",
+   "category": "role",
+   "description": "치유량 +10%",
+   "allowed": {
+    "roles": [
+     "healer"
+    ]
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "healMul",
+        "scope": "self",
+        "value": 0.1
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "vital_light",
+   "name": "생명의 빛",
+   "category": "role",
+   "description": "아군 전원 체력 +4%",
+   "allowed": {
+    "roles": [
+     "healer"
+    ]
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "allies",
+        "stat": "hp",
+        "value": 0.04
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "keen_analysis",
+   "name": "날카로운 분석",
+   "category": "role",
+   "description": "아군 전원 물리공격·에너지공격 +3%",
+   "allowed": {
+    "roles": [
+     "commander"
+    ]
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "allies",
+        "stat": "pAtk",
+        "value": 0.03
+       }
+      },
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "allies",
+        "stat": "eAtk",
+        "value": 0.03
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "steady_nerve",
+   "name": "침착",
+   "category": "role",
+   "description": "아군 전원 에너지방어 +4%",
+   "allowed": {
+    "roles": [
+     "commander"
+    ]
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "allies",
+        "stat": "eDef",
+        "value": 0.04
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "shadow_step",
+   "name": "그림자 걸음걸이",
+   "category": "role",
+   "description": "속도 +6%",
+   "allowed": {
+    "roles": [
+     "assassin"
+    ]
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "self",
+        "stat": "spd",
+        "value": 0.06
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "killer_instinct",
+   "name": "살의",
+   "category": "role",
+   "description": "체력 40% 이하 적에게 피해 +18%",
+   "allowed": {
+    "roles": [
+     "assassin"
+    ]
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "targetHpBelow",
+        "threshold": 0.4
+       },
+       "effect": {
+        "kind": "damageMul",
+        "scope": "self",
+        "value": 0.18
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "vital_strike",
+   "name": "급소 노리기",
+   "category": "role",
+   "description": "치명타율 +6%p",
+   "allowed": {
+    "roles": [
+     "assassin"
+    ]
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statAdd",
+        "scope": "self",
+        "stat": "crit",
+        "value": 0.06
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "hex_craft",
+   "name": "저주 숙련",
+   "category": "role",
+   "description": "에너지공격 +5%",
+   "allowed": {
+    "roles": [
+     "disruptor"
+    ]
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "self",
+        "stat": "eAtk",
+        "value": 0.05
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "cunning",
+   "name": "교활함",
+   "category": "role",
+   "description": "속도 +5%",
+   "allowed": {
+    "roles": [
+     "disruptor"
+    ]
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "self",
+        "stat": "spd",
+        "value": 0.05
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "trickster",
+   "name": "속임수",
+   "category": "role",
+   "description": "첫 행동 피해 +15%",
+   "allowed": {
+    "roles": [
+     "disruptor"
+    ]
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "firstAction"
+       },
+       "effect": {
+        "kind": "damageMul",
+        "scope": "self",
+        "value": 0.15
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "unique_m31",
+   "name": "설원의 칼날",
+   "category": "unique",
+   "description": "치명타율 +5%p",
+   "allowed": {
+    "owner": "m31"
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statAdd",
+        "scope": "self",
+        "stat": "crit",
+        "value": 0.05
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "unique_m32",
+   "name": "질풍 일섬",
+   "category": "unique",
+   "description": "첫 행동 피해 +25%",
+   "allowed": {
+    "owner": "m32"
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "firstAction"
+       },
+       "effect": {
+        "kind": "damageMul",
+        "scope": "self",
+        "value": 0.25
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "unique_m33",
+   "name": "밤의 그림자",
+   "category": "unique",
+   "description": "속도 +8%",
+   "allowed": {
+    "owner": "m33"
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "self",
+        "stat": "spd",
+        "value": 0.08
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "unique_m34",
+   "name": "흐트러뜨리기",
+   "category": "unique",
+   "description": "아군 전원 속도 +3%",
+   "allowed": {
+    "owner": "m34"
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "allies",
+        "stat": "spd",
+        "value": 0.03
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "unique_m35",
+   "name": "대지의 맥",
+   "category": "unique",
+   "description": "체력 +8%",
+   "allowed": {
+    "owner": "m35"
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "self",
+        "stat": "hp",
+        "value": 0.08
+       }
+      }
+     ]
+    }
+   ],
+   "upgrade": null
+  },
+  {
+   "id": "unique_m36",
+   "name": "타오르는 저주",
+   "category": "unique",
+   "description": "에너지공격 +8%",
+   "allowed": {
+    "owner": "m36"
+   },
+   "tags": [],
+   "maxRank": 1,
+   "ranks": [
+    {
+     "effects": [
+      {
+       "trigger": {
+        "type": "always"
+       },
+       "effect": {
+        "kind": "statMul",
+        "scope": "self",
+        "stat": "eAtk",
+        "value": 0.08
        }
       }
      ]

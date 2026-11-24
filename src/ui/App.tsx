@@ -7,6 +7,7 @@ import { Toast } from './components';
 import type { Ctx, Game, Route } from './nav';
 import { saves } from '../app/saves';
 import { BattleReplay } from './screens/BattleReplay';
+import { Help } from './screens/Help';
 import { Base } from './screens/Base';
 import { DayResult } from './screens/DayResult';
 import { GuildHome } from './screens/GuildHome';
@@ -123,7 +124,10 @@ export function App() {
       screen = <DayResult ctx={ctx} events={route.events} />;
       break;
     case 'replay':
-      screen = <BattleReplay ctx={ctx} expeditionId={route.expeditionId} back={route.back} />;
+      screen = <BattleReplay ctx={ctx} expeditionId={route.expeditionId} back={route.back} openStatus={route.openStatus} />;
+      break;
+    case 'help':
+      screen = <Help ctx={ctx} topic={route.topic} back={route.back} />;
       break;
   }
   return (
@@ -154,7 +158,10 @@ function fixtureRoute(screen: string, s: GameState, events?: DayEvent[]): Route 
     case 'merc':
       return { name: 'merc', mercId: guild[0].id };
     case 'replay':
-      return { name: 'replay', expeditionId: s.reports.at(-1)?.expeditionId ?? '', back: { name: 'home' } };
+    case 'helpSheet':
+      return { name: 'replay', expeditionId: s.reports.at(-1)?.expeditionId ?? '', back: { name: 'home' }, ...(screen === 'helpSheet' ? { openStatus: true } : {}) };
+    case 'help':
+      return { name: 'help', topic: 'status', back: { name: 'saves' } };
     case 'base':
       return { name: 'base' };
     case 'saves':

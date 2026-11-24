@@ -3,4 +3,5 @@ export * from './Icon';
 export * from './Art';
 export * from './Shell';
 export * from './parts';
+export * from './StatusIcon';
 export { ConfirmDialog, Toast, Panel, ElementTag, RoleTag, Segmented } from '../legacy';

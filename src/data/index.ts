@@ -3,6 +3,8 @@ import citiesJson from './cities.json';
 import elementsJson from './elements.json';
 import rolesJson from './roles.json';
 import skillsJson from './skills.json';
+import statusEffectsJson from './statusEffects.json';
+import helpJson from './help.json';
 import statsJson from './stats.json';
 import monsterGradesJson from './monster-grades.json';
 import riftTiersJson from './rift-tiers.json';
@@ -77,12 +79,37 @@ export interface RoleRow {
   group: string;
   defaultRow: Row;
   enabled: boolean;
-  /** [기본 공격, 스킬 1, 스킬 2] */
-  skills: string[];
+  /** 기본 공격(지시서 020) */
+  basicSkill: string;
+  /** 액티브 풀 6개. 계약자는 이 안에서 3개를 배정받는다. 몬스터는 앞 2개 */
+  skillPool: string[];
+  /** 역할 특성 후보(특성 슬롯 ②) */
+  roleTraits: string[];
+  /** 도움말 한 줄 설명 */
+  description: string;
 }
 
-export type SkillKind = 'attack' | 'heal' | 'taunt' | 'buff';
-export type SkillTarget = 'enemy' | 'enemyRow' | 'enemyAll' | 'self' | 'allyLowest' | 'allyAll';
+export type SkillKind = 'attack' | 'heal' | 'taunt' | 'buff' | 'shield' | 'debuff';
+export type SkillTarget = 'enemy' | 'enemyRow' | 'enemyAll' | 'enemyBackLowest' | 'enemyBackRow' | 'self' | 'allyLowest' | 'allyAll';
+
+/** 상태 효과(지시서 020, statusEffects.json). 전투 안에서만 유지 */
+export type StatusEffectKind = 'stun' | 'dot' | 'shield' | 'mark' | 'weaken';
+export interface StatusEffectRow {
+  id: string;
+  name: string;
+  kind: StatusEffectKind;
+  defaultDuration: number;
+  /** 표식: 받는 피해 배율, 약화: 주는 피해·치유 배율 */
+  multiplier?: number;
+  /** 지속 피해: 걸 때 정한 피해에 곱하는 값 */
+  powerMultiplier?: number;
+  /** 기절: 풀린 뒤 다시 걸리지 않는 라운드 수 */
+  immuneRoundsAfter?: number;
+  /** cleanse 스킬이 지우는가 */
+  cleansable: boolean;
+  description: string;
+}
+export interface StatusEffectsTable { effects: StatusEffectRow[] }
 
 export interface SkillRow {
   id: string;
@@ -100,6 +127,20 @@ export interface SkillRow {
   damageType?: DamageType;
   /** 치유 스킬이 비례하는 스탯(없으면 eAtk) */
   scaleStat?: StatId;
+  /** 이 스킬을 가진 역할(풀 소속) */
+  role?: string;
+  /** 화면 한 줄 설명(지시서 020) */
+  description?: string;
+  /** 대상에게 거는 상태 효과(항상 적중). duration이 없으면 statusEffects의 기본 지속 */
+  applies?: { status: string; duration?: number }[];
+  /** 대상 체력이 낮을수록 피해 ×(1 + 값 × (1 − 체력 비율)) */
+  lowHpBonus?: number;
+  /** 도발 무시 */
+  ignoreTaunt?: boolean;
+  /** 보호막 양 = 시전자의 scaleStat(hp는 최대 체력) × ratio */
+  shield?: { scaleStat: StatId; ratio: number };
+  /** 지속 피해·표식·약화를 지운다(기절은 지우지 않음) */
+  cleanse?: boolean;
 }
 
 export interface RoleStatRow { base: Stats }
@@ -250,6 +291,10 @@ export interface RosterRow {
   baseStats?: Stats;
   /** 특성 슬롯 순서대로의 특성 id(traits.json). 짧으면 남은 슬롯은 비어 있다 */
   traits?: string[];
+  /** 액티브 스킬 3개(역할 풀 안, 지시서 020) */
+  skills: string[];
+  /** 고유 스킬 자리(지시서 020: 칸만 비워 둔다) */
+  signatureSkill: string | null;
 }
 
 export interface GrowthSpeedRow { id: string; name: string; expToNextMultiplier: number }
@@ -261,10 +306,10 @@ export interface CombatTable {
   /** 행동 순서 흔들림 비율(지시서 018). 0이면 없음 */
   speedJitter: number;
   element: { advantage: number; disadvantage: number; neutral: number };
-  composition: { groups: string[]; bonusPerPresentGroup: number; penaltyPerMissingGroup: number; appliesToSides: Side[] };
+  composition: { groups: string[]; bonusPerPresentGroup: number; penaltyPerMissingGroup: number; appliesToSides: Side[]; groupAlias?: Record<string, string> };
   offRow: { damageDealtMultiplier: number; damageTakenMultiplier: number };
   damage: { defenseConstant: number; varianceMin: number; varianceMax: number; minimum: number };
-  ai: { healThreshold: number };
+  ai: { healThreshold: number; cleanseThreshold: number };
 }
 
 export interface InjuryTable {
@@ -280,6 +325,8 @@ export interface GameTables {
   elements: ElementRow[];
   roles: RoleRow[];
   skills: SkillRow[];
+  statusEffects: StatusEffectsTable;
+  help: HelpTable;
   stats: StatsTable;
   monsterGrades: MonsterGradeRow[];
   riftTiers: RiftTierRow[];
@@ -310,6 +357,14 @@ export interface GameTables {
   terms: TermsTable;
 }
 
+/** 도움말(지시서 020, help.json). 본문 블록: 문단(text), 목록(list), 표(rows), 생성(generated: 데이터에서 만듦) */
+export type HelpBlock =
+  | { type: 'text'; text: string }
+  | { type: 'list'; items: string[] }
+  | { type: 'generated'; source: 'statusEffects' | 'elements' | 'roles' | 'riskTiers' };
+export interface HelpTopic { id: string; title: string; subtitle: string; blocks: HelpBlock[] }
+export interface HelpTable { topics: HelpTopic[] }
+
 /** 화면 용어(지시서 016) */
 export interface TermsTable {
   /** 용병의 화면 이름(지금은 "계약자") */
@@ -323,6 +378,8 @@ export type TraitTrigger =
   | { type: 'battleStart'; rounds: number }
   | { type: 'firstAction' }
   | { type: 'hpBelow'; threshold: number }
+  /** 공격 대상의 체력 비율 이하(지시서 020) */
+  | { type: 'targetHpBelow'; threshold: number }
   | { type: 'roundStack'; perRound: number; max: number }
   | { type: 'fromRound'; round: number };
 export type TraitCondition =
@@ -528,6 +585,8 @@ export const tables: GameTables = {
   elements: elementsJson,
   roles: rolesJson as RoleRow[],
   skills: skillsJson as SkillRow[],
+  statusEffects: statusEffectsJson as StatusEffectsTable,
+  help: helpJson as HelpTable,
   stats: statsJson as unknown as StatsTable,
   monsterGrades: monsterGradesJson as MonsterGradeRow[],
   riftTiers: riftTiersJson as unknown as RiftTierRow[],
@@ -582,6 +641,7 @@ function byId<T extends { id: string }>(rows: T[], id: string, what: string): T 
 export const getElement = (t: GameTables, id: string) => byId(t.elements, id, '속성');
 export const getRole = (t: GameTables, id: string) => byId(t.roles, id, '역할');
 export const getSkill = (t: GameTables, id: string) => byId(t.skills, id, '스킬');
+export const getStatusEffect = (t: GameTables, id: string) => byId(t.statusEffects.effects, id, '상태 효과');
 export const getMonsterGrade = (t: GameTables, id: string) => byId(t.monsterGrades, id, '몬스터 등급');
 export const getRiftTier = (t: GameTables, id: string) => byId(t.riftTiers, id, '리프트 등급');
 export const getMonster = (t: GameTables, id: string) => byId(t.monsters, id, '몬스터');

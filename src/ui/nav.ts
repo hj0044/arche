@@ -13,7 +13,10 @@ export type Route =
   /** 설정(톱니). back: 돌아갈 화면 */
   | { name: 'saves'; back?: Route }
   | { name: 'dayResult'; events: DayEvent[] }
-  | { name: 'replay'; expeditionId: string; back: Route };
+  /** openStatus: 개발 픽스처(시안 HelpSheet)에서 상태 설명 시트를 열어 둔다 */
+  | { name: 'replay'; expeditionId: string; back: Route; openStatus?: boolean }
+  /** 도움말(지시서 020). topic: 처음 펼칠 항목 id */
+  | { name: 'help'; topic?: string; back?: Route };
 
 export type ContentTab = 'rifts' | 'tower' | 'boss' | 'recruit';
 

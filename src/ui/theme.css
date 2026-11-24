@@ -66,6 +66,21 @@
   --stat-pDef: var(--c-info);
   --stat-eDef: var(--el-frost);
   /* 특성 종류(traits.json category) */
+  /* 상태 효과(지시서 020, 시안 Help·HelpSheet). 바탕 · 무늬 */
+  --status-stun: #E6CF4A;
+  --status-stun-ink: #1A1405;
+  --status-dot: #F0706F;
+  --status-dot-ink: #2A0D0D;
+  --status-shield: #6FA8FF;
+  --status-shield-ink: #0B1B38;
+  --status-mark: #F0A64A;
+  --status-mark-ink: #2A1805;
+  --status-weaken: #B58AF0;
+  --status-weaken-ink: #1D0F36;
+  --c-sheet-dim: rgba(5, 7, 11, 0.62);
+  --c-chip-faint: rgba(255, 255, 255, 0.06); /* 스킬 종류 칩 바탕(시안 MercDetail) */
+  --c-scrim-status: rgba(14, 17, 24, 0.75);
+
   --trait-common: #8FA3C8;
   --trait-role: #6FA8FF;
   --trait-background: #5CC9A0;

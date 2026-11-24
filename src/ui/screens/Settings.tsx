@@ -226,6 +226,15 @@ export function Settings({ ctx, back, onLoad, onNewGame }: { ctx: Ctx; back?: Ro
             </div>
             <Toggle label="중요 행동 확인" checked={settings.confirmImportant} onChange={(v) => deviceSettings.set({ confirmImportant: v })} />
           </div>
+          <div className="set-row" data-ui="Settings.help">
+            <div className="set-label">
+              <span>도움말</span>
+              <span className="sub">상태 효과, 속성, 역할 설명</span>
+            </div>
+            <button className="set-hit" data-touch onClick={() => ctx.go({ name: 'help', back: { name: 'saves', back } })}>
+              <span className="set-btn">열기</span>
+            </button>
+          </div>
         </div>
         <div className="grow" />
       </main>

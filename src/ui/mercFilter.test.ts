@@ -60,13 +60,17 @@ describe('정렬과 필터', () => {
   it('새 역할·속성 행을 가진 합성 데이터에서 칩이 자동으로 생긴다', () => {
     const t: GameTables = {
       ...tables,
-      roles: [...tables.roles, { id: 'bard', name: '음유시인', group: 'support', defaultRow: 'back', enabled: true, skills: [] }],
+      roles: [
+        ...tables.roles,
+        { id: 'bard', name: '음유시인', group: 'support', defaultRow: 'back', enabled: true, basicSkill: 'healer_strike', skillPool: [], roleTraits: [], description: '' },
+        { id: 'jester', name: '광대', group: 'support', defaultRow: 'back', enabled: false, basicSkill: 'healer_strike', skillPool: [], roleTraits: [], description: '' },
+      ],
       elements: [...tables.elements, { id: 'time', name: '시간', loreName: '시류', strongAgainst: [] }],
     };
     const c = filterChips(t);
     expect(c.roles.map((r) => r.name)).toContain('음유시인');
     expect(c.elements.map((e) => e.name)).toContain('시간');
-    expect(c.roles.map((r) => r.id)).not.toContain('assassin'); // 비활성 역할은 칩 없음
+    expect(c.roles.map((r) => r.id)).not.toContain('jester'); // 비활성 역할은 칩 없음
     expect(c.statuses.length).toBe(tables.ui.mercStatusFilters.length);
   });
 });

@@ -96,8 +96,10 @@ describe('속성 상성', () => {
 
 describe('열 배치와 타겟팅', () => {
   it('일반 공격은 전열을 먼저 노린다', () => {
+    // 후열 직격(저격)이 없는 배정
+    const archer = createMercenary(tables, { id: 'a', name: 'a', element: 'fire', role: 'archer', level: 5, skills: ['archer_aimed', 'archer_double', 'archer_mark'] });
     const r = resolveCombat(tables, {
-      allies: [{ unit: tough(merc('a', 'archer')), row: 'back' }],
+      allies: [{ unit: tough(archer), row: 'back' }],
       enemies: [
         { unit: tough(mon('f', 'warrior')), row: 'front' },
         { unit: tough(mon('b', 'archer')), row: 'back' },
@@ -288,8 +290,9 @@ describe('파티 편성 규칙', () => {
     expect(validateParty(tables, five)).toEqual([]);
     expect(validateParty(tables, [...five, { unit: merc('u5', 'warrior'), row: 'back' }]).length).toBeGreaterThan(0);
   });
-  it('비활성 역할(암습자)은 넣을 수 없다', () => {
-    expect(() => createMercenary(tables, { id: 'x', name: 'x', element: 'fire', role: 'assassin', level: 1 })).toThrow();
+  it('비활성 역할은 넣을 수 없다', () => {
+    const t = { ...tables, roles: tables.roles.map((r) => (r.id === 'assassin' ? { ...r, enabled: false } : r)) };
+    expect(() => createMercenary(t, { id: 'x', name: 'x', element: 'fire', role: 'assassin', level: 1 })).toThrow();
   });
 });
 
