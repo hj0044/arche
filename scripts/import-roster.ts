@@ -1,13 +1,12 @@
 // docs/design/roster-phase1.csv(정본)와 src/data/roster-profile.json(임시 보충)으로 src/data/roster.json을 만든다.
-// 계약자별 기본 스탯·특성·짧은 이름·스킬은 기존 roster.json 값을 옮기고, 없으면 docs/design/roster-v2-draft.json(지시서 020 초안)에서 채운다.
+// 계약자별 기본 스탯·특성·짧은 이름·스킬·성장률(021)은 기존 roster.json 값을 옮기고, 없으면 docs/design/roster-v2-draft.json(초안)에서 채운다.
 // 사용: npm run import-roster [-- --from-draft]
-//   --from-draft: 스킬·특성을 초안 값으로 덮어쓴다(초안을 새로 확정했을 때 한 번).
+//   --from-draft: 스킬·특성·성장률을 초안 값으로 덮어쓴다(초안을 새로 확정했을 때 한 번).
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import backgrounds from '../src/data/backgrounds.json';
 import cities from '../src/data/cities.json';
 import elements from '../src/data/elements.json';
 import factions from '../src/data/factions.json';
-import growthSpeeds from '../src/data/growth-speeds.json';
 import profile from '../src/data/roster-profile.json';
 import roles from '../src/data/roles.json';
 
@@ -51,7 +50,6 @@ const rows = lines.map((line) => {
     background: lookup(backgrounds, col(c, '배경'), [(r) => r.aliases, (r) => r.shortName, (r) => r.name], '배경'),
     growth: {
       cap: Number(col(c, '성장 한계')),
-      speed: lookup(growthSpeeds, col(c, '성장 속도'), [(r) => r.name], '성장 속도'),
     },
     initialLevel: Number(col(c, '최초 레벨')),
     age: p.age,
@@ -62,7 +60,7 @@ const rows = lines.map((line) => {
   };
 });
 
-interface Kept { baseStats?: unknown; traits?: string[]; shortName?: string; skills?: string[]; signatureSkill?: string | null }
+interface Kept { baseStats?: unknown; traits?: string[]; shortName?: string; skills?: string[]; signatureSkill?: string | null; growthRates?: unknown }
 // 계약자별 기본 스탯과 특성 슬롯(지시서 016), 짧은 이름(017b), 스킬(020)은 사람이 고치는 값이라 기존 roster.json에서 그대로 옮긴다.
 const previous = new Map<string, Kept>(existsSync(OUT) ? (JSON.parse(readFileSync(OUT, 'utf8')) as (Kept & { id: string })[]).map((r) => [r.id, r] as const) : []);
 // 초안(지시서 020): 새 계약자의 기본 스탯·특성·짧은 이름·스킬과, --from-draft일 때 모든 계약자의 스킬·특성
@@ -73,10 +71,11 @@ const merged = rows.map((r) => {
   const prev = previous.get(r.id);
   const d = draft.get(r.id);
   const { name, ...rest } = r as typeof r & { name: string };
-  const pick = <K extends keyof Kept>(k: K) => (fromDraft && (k === 'skills' || k === 'traits') ? (d?.[k] ?? prev?.[k]) : (prev?.[k] ?? d?.[k]));
+  const pick = <K extends keyof Kept>(k: K) => (fromDraft && (k === 'skills' || k === 'traits' || k === 'growthRates') ? (d?.[k] ?? prev?.[k]) : (prev?.[k] ?? d?.[k]));
   const baseStats = pick('baseStats');
   const traits = pick('traits');
   const skills = pick('skills');
+  const growthRates = pick('growthRates');
   if (!skills) throw new Error(`${r.id}: 스킬이 없다(roster.json·초안 모두)`);
   const { id, no, ...others } = rest;
   return {
@@ -87,6 +86,7 @@ const merged = rows.map((r) => {
     ...others,
     ...(baseStats ? { baseStats } : {}),
     ...(traits ? { traits } : {}),
+    ...(growthRates ? { growthRates } : {}),
     skills,
     signatureSkill: prev?.signatureSkill ?? null,
   };

@@ -1,5 +1,0 @@
-[
-  { "id": "fast",   "name": "빠름", "expToNextMultiplier": 0.75 },
-  { "id": "normal", "name": "보통", "expToNextMultiplier": 1.0 },
-  { "id": "slow",   "name": "느림", "expToNextMultiplier": 1.3 }
-]

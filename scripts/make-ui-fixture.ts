@@ -39,7 +39,7 @@ const patch = (id: string, f: (m: MercenaryState) => Partial<MercenaryState>) =>
   s = { ...s, mercenaries: s.mercenaries.map((m) => (m.id === id ? { ...m, ...f(m) } : m)) };
 };
 // 레벨업 가능 3명(아르케 86으로 일부만 가능)
-for (const id of [guildIds[0], guildIds[2], guildIds[5]]) patch(id, (m) => ({ exp: expToNextLevel(t, m.level, m.growth.speed) }));
+for (const id of [guildIds[0], guildIds[2], guildIds[5]]) patch(id, (m) => ({ exp: expToNextLevel(t, m.level) }));
 // 부상 1명, 충성 낮음 1명
 patch(guildIds[4], () => ({ injury: { severity: 'light', recoverDay: DAY + 1 } }));
 patch(guildIds[3], (m) => ({ loyalty: m.loyalty ? { ...m.loyalty, value: 15, dangerDays: 1 } : m.loyalty }));

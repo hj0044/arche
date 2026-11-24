@@ -89,7 +89,7 @@ export function levelUpCandidates(tables: GameTables, state: GameState, onlyIds?
   return state.mercenaries
     .filter((m) => isGuildMember(m) && !isOnExpedition(state, m.id) && m.level < m.growth.cap)
     .filter((m) => !onlyIds || onlyIds.includes(m.id))
-    .filter((m) => m.exp >= expToNextLevel(tables, m.level, m.growth.speed))
+    .filter((m) => m.exp >= expToNextLevel(tables, m.level))
     .map((m) => {
       const cost = levelUpCost(tables, m.level);
       return { mercId: m.id, cost, affordable: state.resources.arche >= cost, shortfall: Math.max(0, cost - state.resources.arche) };

@@ -24,7 +24,7 @@
     "refRetakeMismatch": 0.0255
   },
   "MercDetail": {
-    "mismatchRatio": 0.0608,
+    "mismatchRatio": 0.0621,
     "refRetakeMismatch": 0.0176
   },
   "Battle": {
@@ -36,7 +36,7 @@
     "refRetakeMismatch": 0.01
   },
   "Settings": {
-    "mismatchRatio": 0.045,
+    "mismatchRatio": 0.0451,
     "refRetakeMismatch": 0.0201
   },
   "Tower": {
@@ -48,11 +48,11 @@
     "refRetakeMismatch": 0.0026
   },
   "Help": {
-    "mismatchRatio": 0.0381,
+    "mismatchRatio": 0.0383,
     "refRetakeMismatch": 0.0101
   },
   "HelpSheet": {
-    "mismatchRatio": 0.0422,
+    "mismatchRatio": 0.0421,
     "refRetakeMismatch": 0.0065
   }
 }

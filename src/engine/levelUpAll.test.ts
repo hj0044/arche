@@ -11,7 +11,7 @@ const gm = () => newGame(tables, { seed: 'lua', guildName: 'g', baseCityId: 'seo
 function give(s: GameState, id: string, levels: number): GameState {
   const m = getMerc(s, id);
   let exp = 0;
-  for (let i = 0; i < levels; i++) exp += expToNextLevel(tables, m.level + i, m.growth.speed);
+  for (let i = 0; i < levels; i++) exp += expToNextLevel(tables, m.level + i);
   return { ...s, mercenaries: s.mercenaries.map((x) => (x.id === id ? { ...x, exp } : x)) };
 }
 const withArche = (s: GameState, arche: number): GameState => ({ ...s, resources: { ...s.resources, arche } });

@@ -64,7 +64,7 @@ describe('지금 상황 요약', () => {
 });
 
 describe('레벨업 가능 용병', () => {
-  const ready = (s: GameState, id: string) => patch(s, id, { exp: expToNextLevel(tables, getMerc(s, id).level, getMerc(s, id).growth.speed) });
+  const ready = (s: GameState, id: string) => patch(s, id, { exp: expToNextLevel(tables, getMerc(s, id).level) });
 
   it('경험치·아르케 충족이면 올릴 수 있음, 아르케가 모자라면 부족분', () => {
     let s = ready(ready(opener(), 'm02'), 'm03');

@@ -46,7 +46,7 @@ const mercenary: Schema = {
     role: 'string',
     level: 'number',
     exp: 'number',
-    growth: { fields: { cap: 'number', speed: 'string' } },
+    growth: { fields: { cap: 'number' } },
     initialLevel: 'number',
     profile: { fields: { background: 'string', world: 'string', race: 'string' } },
     affiliation: { fields: { kind: 'string' } },

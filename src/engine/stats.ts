@@ -3,12 +3,22 @@
  * 순서: 기본 스탯(계약자별 baseStats 또는 역할 기본값) × 레벨 성장 × 외부 배율 → 특성 효과 → (나중의 훈련·장비) → 상한.
  * 데이터만 쓴다(stats.json, traits.json).
  */
-import { AUX_STATS, CORE_STATS, getElement, type GameTables, type Row, type Stats, type StatId, type TraitEffectRow, type TraitRow } from '../data';
+import { AUX_STATS, CORE_STATS, getElement, type CoreStats, type GameTables, type Row, type Stats, type StatId, type TraitEffectRow, type TraitRow } from '../data';
 
-/** 레벨 성장 배율: (1 + 성장률)^(레벨-1). 보조 스탯은 성장하지 않는다(1) */
-export function levelScale(tables: GameTables, stat: StatId, level: number): number {
-  const rate = (tables.stats.levelGrowthRate as Record<string, number>)[stat];
+/** 레벨당 성장률(핵심 6스탯). 계약자별 값(지시서 021)이 없으면 stats.json levelGrowthRate(기본값) */
+export type GrowthRates = Partial<CoreStats>;
+
+/** 레벨 성장 배율: (1 + 성장률)^(레벨-1). rates가 있으면 그 스탯의 계약자별 성장률. 보조 스탯은 성장하지 않는다(1) */
+export function levelScale(tables: GameTables, stat: StatId, level: number, rates?: GrowthRates): number {
+  const rate = (rates as Record<string, number> | undefined)?.[stat] ?? (tables.stats.levelGrowthRate as Record<string, number>)[stat];
   return rate === undefined ? 1 : Math.pow(1 + rate, level - 1);
+}
+
+/** 성장률의 별(지시서 021): clamp(round(3 + (성장률/기본 − 1) ÷ 한 칸), 1, 5). 기본값이 ★★★ */
+export function growthStars(tables: GameTables, stat: keyof CoreStats, rate: number): number {
+  const base = tables.stats.levelGrowthRate[stat];
+  const step = tables.stats.growthStarStep[stat];
+  return Math.max(1, Math.min(5, Math.round(3 + (rate / base - 1) / step)));
 }
 
 const round2 = (v: number) => Math.round(v * 100) / 100;
@@ -17,10 +27,10 @@ const round2 = (v: number) => Math.round(v * 100) / 100;
  * 레벨에 맞춘 스탯. 핵심 6개는 기본값 × 레벨 성장 × multiplier(몬스터 등급 등), 체력은 정수로 반올림.
  * 보조 3개는 기본값 그대로.
  */
-export function statsAtLevel(tables: GameTables, base: Stats, level: number, multiplier = 1): Stats {
+export function statsAtLevel(tables: GameTables, base: Stats, level: number, multiplier = 1, rates?: GrowthRates): Stats {
   const out = {} as Stats;
   for (const id of CORE_STATS) {
-    const v = base[id] * levelScale(tables, id, level) * multiplier;
+    const v = base[id] * levelScale(tables, id, level, rates) * multiplier;
     out[id] = id === 'hp' ? Math.round(v) : round2(v);
   }
   for (const id of AUX_STATS) out[id] = base[id];

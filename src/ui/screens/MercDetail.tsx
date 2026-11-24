@@ -1,5 +1,5 @@
 /**
- * 계약자 상세(시안 MercDetail, 지시서 017·020). 구역 순서: header · identity · coreStats · subStats · (growth: 021) · skills · traits · actions.
+ * 계약자 상세(시안 MercDetail, 지시서 017·020·021). 구역 순서: header · identity · coreStats · subStats · growth · skills · traits · actions.
  * 영웅 그림 아래(스탯~특성)는 스크롤(merc.scroll), 헤더와 하단 버튼은 고정이다.
  * 시안에 자리가 없는 프로필(이름 영역), 충성도 기록·급료 보너스(충성도 칸), 훈련 배치(훈련 버튼)는 바텀 시트로 흡수했다.
  */
@@ -17,6 +17,7 @@ import {
   LEVEL_UP_BLOCKED_ON_EXPEDITION,
   mercToUnit,
   mercTraitIds,
+  mercGrowthRates,
   newTraitsOnLevelUp,
   recruit,
   recruitInfo,
@@ -29,9 +30,9 @@ import { trainingAccess } from '../../engine/status';
 import { Gauge, Portrait, Sheet, StatRow, TextWithStatus, TraitRow } from '../components';
 import { Icon } from '../components';
 import { loyaltyDisplay, loyaltyTier, tendencyOf } from '../../engine/loyalty';
-import { allyAuraRows, computeEffectiveStats, getTrait } from '../../engine/stats';
+import { allyAuraRows, computeEffectiveStats, getTrait, growthStars } from '../../engine/stats';
 import { assignedFacility, getFacility } from '../../engine/facilities';
-import { injuryText, loyaltyReasonName, backgroundShort, cityName, factionName, growthSpeedName, num, tierName, worldName, term, statValue, traitName, traitCategoryName, roleName, elementName } from '../format';
+import { injuryText, loyaltyReasonName, backgroundShort, cityName, factionName, num, tierName, worldName, term, statValue, traitName, traitCategoryName, roleName, elementName, statName } from '../format';
 import { statBarMax } from '../mercInfo';
 import type { Ctx } from '../nav';
 
@@ -43,6 +44,8 @@ export function MercDetail({ ctx, mercId }: { ctx: Ctx; mercId: string }) {
   const m = s.mercenaries.find((x) => x.id === mercId);
   if (!m) return null;
   const unit = mercToUnit(tables, m);
+  // 레벨당 성장률(지시서 021): 계약자 값, 없으면(주인공) 기본값
+  const rates = { ...tables.stats.levelGrowthRate, ...mercGrowthRates(tables, m) };
   // 최종 스탯 계산 한 곳(stats.ts): 전투 시작 상황, 체력 가득, 기본 열
   const finalStats = computeEffectiveStats(tables, unit, { round: 1, hpRatio: 1, row: getRole(tables, m.role).defaultRow, allyAuras: allyAuraRows(tables, unit) });
   // 특성 슬롯: 해금 레벨이 성장 한계 이하이고 데이터에 특성이 있는 칸
@@ -52,7 +55,7 @@ export function MercDetail({ ctx, mercId }: { ctx: Ctx; mercId: string }) {
     .filter((x) => x.id && x.level <= m.growth.cap);
   const unlockedCount = traitSlots.filter((t) => t.unlocked).length;
   const nextSlot = traitSlots.find((t) => !t.unlocked);
-  const need = expToNextLevel(tables, m.level, m.growth.speed);
+  const need = expToNextLevel(tables, m.level);
   const cost = levelUpCost(tables, m.level);
   const capped = m.level >= m.growth.cap;
   const isGuild = m.affiliation.kind === 'guild';
@@ -60,7 +63,6 @@ export function MercDetail({ ctx, mercId }: { ctx: Ctx; mercId: string }) {
   const info = recruitInfo(tables, s, m.id);
   const outlook = recruitUpkeepOutlook(tables, s, m.id);
   const tendency = tendencyOf(tables, m.profile.background);
-  const speed = tables.growthSpeeds.find((g) => g.id === m.growth.speed);
   const training = isGuild && !m.isProtagonist ? trainingAccess(tables, s, m.id) : null;
 
   const run = (fn: () => void) => {
@@ -173,7 +175,42 @@ export function MercDetail({ ctx, mercId }: { ctx: Ctx; mercId: string }) {
               </span>
             </button>
           </div>
-          {/* 지시서 020: 스킬(기본 공격 1 + 액티브 3). 성장률 구역(growth)은 021에서 이 앞에 들어간다 */}
+          {/* 지시서 021: 성장률(핵심 6스탯, 별 5단계 + 레벨당 %) */}
+          <div className="col" style={{ gap: 6 }} data-ui="MercDetail.growth">
+            <div className="row between" style={{ alignItems: 'baseline', marginTop: 2 }}>
+              <span style={{ fontSize: 16, fontWeight: 500 }}>성장률</span>
+              <span className="sub">★★★ = 기본 · 레벨당 증가</span>
+            </div>
+            {(
+              [
+                ['hp', 'spd'],
+                ['pAtk', 'eAtk'],
+                ['pDef', 'eDef'],
+              ] as const
+            ).map((pair) => (
+              <div key={pair[0]} className="row" style={{ gap: 6 }}>
+                {pair.map((id) => {
+                  const rate = rates[id];
+                  const stars = growthStars(tables, id, rate);
+                  return (
+                    <div key={id} className="growth-cell" data-stat={id} data-stars={stars}>
+                      <div className="row between">
+                        <span className="nm">{statName(id)}</span>
+                        <span className="stars" aria-label={`별 ${stars}개`}>
+                          <span className="on">{'★'.repeat(stars)}</span>
+                          <span className="off">{'★'.repeat(5 - stars)}</span>
+                        </span>
+                      </div>
+                      <span className="val">
+                        <b>+{(rate * 100).toFixed(2)}%</b> <span>/ 레벨</span>
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
+          </div>
+          {/* 지시서 020: 스킬(기본 공격 1 + 액티브 3) */}
           <div className="col" style={{ gap: 6 }} data-ui="MercDetail.skills">
             <div className="row between" style={{ alignItems: 'baseline', marginTop: 2 }}>
               <span style={{ fontSize: 16, fontWeight: 500 }}>스킬</span>
@@ -252,7 +289,6 @@ export function MercDetail({ ctx, mercId }: { ctx: Ctx; mercId: string }) {
             <Kv k="배경" v={backgroundShort(m.profile.background)} />
             {!m.isProtagonist && tendency && <Kv k="계약 성향" v={`${tendency.name}형 · ${tendency.description}`} />}
             <Kv k="세계" v={worldName(m.profile.world)} />
-            <Kv k="성장 속도" v={`${growthSpeedName(m.growth.speed)} (필요 경험치 ×${speed?.expToNextMultiplier})`} />
             <Kv k="최초 레벨" v={`${m.initialLevel}`} />
             {isGuild && <Kv k="경험치" v={`${num(m.exp)} / ${num(need)}`} />}
             {upkeepPerDay(tables, m) > 0 && <Kv k="하루 유지비" v={`제로 ${num(upkeepPerDay(tables, m))}`} />}

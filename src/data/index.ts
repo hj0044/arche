@@ -18,7 +18,6 @@ import rosterJson from './roster.json';
 import travelJson from './travel.json';
 import backgroundsJson from './backgrounds.json';
 import uiJson from './ui.json';
-import growthSpeedsJson from './growth-speeds.json';
 import worldsJson from './worlds.json';
 import racesJson from './races.json';
 import omensJson from './omens.json';
@@ -151,6 +150,10 @@ export interface StatsTable {
   roleBase: Record<string, RoleStatRow>;
   /** 레벨당 복리 성장률(핵심 6개만) */
   levelGrowthRate: CoreStats;
+  /** 성장률 별 한 칸(기본 대비 배율 차, 지시서 021) */
+  growthStarStep: CoreStats;
+  /** 계약자 성장률 검증 범위(기본 대비 배율)와 성장 한계 레벨 전투력 범위 */
+  growthRateBounds: { core: Range; spd: Range; capPower: Range };
   /** 계약자 baseStats 검증: 핵심은 역할 기본값 대비 배율, 보조는 절대값 범위 */
   roleBounds: Record<StatId, Range>;
   /** 특수 스탯(지시서 016: 자리만, 모두 꺼짐) */
@@ -215,7 +218,7 @@ export interface ProgressionTable {
   levelUpArcheCost: { base: number; perLevel: number };
   /** 영입비 = (base + perCapAbove30 × (한계 − capBaseline) + perLevel × (레벨 − 1)) × 세력 배율 × 도시 배율 */
   recruitZeroCost: { base: number; perCapAbove30: number; perLevel: number; capBaseline: number };
-  protagonistGrowth: { cap: number; speed: string; initialLevel: number };
+  protagonistGrowth: { cap: number; initialLevel: number };
   /** 보상 = 등급 보상 × (1 + rewardLevelScale × 몬스터 레벨) */
   rewardLevelScale: number;
   /** 경험치 = 결과별 경험치 × 등급 배율 × (1 + expLevelScale × 몬스터 레벨) */
@@ -278,8 +281,10 @@ export interface RosterRow {
   faction: string;
   startingCandidate: boolean;
   background: string;
-  /** cap: 성장 한계(최대 레벨), speed: growth-speeds.json의 id */
-  growth: { cap: number; speed: string };
+  /** cap: 성장 한계(최대 레벨) */
+  growth: { cap: number };
+  /** 핵심 6스탯의 레벨당 성장률(지시서 021). 없으면 stats.json levelGrowthRate */
+  growthRates?: CoreStats;
   initialLevel: number;
   age: number;
   gender: string;
@@ -297,7 +302,6 @@ export interface RosterRow {
   signatureSkill: string | null;
 }
 
-export interface GrowthSpeedRow { id: string; name: string; expToNextMultiplier: number }
 export interface BackgroundRow { id: string; name: string; shortName: string; forProtagonist: boolean; aliases: string[] }
 
 export interface CombatTable {
@@ -341,7 +345,6 @@ export interface GameTables {
   travel: TravelTable;
   backgrounds: BackgroundRow[];
   ui: UiTable;
-  growthSpeeds: GrowthSpeedRow[];
   worlds: { id: string; name: string }[];
   races: { id: string; name: string; world: string }[];
   /** 징조 표식 문구 */
@@ -601,7 +604,6 @@ export const tables: GameTables = {
   travel: travelJson,
   backgrounds: backgroundsJson,
   ui: uiJson as unknown as UiTable,
-  growthSpeeds: growthSpeedsJson,
   worlds: worldsJson,
   races: racesJson,
   omens: omensJson,
@@ -654,5 +656,4 @@ export function travelDays(t: GameTables, from: string, to: string): number {
   const route = t.travel.routes.find((r) => r.between.includes(from) && r.between.includes(to));
   return route ? route.days : t.travel.defaultDays;
 }
-export const getGrowthSpeed = (t: GameTables, id: string) => byId(t.growthSpeeds, id, '성장 속도');
 export const getBackground = (t: GameTables, id: string) => byId(t.backgrounds, id, '배경');

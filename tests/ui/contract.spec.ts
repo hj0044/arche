@@ -16,9 +16,7 @@ async function open(page: Page, screen: string) {
 }
 
 // 계약에는 있지만 아직 지시서가 구현하지 않은 구역. 해당 지시서에서 구현하면 이 목록에서 지운다.
-const PENDING: Record<string, string[]> = {
-  MercDetail: ['growth'], // 021 성장률
-};
+const PENDING: Record<string, string[]> = {};
 // 서브 탭 화면에서 같이 보이는 부모 화면 구역
 const PARENT_SECTIONS = ['header', 'subtabs'];
 
@@ -162,6 +160,41 @@ test('도움말 화면', async ({ page }) => {
   const titles = await page.locator('.help-sec-head .t').allInnerTexts();
   expect(titles).toContain('전열과 후열');
   expect(titles).not.toContain('위험도');
+});
+
+// 021: 계약자 상세 성장률 구역(6칸, 별 5단계, '+N.NN% / 레벨'), 별은 growthStarStep으로 계산
+test('계약자 상세 성장률 구역', async ({ page }) => {
+  await open(page, 'merc');
+  const cells = page.locator('[data-ui="MercDetail.growth"] .growth-cell');
+  await expect(cells).toHaveCount(6);
+  const stats = await cells.evaluateAll((els) => els.map((e) => e.getAttribute('data-stat')));
+  expect(stats).toEqual(['hp', 'spd', 'pAtk', 'eAtk', 'pDef', 'eDef']);
+  for (let i = 0; i < 6; i++) {
+    await expect(cells.nth(i).locator('.val')).toHaveText(/^\+\d+\.\d{2}% \/ 레벨$/);
+    const on = (await cells.nth(i).locator('.stars .on').innerText()).length;
+    const off = (await cells.nth(i).locator('.stars .off').innerText()).length;
+    expect(on + off).toBe(5);
+    expect(on).toBeGreaterThanOrEqual(1);
+  }
+  // 위치: 보조 스탯 줄과 스킬 사이
+  const order = await page.$$eval('[data-ui^="MercDetail."]', (els) => els.map((e) => e.getAttribute('data-ui')));
+  expect(order.indexOf('MercDetail.growth')).toBe(order.indexOf('MercDetail.subStats') + 1);
+  expect(order.indexOf('MercDetail.skills')).toBe(order.indexOf('MercDetail.growth') + 1);
+});
+
+// 021: 성장 속도(빠름·보통·느림, 경험치 배율)는 화면 어디에도 없다. 상세는 프로필 시트까지 연다
+test('성장 속도가 화면에 남지 않는다', async ({ page }) => {
+  const banned = /성장 속도|필요 경험치 ×|빠름|느림/;
+  for (const sc of SCREENS) {
+    await open(page, sc.screen);
+    expect(await page.locator('body').innerText(), sc.name).not.toMatch(banned);
+  }
+  await open(page, 'merc');
+  await page.locator('[data-ui="MercDetail.identity"]').click();
+  expect(await page.locator('body').innerText()).not.toMatch(banned);
+  await open(page, 'mercs');
+  await page.getByRole('button', { name: /필터/ }).first().click();
+  expect(await page.locator('body').innerText()).not.toMatch(banned);
 });
 
 // 017c: 영입 가능·진행 중 카드마다 '레벨/성장 한계' 배지(숫자/숫자), 잠김 카드에는 없다

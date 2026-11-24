@@ -1,5 +1,5 @@
-import { getGrowthSpeed, getRiftTier, travelDays, type GameTables, type Outcome, type Row, type Stats, type UnlockRule } from '../data';
-import { activeTraits, newlyUnlockedTraits, roleBaseStats, statsAtLevel } from './stats';
+import { getRiftTier, travelDays, type GameTables, type Outcome, type Row, type Stats, type UnlockRule } from '../data';
+import { activeTraits, newlyUnlockedTraits, roleBaseStats, statsAtLevel, type GrowthRates } from './stats';
 import { compositionGroup, resolveCombat, validateParty, type CombatEvent, type CombatSlot } from './combat';
 import { rollInjuries, type Injury } from './injury';
 import { rollPreemption } from './preemption';
@@ -30,8 +30,8 @@ export interface MercenaryState {
   level: number;
   /** 다음 레벨까지 쌓인 경험치 */
   exp: number;
-  /** 개별 성장 수치(용병마다 고정). cap: 성장 한계(최대 레벨), speed: growth-speeds.json id */
-  growth: { cap: number; speed: string };
+  /** 개별 성장 수치(계약자마다 고정). cap: 성장 한계(최대 레벨) */
+  growth: { cap: number };
   initialLevel: number;
   /** 표시용 프로필(1단계는 전투·성장에 영향 없음) */
   profile: MercProfile;
@@ -178,10 +178,10 @@ export function refusedToday(state: GameState, m: MercenaryState): boolean {
   return m.loyalty?.refusedOnDay === state.day;
 }
 
-/** 다음 레벨까지 필요한 경험치. 성장 속도가 필요 경험치 배율이다(빠름 ×0.75, 보통 ×1.0, 느림 ×1.3). */
-export function expToNextLevel(tables: GameTables, level: number, speed = 'normal'): number {
+/** 다음 레벨까지 필요한 경험치. 모든 계약자가 같다(지시서 021: 경험치 배율 체계 삭제) */
+export function expToNextLevel(tables: GameTables, level: number): number {
   const { base, perLevel } = tables.progression.expToNextLevel;
-  return Math.round((base + perLevel * (level - 1)) * getGrowthSpeed(tables, speed).expToNextMultiplier);
+  return Math.round(base + perLevel * (level - 1));
 }
 
 export function levelUpCost(tables: GameTables, level: number): number {
@@ -264,6 +264,9 @@ export function mercBaseStats(tables: GameTables, m: MercenaryState): Stats {
   return tables.roster.find((r) => r.id === m.id)?.baseStats ?? roleBaseStats(tables, m.role);
 }
 
+/** 계약자의 레벨당 성장률(roster.json growthRates, 지시서 021). 주인공 등 값이 없으면 undefined(기본 성장률) */
+export const mercGrowthRates = (tables: GameTables, m: { id: string }): GrowthRates | undefined => tables.roster.find((r) => r.id === m.id)?.growthRates;
+
 /** 계약자의 특성 슬롯 목록(roster.json traits, 주인공은 없음) */
 export const mercTraitIds = (tables: GameTables, m: MercenaryState): string[] => tables.roster.find((r) => r.id === m.id)?.traits ?? [];
 
@@ -275,7 +278,7 @@ export const mercSkillIds = (tables: GameTables, m: { id: string; role: string }
  * 레벨 성장과 충성도 배율까지 적용한 스탯(특성 전). 충성도 구간 배율은 공격·방어(물리·에너지 모두)에 곱한다.
  */
 export function loyaltyAdjustedStats(tables: GameTables, m: MercenaryState): Stats {
-  const stats = statsAtLevel(tables, mercBaseStats(tables, m), m.level);
+  const stats = statsAtLevel(tables, mercBaseStats(tables, m), m.level, 1, mercGrowthRates(tables, m));
   if (!m.loyalty) return stats;
   const bonus = loyaltyTier(tables, m.loyalty.value).statBonus;
   const out = { ...stats };
@@ -371,7 +374,7 @@ export function newGame(tables: GameTables, opts: NewGameOptions): GameState {
       role: p.role,
       level: g.initialLevel,
       exp: 0,
-      growth: { cap: g.cap, speed: g.speed },
+      growth: { cap: g.cap },
       initialLevel: g.initialLevel,
       profile: { background: p.background, hometown: opts.baseCityId, world: 'earth', race: 'human' },
       affiliation: { kind: 'guild' },
@@ -456,7 +459,7 @@ export function levelUp(tables: GameTables, prev: GameState, mercId: string): Ga
   // 부상 중에는 레벨업할 수 있고, 파견 중에는 복귀할 때까지 할 수 없다(2026-11-20 확정).
   if (isOnExpedition(state, m.id)) throw new GameError(LEVEL_UP_BLOCKED_ON_EXPEDITION);
   if (m.level >= m.growth.cap) throw new GameError('성장 한계에 도달했다');
-  const need = expToNextLevel(tables, m.level, m.growth.speed);
+  const need = expToNextLevel(tables, m.level);
   if (m.exp < need) throw new GameError('경험치가 부족하다');
   const cost = levelUpCost(tables, m.level);
   if (state.resources.arche < cost) throw new GameError('아르케가 부족하다');
@@ -507,7 +510,7 @@ export function canLevelUp(tables: GameTables, state: GameState, mercId: string)
     isGuildMember(m) &&
     !isOnExpedition(state, m.id) &&
     m.level < m.growth.cap &&
-    m.exp >= expToNextLevel(tables, m.level, m.growth.speed) &&
+    m.exp >= expToNextLevel(tables, m.level) &&
     state.resources.arche >= levelUpCost(tables, m.level)
   );
 }

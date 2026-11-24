@@ -162,11 +162,19 @@ describe('세이브 v6(리프트 영역 세력)', () => {
   });
 });
 
-describe('세이브 v9(지시서 020)', () => {
-  it('버전은 9이고 v8 세이브는 지원하지 않는 세이브로 거절한다', () => {
-    expect(SAVE_VERSION).toBe(9);
+describe('세이브 v10(지시서 021)', () => {
+  it('버전은 10이고 v9 세이브는 지원하지 않는 세이브로 거절한다', () => {
+    expect(SAVE_VERSION).toBe(10);
     const file = JSON.parse(serializeSave(createSaveFile(playedState(), 'manual')));
-    expect(() => parseSave(JSON.stringify({ ...file, version: 8 }))).toThrow(/지원하지 않는 세이브/);
+    expect(() => parseSave(JSON.stringify({ ...file, version: 9 }))).toThrow(/지원하지 않는 세이브/);
+  });
+  it('저장하고 불러오면 그대로 돌아오고 성장 속도 필드가 없다', () => {
+    const s = playedState();
+    const raw = serializeSave(createSaveFile(s, 'manual'));
+    expect(raw).not.toMatch(/"speed"/);
+    const back = parseSave(raw, { ...tables, limits: saveLimits });
+    expect(back.state).toEqual(s);
+    for (const m of back.state.mercenaries) expect(Object.keys(m.growth)).toEqual(['cap']);
   });
 });
 

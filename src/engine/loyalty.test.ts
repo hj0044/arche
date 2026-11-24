@@ -58,7 +58,8 @@ describe('충성도 구간', () => {
   it('구간별 능력 배율이 전투 유닛의 공격·방어에 적용된다', () => {
     const s = gm();
     const m01 = getMerc(s, 'm01');
-    const base = statsAtLevel(tables, tables.roster.find((r) => r.id === 'm01')!.baseStats!, m01.level);
+    const row = tables.roster.find((r) => r.id === 'm01')!;
+    const base = statsAtLevel(tables, row.baseStats!, m01.level, 1, row.growthRates);
     for (const t of L.tiers) {
       const unit = mercToUnit(tables, getMerc(setLoyalty(s, 'm01', { value: t.min }), 'm01'));
       for (const k of ['pAtk', 'eAtk', 'pDef', 'eDef'] as const) expect(unit.stats[k]).toBeCloseTo(base[k] * (1 + t.statBonus), 1);

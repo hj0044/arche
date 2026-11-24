@@ -1,6 +1,6 @@
 {
  "format": "arche-save",
- "version": 9,
+ "version": 10,
  "savedAt": "2026-11-23T00:00:00.000Z",
  "kind": "manual",
  "summary": {
@@ -34,8 +34,7 @@
     "level": 6,
     "exp": 140,
     "growth": {
-     "cap": 45,
-     "speed": "normal"
+     "cap": 45
     },
     "initialLevel": 5,
     "profile": {
@@ -66,8 +65,7 @@
     "level": 7,
     "exp": 0,
     "growth": {
-     "cap": 50,
-     "speed": "fast"
+     "cap": 50
     },
     "initialLevel": 4,
     "profile": {
@@ -98,8 +96,7 @@
     "level": 8,
     "exp": 180,
     "growth": {
-     "cap": 55,
-     "speed": "normal"
+     "cap": 55
     },
     "initialLevel": 3,
     "profile": {
@@ -130,8 +127,7 @@
     "level": 9,
     "exp": 0,
     "growth": {
-     "cap": 40,
-     "speed": "fast"
+     "cap": 40
     },
     "initialLevel": 6,
     "profile": {
@@ -162,8 +158,7 @@
     "level": 10,
     "exp": 0,
     "growth": {
-     "cap": 55,
-     "speed": "normal"
+     "cap": 55
     },
     "initialLevel": 6,
     "profile": {
@@ -196,10 +191,9 @@
     "element": "lightning",
     "role": "warrior",
     "level": 11,
-    "exp": 180,
+    "exp": 240,
     "growth": {
-     "cap": 45,
-     "speed": "fast"
+     "cap": 45
     },
     "initialLevel": 8,
     "profile": {
@@ -230,8 +224,7 @@
     "level": 12,
     "exp": 0,
     "growth": {
-     "cap": 65,
-     "speed": "slow"
+     "cap": 65
     },
     "initialLevel": 3,
     "profile": {
@@ -262,8 +255,7 @@
     "level": 6,
     "exp": 0,
     "growth": {
-     "cap": 50,
-     "speed": "normal"
+     "cap": 50
     },
     "initialLevel": 5,
     "profile": {
@@ -294,8 +286,7 @@
     "level": 7,
     "exp": 0,
     "growth": {
-     "cap": 50,
-     "speed": "fast"
+     "cap": 50
     },
     "initialLevel": 4,
     "profile": {
@@ -326,8 +317,7 @@
     "level": 8,
     "exp": 0,
     "growth": {
-     "cap": 60,
-     "speed": "normal"
+     "cap": 60
     },
     "initialLevel": 3,
     "profile": {
@@ -358,8 +348,7 @@
     "level": 9,
     "exp": 0,
     "growth": {
-     "cap": 50,
-     "speed": "normal"
+     "cap": 50
     },
     "initialLevel": 5,
     "profile": {
@@ -390,8 +379,7 @@
     "level": 10,
     "exp": 0,
     "growth": {
-     "cap": 70,
-     "speed": "fast"
+     "cap": 70
     },
     "initialLevel": 8,
     "profile": {
@@ -422,8 +410,7 @@
     "level": 11,
     "exp": 0,
     "growth": {
-     "cap": 40,
-     "speed": "fast"
+     "cap": 40
     },
     "initialLevel": 9,
     "profile": {
@@ -454,8 +441,7 @@
     "level": 12,
     "exp": 0,
     "growth": {
-     "cap": 55,
-     "speed": "normal"
+     "cap": 55
     },
     "initialLevel": 4,
     "profile": {
@@ -486,8 +472,7 @@
     "level": 6,
     "exp": 0,
     "growth": {
-     "cap": 45,
-     "speed": "normal"
+     "cap": 45
     },
     "initialLevel": 6,
     "profile": {
@@ -518,8 +503,7 @@
     "level": 7,
     "exp": 0,
     "growth": {
-     "cap": 60,
-     "speed": "fast"
+     "cap": 60
     },
     "initialLevel": 7,
     "profile": {
@@ -550,8 +534,7 @@
     "level": 8,
     "exp": 0,
     "growth": {
-     "cap": 65,
-     "speed": "normal"
+     "cap": 65
     },
     "initialLevel": 4,
     "profile": {
@@ -582,8 +565,7 @@
     "level": 9,
     "exp": 0,
     "growth": {
-     "cap": 70,
-     "speed": "slow"
+     "cap": 70
     },
     "initialLevel": 1,
     "profile": {
@@ -614,8 +596,7 @@
     "level": 10,
     "exp": 0,
     "growth": {
-     "cap": 40,
-     "speed": "normal"
+     "cap": 40
     },
     "initialLevel": 6,
     "profile": {
@@ -646,8 +627,7 @@
     "level": 11,
     "exp": 0,
     "growth": {
-     "cap": 55,
-     "speed": "normal"
+     "cap": 55
     },
     "initialLevel": 5,
     "profile": {
@@ -678,8 +658,7 @@
     "level": 5,
     "exp": 0,
     "growth": {
-     "cap": 50,
-     "speed": "normal"
+     "cap": 50
     },
     "initialLevel": 5,
     "profile": {
@@ -711,8 +690,7 @@
     "level": 6,
     "exp": 0,
     "growth": {
-     "cap": 45,
-     "speed": "normal"
+     "cap": 45
     },
     "initialLevel": 6,
     "profile": {
@@ -744,8 +722,7 @@
     "level": 9,
     "exp": 0,
     "growth": {
-     "cap": 35,
-     "speed": "fast"
+     "cap": 35
     },
     "initialLevel": 9,
     "profile": {
@@ -777,8 +754,7 @@
     "level": 2,
     "exp": 0,
     "growth": {
-     "cap": 60,
-     "speed": "slow"
+     "cap": 60
     },
     "initialLevel": 2,
     "profile": {
@@ -810,8 +786,7 @@
     "level": 4,
     "exp": 0,
     "growth": {
-     "cap": 50,
-     "speed": "normal"
+     "cap": 50
     },
     "initialLevel": 4,
     "profile": {
@@ -843,8 +818,7 @@
     "level": 4,
     "exp": 0,
     "growth": {
-     "cap": 70,
-     "speed": "normal"
+     "cap": 70
     },
     "initialLevel": 4,
     "profile": {
@@ -876,8 +850,7 @@
     "level": 8,
     "exp": 0,
     "growth": {
-     "cap": 55,
-     "speed": "fast"
+     "cap": 55
     },
     "initialLevel": 8,
     "profile": {
@@ -909,8 +882,7 @@
     "level": 3,
     "exp": 0,
     "growth": {
-     "cap": 60,
-     "speed": "slow"
+     "cap": 60
     },
     "initialLevel": 3,
     "profile": {
@@ -942,8 +914,7 @@
     "level": 5,
     "exp": 0,
     "growth": {
-     "cap": 45,
-     "speed": "normal"
+     "cap": 45
     },
     "initialLevel": 5,
     "profile": {
@@ -975,8 +946,7 @@
     "level": 5,
     "exp": 0,
     "growth": {
-     "cap": 50,
-     "speed": "normal"
+     "cap": 50
     },
     "initialLevel": 5,
     "profile": {
@@ -1008,8 +978,7 @@
     "level": 5,
     "exp": 0,
     "growth": {
-     "cap": 50,
-     "speed": "normal"
+     "cap": 50
     },
     "initialLevel": 5,
     "profile": {
@@ -1041,8 +1010,7 @@
     "level": 2,
     "exp": 0,
     "growth": {
-     "cap": 65,
-     "speed": "normal"
+     "cap": 65
     },
     "initialLevel": 2,
     "profile": {
@@ -1074,8 +1042,7 @@
     "level": 4,
     "exp": 0,
     "growth": {
-     "cap": 55,
-     "speed": "normal"
+     "cap": 55
     },
     "initialLevel": 4,
     "profile": {
@@ -1107,8 +1074,7 @@
     "level": 6,
     "exp": 0,
     "growth": {
-     "cap": 50,
-     "speed": "normal"
+     "cap": 50
     },
     "initialLevel": 6,
     "profile": {
@@ -1140,8 +1106,7 @@
     "level": 3,
     "exp": 0,
     "growth": {
-     "cap": 60,
-     "speed": "normal"
+     "cap": 60
     },
     "initialLevel": 3,
     "profile": {
@@ -1173,8 +1138,7 @@
     "level": 5,
     "exp": 0,
     "growth": {
-     "cap": 45,
-     "speed": "normal"
+     "cap": 45
     },
     "initialLevel": 5,
     "profile": {
@@ -1237,7 +1201,7 @@
     "variant": "small"
    },
    {
-    "id": "r118",
+    "id": "r120",
     "cityId": "seoul",
     "tier": "crack",
     "name": "서울 골목 끝 균열",
@@ -1248,14 +1212,20 @@
      {
       "monsterId": "void_hound",
       "grade": "mid",
-      "level": 29,
+      "level": 15,
       "row": "front"
      },
      {
       "monsterId": "husk_guard",
       "grade": "mid",
-      "level": 29,
+      "level": 15,
       "row": "front"
+     },
+     {
+      "monsterId": "spore_spitter",
+      "grade": "mid",
+      "level": 15,
+      "row": "back"
      }
     ],
     "reward": {
@@ -1825,8 +1795,8 @@
         "element": "frost",
         "role": "commander",
         "level": 12,
-        "hp": 155,
-        "maxHp": 155,
+        "hp": 156,
+        "maxHp": 156,
         "offRow": true
        },
        {
@@ -1838,8 +1808,8 @@
         "element": "lightning",
         "role": "archer",
         "level": 6,
-        "hp": 84,
-        "maxHp": 84,
+        "hp": 83,
+        "maxHp": 83,
         "offRow": true
        },
        {
@@ -1851,8 +1821,8 @@
         "element": "wind",
         "role": "healer",
         "level": 7,
-        "hp": 94,
-        "maxHp": 94,
+        "hp": 93,
+        "maxHp": 93,
         "offRow": true
        },
        {
@@ -1864,8 +1834,8 @@
         "element": "light",
         "role": "mage",
         "level": 8,
-        "hp": 86,
-        "maxHp": 86,
+        "hp": 85,
+        "maxHp": 85,
         "offRow": true
        },
        {
@@ -2125,7 +2095,7 @@
         "kind": "damage",
         "target": "a0",
         "amount": 35,
-        "hpAfter": 120,
+        "hpAfter": 121,
         "elementMultiplier": 1,
         "downed": false
        },
@@ -2133,7 +2103,7 @@
         "kind": "damage",
         "target": "a1",
         "amount": 34,
-        "hpAfter": 50,
+        "hpAfter": 49,
         "elementMultiplier": 1,
         "downed": false
        }
@@ -2149,7 +2119,7 @@
         "kind": "damage",
         "target": "a0",
         "amount": 32,
-        "hpAfter": 88,
+        "hpAfter": 89,
         "elementMultiplier": 1,
         "downed": false
        },
@@ -2157,7 +2127,7 @@
         "kind": "damage",
         "target": "a1",
         "amount": 31,
-        "hpAfter": 19,
+        "hpAfter": 18,
         "elementMultiplier": 1,
         "downed": false
        }
@@ -2223,8 +2193,8 @@
        {
         "kind": "damage",
         "target": "e0",
-        "amount": 12,
-        "hpAfter": 174,
+        "amount": 13,
+        "hpAfter": 173,
         "elementMultiplier": 1,
         "downed": false
        },
@@ -2261,7 +2231,7 @@
         "kind": "damage",
         "target": "a0",
         "amount": 37,
-        "hpAfter": 51,
+        "hpAfter": 52,
         "elementMultiplier": 1,
         "downed": false
        }
@@ -2273,7 +2243,7 @@
       "target": "e0",
       "status": "dot",
       "amount": 15,
-      "hpAfter": 159,
+      "hpAfter": 158,
       "downed": false
      },
      {
@@ -2286,7 +2256,7 @@
         "kind": "damage",
         "target": "a0",
         "amount": 33,
-        "hpAfter": 18,
+        "hpAfter": 19,
         "elementMultiplier": 1,
         "downed": false
        }
@@ -2302,7 +2272,7 @@
         "kind": "damage",
         "target": "a0",
         "amount": 17,
-        "hpAfter": 1,
+        "hpAfter": 2,
         "elementMultiplier": 1,
         "downed": false
        }
@@ -2356,8 +2326,8 @@
        {
         "kind": "damage",
         "target": "e0",
-        "amount": 53,
-        "hpAfter": 106,
+        "amount": 54,
+        "hpAfter": 104,
         "elementMultiplier": 1,
         "downed": false
        }
@@ -2372,8 +2342,8 @@
        {
         "kind": "damage",
         "target": "e1",
-        "amount": 12,
-        "hpAfter": 146,
+        "amount": 11,
+        "hpAfter": 147,
         "elementMultiplier": 1,
         "downed": false
        }
@@ -2401,7 +2371,7 @@
       "target": "e0",
       "status": "dot",
       "amount": 15,
-      "hpAfter": 91,
+      "hpAfter": 89,
       "downed": false
      },
      {

@@ -233,7 +233,7 @@ describe('육성과 영입', () => {
   it('경험치가 차면 아르케를 내고 레벨을 올린다', () => {
     let s = opener();
     const hero = getMerc(s, 'hero');
-    const need = expToNextLevel(tables, hero.level, hero.growth.speed);
+    const need = expToNextLevel(tables, hero.level);
     expect(() => levelUp(tables, s, 'hero')).toThrow(/경험치/);
     s = { ...s, mercenaries: s.mercenaries.map((m) => (m.id === 'hero' ? { ...m, exp: need + 5 } : m)) };
     const up = levelUp(tables, s, 'hero');
@@ -248,10 +248,15 @@ describe('육성과 영입', () => {
     expect(() => levelUp(tables, capped, 'm01')).toThrow(/한계/);
   });
 
-  it('성장 속도는 레벨업에 필요한 경험치 배율이다(빠름 ×0.75, 보통 ×1.0, 느림 ×1.3)', () => {
-    const base = expToNextLevel(tables, 10, 'normal');
-    expect(expToNextLevel(tables, 10, 'fast')).toBe(Math.round(base * 0.75));
-    expect(expToNextLevel(tables, 10, 'slow')).toBe(Math.round(base * 1.3));
+  it('레벨업에 필요한 경험치는 모든 계약자가 같다(지시서 021: base + perLevel × (레벨 − 1))', () => {
+    const { base, perLevel } = tables.progression.expToNextLevel;
+    expect(expToNextLevel(tables, 1)).toBe(base);
+    expect(expToNextLevel(tables, 10)).toBe(base + perLevel * 9);
+    // 성장 한계가 다른 두 계약자도 같은 레벨이면 같은 경험치로 오른다
+    const s = opener();
+    const a = getMerc(s, 'm01');
+    const b = getMerc(s, 'm02');
+    expect(expToNextLevel(tables, a.level)).toBe(expToNextLevel(tables, b.level + (a.level - b.level)));
   });
 
   it('NPC 세력 용병을 영입비를 내고 영입하면 소속이 길드로 바뀐다', () => {
@@ -326,10 +331,10 @@ describe('시작 구성', () => {
     if (sameRole) expect(left).toBe(sameRole.id);
   });
 
-  it('용병 프로필(나이, 성별, 고향, 배경, 성장 한계·속도, 최초 레벨)이 CSV 값으로 들어온다', () => {
+  it('용병 프로필(나이, 성별, 고향, 배경, 성장 한계, 최초 레벨)이 CSV 값으로 들어온다', () => {
     const m = getMerc(start({ mode: 'guildMaster', name: 'gm', background: 'heir' }), 'm12');
     expect(m.name).toBe('카게야마 쇼');
-    expect(m.growth).toEqual({ cap: 70, speed: 'fast' });
+    expect(m.growth).toEqual({ cap: 70 });
     expect(m.level).toBe(8);
     expect(m.initialLevel).toBe(8);
     expect(m.profile).toMatchObject({ hometown: 'tokyo', background: 'corporate', world: 'earth' });
