@@ -15,6 +15,15 @@ async function open(page: Page, screen: string) {
   await page.evaluate(() => document.fonts.ready);
 }
 
+// 계약에는 있지만 아직 지시서가 구현하지 않은 구역. 해당 지시서에서 구현하면 이 목록에서 지운다.
+const PENDING: Record<string, string[]> = {
+  MercDetail: ['growth', 'skills'], // 021 성장률, 020 스킬
+  Battle: ['statusIcons'], // 020 상태 효과
+  Settings: ['help'], // 020 도움말
+};
+// 서브 탭 화면에서 같이 보이는 부모 화면 구역
+const PARENT_SECTIONS = ['header', 'subtabs'];
+
 for (const sc of SCREENS) {
   const spec = contract.screens[sc.name];
   test.describe(sc.name, () => {
@@ -23,15 +32,21 @@ for (const sc of SCREENS) {
     test('구역 계약: 순서와 이름', async ({ page }) => {
       // 제안 화면(탑·보스·영입)은 콘텐츠의 서브 탭이고 계약에 구역이 없다
       test.skip(spec.sections.length === 0, '계약에 구역이 없는 제안 화면');
-      const found: string[] = await page.$$eval('[data-ui]', (els) => els.map((e) => e.getAttribute('data-ui')!));
+      // 구역 이름은 '화면.구역'(대문자 시작). 소문자로 시작하는 data-ui(예: recruit.level)는 요소 표시라 구역이 아니다
+      const found: string[] = (await page.$$eval('[data-ui]', (els) => els.map((e) => e.getAttribute('data-ui')!))).filter((x) => /^[A-Z]/.test(x));
       const prefix = `${sc.name}.`;
       const mine = found.filter((x) => x.startsWith(prefix)).map((x) => x.slice(prefix.length));
-      const others = found.filter((x) => !x.startsWith(prefix));
+      const parentIds = sc.parent ? PARENT_SECTIONS.map((id) => `${sc.parent}.${id}`) : [];
+      const others = found.filter((x) => !x.startsWith(prefix) && !parentIds.includes(x));
       expect(others, '다른 화면의 data-ui').toEqual([]);
       const ids: string[] = spec.sections.map((s: { id: string }) => s.id);
       const unknown = mine.filter((x) => !ids.includes(x));
       expect(unknown, '계약에 없는 구역').toEqual([]);
-      const required = spec.sections.filter((s: { optionalChildren?: boolean }) => !s.optionalChildren).map((s: { id: string }) => s.id);
+      const pending = PENDING[sc.name] ?? [];
+      const required = spec.sections
+        .filter((s: { optionalChildren?: boolean }) => !s.optionalChildren)
+        .map((s: { id: string }) => s.id)
+        .filter((id: string) => !pending.includes(id));
       for (const id of required) expect(mine, `구역 ${id}`).toContain(id);
       // 순서: 계약 순서대로 나와야 한다
       const order = mine.map((x) => ids.indexOf(x));
@@ -94,6 +109,26 @@ for (const sc of SCREENS) {
     });
   });
 }
+
+// 017c: 영입 가능·진행 중 카드마다 '레벨/성장 한계' 배지(숫자/숫자), 잠김 카드에는 없다
+test('영입 카드 레벨/성장 한계 배지', async ({ page }) => {
+  await open(page, 'recruit');
+  const cards = await page.$$eval('[data-ui="Recruit.cards"] [data-role=card]', (els) =>
+    els.map((e) => ({
+      locked: e.classList.contains('locked'),
+      badges: [...e.querySelectorAll('[data-ui="recruit.level"]')].map((b) => b.textContent ?? ''),
+    })),
+  );
+  const open_ = cards.filter((c) => !c.locked);
+  const locked = cards.filter((c) => c.locked);
+  expect(open_.length, '영입 가능·진행 중 카드').toBeGreaterThan(0);
+  expect(locked.length, '잠김 카드').toBeGreaterThan(0);
+  for (const c of open_) {
+    expect(c.badges.length, '배지 1개').toBe(1);
+    expect(c.badges[0]).toMatch(/^\d+\/\d+$/);
+  }
+  for (const c of locked) expect(c.badges, '잠김 카드 배지 없음').toEqual([]);
+});
 
 test('계약자 그리드 4열, 파티 슬롯 줄당 5', async ({ page }) => {
   await open(page, 'mercs');
