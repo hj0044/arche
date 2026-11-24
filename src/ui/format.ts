@@ -23,7 +23,6 @@ export const materialName = (id: string) => getMaterial(tables, id).name;
 export const backgroundName = (id: string) => tables.backgrounds.find((b) => b.id === id)?.name ?? id;
 /** 용병 프로필용 짧은 배경 이름(군인, 연구원 등) */
 export const backgroundShort = (id: string) => tables.backgrounds.find((b) => b.id === id)?.shortName ?? id;
-export const growthSpeedName = (id: string) => tables.growthSpeeds.find((g) => g.id === id)?.name ?? id;
 export const worldName = (id: string) => tables.worlds.find((w) => w.id === id)?.name ?? id;
 export const severityName = (id: string) => tables.injuries.severities.find((s) => s.id === id)?.name ?? id;
 export const factionName = (id: string) => tables.factions.find((f) => f.id === id)?.name ?? id;

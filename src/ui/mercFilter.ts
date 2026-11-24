@@ -37,7 +37,7 @@ export function mercStatuses(tables: GameTables, state: GameState, m: MercenaryS
   if (isOnExpedition(state, m.id)) out.push('expedition');
   if (assignedFacility(state.facilities, m.id)) out.push('training');
   if (m.loyalty && loyaltyTier(tables, m.loyalty.value).warn) out.push('lowLoyalty');
-  if (canLevelUp(tables, state, m.id) || (m.level < m.growth.cap && !isOnExpedition(state, m.id) && m.exp >= expToNextLevel(tables, m.level, m.growth.speed))) out.push('levelup');
+  if (canLevelUp(tables, state, m.id) || (m.level < m.growth.cap && !isOnExpedition(state, m.id) && m.exp >= expToNextLevel(tables, m.level))) out.push('levelup');
   return out;
 }
 
@@ -83,7 +83,7 @@ const byId = (a: MercenaryState, b: MercenaryState) => (a.id < b.id ? -1 : a.id 
 function comparator(tables: GameTables, state: GameState, sortId: string): (a: MercenaryState, b: MercenaryState) => number {
   const roleIdx = (m: MercenaryState) => tables.roles.findIndex((r) => r.id === m.role);
   const elIdx = (m: MercenaryState) => tables.elements.findIndex((e) => e.id === m.element);
-  const ratio = (m: MercenaryState) => (m.level >= m.growth.cap ? -1 : m.exp / expToNextLevel(tables, m.level, m.growth.speed));
+  const ratio = (m: MercenaryState) => (m.level >= m.growth.cap ? -1 : m.exp / expToNextLevel(tables, m.level));
   const cost = (m: MercenaryState) => recruitInfo(tables, state, m.id).cost;
   const home = (m: MercenaryState) => (m.profile.hometown === state.baseCityId ? 0 : 1);
   switch (sortId) {

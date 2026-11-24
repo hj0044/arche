@@ -34,7 +34,6 @@
   },
   "protagonistGrowth": {
     "cap": 50,
-    "speed": "normal",
     "initialLevel": 5
   },
   "reportHistoryLimit": 20,

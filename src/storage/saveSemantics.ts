@@ -20,7 +20,6 @@ export type SemanticTables = Pick<
   | 'omens'
   | 'elements'
   | 'roles'
-  | 'growthSpeeds'
   | 'backgrounds'
   | 'worlds'
   | 'races'
@@ -76,7 +75,6 @@ export function validateSemantics(state: GameState, t: SemanticTables): string[]
     mercIds.add(m.id);
     ref(`${p}.element`, t.elements, m.element, '속성');
     ref(`${p}.role`, t.roles, m.role, '역할');
-    ref(`${p}.growth.speed`, t.growthSpeeds, m.growth.speed, '성장 속도');
     ref(`${p}.profile.background`, t.backgrounds, m.profile.background, '배경');
     ref(`${p}.profile.hometown`, t.cities, m.profile.hometown, '도시');
     // 특성 단계(지시서 016): 있는 특성 id, 1 ~ maxRank

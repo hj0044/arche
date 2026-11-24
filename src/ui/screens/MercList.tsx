@@ -114,7 +114,7 @@ export function MercList({ ctx }: { ctx: Ctx }) {
           {list.map((m) => {
             const st = stateOf(s, m);
             const capped = m.level >= m.growth.cap;
-            const need = expToNextLevel(tables, m.level, m.growth.speed);
+            const need = expToNextLevel(tables, m.level);
             const up = !capped && !isOnExpedition(s, m.id) && m.exp >= need;
             return (
               <MercCard

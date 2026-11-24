@@ -389,3 +389,12 @@ html, body, #root { margin: 0; height: 100%; background: var(--c-page); }
 .help-ul { margin: 0; padding: 4px 0 4px 18px; display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--c-text-banner); line-height: 1.4; }
 .help-dot { flex: none; width: 12px; height: 12px; margin-top: 4px; border-radius: 50%; background: var(--sw, var(--c-line-dim)); }
 .bt-layer { position: absolute; inset: 0; }
+/* 지시서 021: 성장률 칸(시안 merc.growth) */
+.growth-cell { flex: 1; box-sizing: border-box; background: var(--c-panel); border: 1px solid var(--c-line); border-radius: var(--r-btn); padding: 5px 10px; display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.growth-cell .nm { font-size: 12px; color: var(--c-text-sub); }
+.growth-cell .stars { flex: none; white-space: nowrap; font-size: 13px; letter-spacing: 1px; }
+.growth-cell .stars .on { color: var(--c-gold); }
+.growth-cell .stars .off { color: var(--c-line-dim); }
+.growth-cell .val { font-size: 12px; color: var(--c-text); }
+.growth-cell .val b { font-size: 14px; }
+.growth-cell .val span { color: var(--c-text-sub); }

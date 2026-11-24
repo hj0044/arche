@@ -9,9 +9,10 @@ import { validateSemantics, type SemanticTables } from './saveSemantics';
  * v7: 리프트 등급 변형(variant, 지시서 015).
  * v8: 스탯 세분화·특성(지시서 016). 계약자 특성 단계(traitRanks).
  * v9: 스킬 구조(기본 공격 + 액티브 3)·자객·기만자·계약자 36명(지시서 020). 전투 안의 상태 효과는 저장하지 않는다.
+ * v10: 성장 속도 삭제(growth.speed 없음)·계약자별 성장률(지시서 021).
  */
 export const SAVE_FORMAT = 'arche-save';
-export const SAVE_VERSION = 9;
+export const SAVE_VERSION = 10;
 
 export type SaveKind = 'manual' | 'auto';
 
