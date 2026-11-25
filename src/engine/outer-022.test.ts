@@ -63,6 +63,14 @@ describe('022 외곽 임무', () => {
     expect(ev.results.map((r) => r.mercId)).toEqual(['m01']);
   });
 
+  it('그날 파견을 거부한 계약자는 외곽 임무에 가지 않는다(2026-11-25 결정)', () => {
+    let s = start();
+    s = patch(s, 'm02', (m) => ({ loyalty: { ...m.loyalty!, refusedOnDay: s.day } }));
+    const ev = outerEvent(advanceDay(tables, s).events)!;
+    expect(ev.results.map((r) => r.mercId)).not.toContain('m02');
+    expect(ev.results.length).toBe(3);
+  });
+
   it('성장 한계면 경험치를 받지 않는다', () => {
     const t: GameTables = { ...tables, outerMissions: { ...tables.outerMissions, types: tables.outerMissions.types.filter((x) => x.exp) } };
     const capped = planOuterMissions(t, 'x', 1, [{ id: 'a', level: 50, cap: 50 }])[0];

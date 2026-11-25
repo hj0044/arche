@@ -75,9 +75,11 @@ const want = t.combatPower.riskTiers.map((x) => x.id);
 const picked = new Map<string, Rift>();
 const tmpl = make('seoul', 'fx-tmpl', DAY + 4);
 const gradeRange = t.monsterGrades.find((g) => g.id === 'mid')!.level;
-for (const count of [2, 3, 4]) {
+// 구간 경계가 좁아 한 구성으로 못 채우면 마리 수를 늘리고 시작 종(species 순서)을 바꿔 가며 찾는다
+for (const [count, offset] of [2, 3, 4, 5].flatMap((c) => [0, 1, 2].map((o) => [c, o] as const))) {
   for (let level = gradeRange[0]; level <= gradeRange[1] && picked.size < want.length; level++) {
-    const species = t.monsters.filter((m) => m.grades.includes('mid'));
+    const all = t.monsters.filter((m) => m.grades.includes('mid'));
+    const species = [...all.slice(offset), ...all.slice(0, offset)];
     const r: Rift = {
       ...tmpl,
       id: `r${++counter}`,

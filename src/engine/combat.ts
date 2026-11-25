@@ -496,7 +496,12 @@ export function resolveCombat(tables: GameTables, input: CombatInput): CombatRes
 
     /** 적 한 명에게: 공격이면 피해 후 상태 효과, debuff면 상태 효과만 */
     const hitEnemy = (t: Combatant) => {
-      if (skill.kind !== 'debuff') effects.push(dealDamage(actor, t, skill));
+      // 공격이 회피되면 그 공격에 붙은 상태 효과도 걸리지 않는다(2026-11-25 결정). 피해 없는 debuff는 늘 걸린다
+      if (skill.kind !== 'debuff') {
+        const hit = dealDamage(actor, t, skill);
+        effects.push(hit);
+        if (hit.kind === 'damage' && hit.evaded) return;
+      }
       applyAll(actor, t, skill, effects);
     };
     /** 아군 한 명에게: 치유(+정화), 보호막, 강화 */

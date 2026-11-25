@@ -219,6 +219,22 @@ describe('020 상태 효과', () => {
   });
 });
 
+describe('2026-11-25 결정: 회피와 상태 효과', () => {
+  it('공격이 회피되면 그 공격에 붙은 상태 효과는 걸리지 않는다', () => {
+    // 회피율 상한을 풀어 늘 회피하게 한다
+    const T2: GameTables = { ...T, stats: { ...T.stats, caps: { ...T.stats.caps, eva: 1 } } };
+    const r = fight([{ unit: unit('a', ['t_poke', 't_mark3'], { ...FAST, ...TOUGH }), row: 'front' }], [{ unit: unit('e', ['t_poke'], { ...SLOW, ...TOUGH, eva: 1 }), row: 'front' }], 1, T2);
+    const first = actions(r.events).find((a) => a.skillId === 't_mark3')!;
+    expect(first.effects).toHaveLength(1);
+    expect(first.effects[0]).toMatchObject({ kind: 'damage', evaded: true });
+  });
+  it('피해 없는 debuff는 회피와 상관없이 걸린다', () => {
+    const T2: GameTables = { ...T, stats: { ...T.stats, caps: { ...T.stats.caps, eva: 1 } } };
+    const r = fight([{ unit: unit('a', ['t_poke', 't_weaken'], { ...FAST, ...TOUGH }), row: 'front' }], [{ unit: unit('e', ['t_poke'], { ...SLOW, ...TOUGH, eva: 1 }), row: 'front' }], 1, T2);
+    expect(effectsOf(r.events, 'status').some((f) => f.kind === 'status' && f.status === 'weaken')).toBe(true);
+  });
+});
+
 describe('020 후열 직격', () => {
   const enemies = (): CombatSlot[] => [
     { unit: unit('front', ['t_taunt'], { spd: 2000, ...TOUGH }), row: 'front' },
@@ -246,9 +262,9 @@ describe('020 후열 직격', () => {
     const r2 = fight([{ unit: unit('a', ['t_backRow'], { ...FAST, ...TOUGH }), row: 'front' }], [{ unit: unit('f', ['t_poke'], TOUGH), row: 'front' }]);
     expect(actions(r2.events).find((a) => a.actor === 'a0')!.effects.map((f) => f.target)).toEqual(['e0']);
   });
-  it('초안의 저격수 저격은 도발 무시, 자객 스킬은 후열 직격이라 기본값으로 도발 무시', () => {
-    expect(ignoresTaunt(getSkill(base, 'archer_snipe'))).toBe(true);
-    for (const id of ['assassin_stab', 'assassin_backstab', 'assassin_ambush']) expect(ignoresTaunt(getSkill(base, id)), id).toBe(true);
+  it('저격과 자객의 후열 직격 스킬은 데이터에 도발 무시가 명시돼 있다(2026-11-25 결정)', () => {
+    expect(getSkill(base, 'archer_snipe').ignoreTaunt).toBe(true);
+    for (const s of base.skills.filter((x) => x.role === 'assassin' && ['enemyBackLowest', 'enemyBackRow'].includes(x.target))) expect(s.ignoreTaunt, s.id).toBe(true);
   });
 });
 

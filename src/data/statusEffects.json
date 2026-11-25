@@ -1,5 +1,5 @@
 {
-  "_note": "지시서 020 상태 효과 5종(초안 skills-draft.json statusEffects). 전투 안에서만 유지. defaultDuration은 스킬 applies에 duration이 없을 때. multiplier: 표식은 받는 피해 배율, 약화는 주는 피해·치유 배율. dot.powerMultiplier: 걸 때 정한 피해(공격 × 스킬 위력 × 방어 감쇠)에 곱하는 값(임시 1.0). stun.immuneRoundsAfter: 풀린 뒤 기절에 걸리지 않는 라운드 수. cleanse가 지우는 효과는 cleansable. 수치는 임시값. description은 화면 문구(시안 Help.html 문구를 따름).",
+  "_note": "지시서 020 상태 효과 5종(초안 skills-draft.json statusEffects). 전투 안에서만 유지. defaultDuration은 스킬 applies에 duration이 없을 때. multiplier: 표식은 받는 피해 배율, 약화는 주는 피해·치유 배율. dot.powerMultiplier: 걸 때 정한 피해(공격 × 스킬 위력 × 방어 감쇠)에 곱하는 값(임시 0.4: 한 번에 스킬 위력의 40%, 기본 3번이면 원래 피해의 1.2배를 더 준다. 2026-11-25 구현자 결정, 사용자 위임). stun.immuneRoundsAfter: 풀린 뒤 기절에 걸리지 않는 라운드 수. cleanse가 지우는 효과는 cleansable. 수치는 임시값. description은 화면 문구(시안 Help.html 문구를 따름).",
   "effects": [
     {
       "id": "stun",
@@ -16,7 +16,7 @@
       "kind": "dot",
       "defaultDuration": 3,
       "description": "자기 차례가 시작될 때마다 피해를 입는다(방어 적용).",
-      "powerMultiplier": 1.0,
+      "powerMultiplier": 0.4,
       "cleansable": true
     },
     {

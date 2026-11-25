@@ -1200,7 +1200,7 @@
     "variant": "small"
    },
    {
-    "id": "r126",
+    "id": "r133",
     "cityId": "seoul",
     "tier": "crack",
     "name": "서울 골목 끝 균열",
@@ -1209,21 +1209,15 @@
     "durationDays": 2,
     "enemies": [
      {
-      "monsterId": "void_hound",
-      "grade": "mid",
-      "level": 21,
-      "row": "front"
-     },
-     {
       "monsterId": "husk_guard",
       "grade": "mid",
-      "level": 21,
+      "level": 28,
       "row": "front"
      },
      {
       "monsterId": "spore_spitter",
       "grade": "mid",
-      "level": 21,
+      "level": 28,
       "row": "back"
      }
     ],
@@ -1245,7 +1239,7 @@
     }
    },
    {
-    "id": "r127",
+    "id": "r134",
     "cityId": "seoul",
     "tier": "crack",
     "name": "서울 지하 배수로 균열",
@@ -1254,21 +1248,15 @@
     "durationDays": 2,
     "enemies": [
      {
-      "monsterId": "void_hound",
-      "grade": "mid",
-      "level": 22,
-      "row": "front"
-     },
-     {
       "monsterId": "husk_guard",
       "grade": "mid",
-      "level": 22,
+      "level": 29,
       "row": "front"
      },
      {
       "monsterId": "spore_spitter",
       "grade": "mid",
-      "level": 22,
+      "level": 29,
       "row": "back"
      }
     ],
@@ -1287,7 +1275,7 @@
     "variant": "upper"
    },
    {
-    "id": "r128",
+    "id": "r150",
     "cityId": "seoul",
     "tier": "crack",
     "name": "서울 공사장 가림막 균열",
@@ -1296,21 +1284,15 @@
     "durationDays": 2,
     "enemies": [
      {
-      "monsterId": "void_hound",
-      "grade": "mid",
-      "level": 23,
-      "row": "front"
-     },
-     {
-      "monsterId": "husk_guard",
-      "grade": "mid",
-      "level": 23,
-      "row": "front"
-     },
-     {
       "monsterId": "spore_spitter",
       "grade": "mid",
-      "level": 23,
+      "level": 29,
+      "row": "back"
+     },
+     {
+      "monsterId": "rift_caller",
+      "grade": "mid",
+      "level": 29,
       "row": "back"
      }
     ],
@@ -1329,7 +1311,7 @@
     "variant": "upper"
    },
    {
-    "id": "r131",
+    "id": "r149",
     "cityId": "seoul",
     "tier": "crack",
     "name": "서울 옥상 물탱크 균열",
@@ -1338,21 +1320,15 @@
     "durationDays": 2,
     "enemies": [
      {
-      "monsterId": "void_hound",
-      "grade": "mid",
-      "level": 26,
-      "row": "front"
-     },
-     {
-      "monsterId": "husk_guard",
-      "grade": "mid",
-      "level": 26,
-      "row": "front"
-     },
-     {
       "monsterId": "spore_spitter",
       "grade": "mid",
-      "level": 26,
+      "level": 28,
+      "row": "back"
+     },
+     {
+      "monsterId": "rift_caller",
+      "grade": "mid",
+      "level": 28,
       "row": "back"
      }
     ],
@@ -1371,7 +1347,7 @@
     "variant": "upper"
    },
    {
-    "id": "r132",
+    "id": "r151",
     "cityId": "tokyo",
     "tier": "crack",
     "name": "도쿄 지하 배수로 균열",
@@ -1407,7 +1383,7 @@
     "variant": "small"
    },
    {
-    "id": "r133",
+    "id": "r152",
     "cityId": "tokyo",
     "tier": "crack",
     "name": "도쿄 골목 끝 균열",
@@ -1443,7 +1419,7 @@
     "variant": "base"
    },
    {
-    "id": "r134",
+    "id": "r153",
     "cityId": "tokyo",
     "tier": "gate",
     "name": "도쿄 불 꺼진 항만 관문",
@@ -1487,7 +1463,7 @@
     "variant": "lower"
    },
    {
-    "id": "r135",
+    "id": "r154",
     "cityId": "newyork",
     "tier": "crack",
     "name": "뉴욕 심야 편의점 뒷문 균열",
@@ -1529,7 +1505,7 @@
     "variant": "base"
    },
    {
-    "id": "r136",
+    "id": "r155",
     "cityId": "newyork",
     "tier": "route",
     "name": "뉴욕 가라앉은 도시 항로",
@@ -2202,7 +2178,7 @@
         "target": "e0",
         "status": "dot",
         "duration": 3,
-        "value": 15
+        "value": 6
        }
       ]
      },
@@ -2241,8 +2217,8 @@
       "round": 3,
       "target": "e0",
       "status": "dot",
-      "amount": 15,
-      "hpAfter": 158,
+      "amount": 6,
+      "hpAfter": 167,
       "downed": false
      },
      {
@@ -2326,7 +2302,7 @@
         "kind": "damage",
         "target": "e0",
         "amount": 54,
-        "hpAfter": 104,
+        "hpAfter": 113,
         "elementMultiplier": 1,
         "downed": false
        }
@@ -2369,8 +2345,8 @@
       "round": 4,
       "target": "e0",
       "status": "dot",
-      "amount": 15,
-      "hpAfter": 89,
+      "amount": 6,
+      "hpAfter": 107,
       "downed": false
      },
      {
@@ -2452,7 +2428,7 @@
   ],
   "stabilizedRoutes": [],
   "counters": {
-   "rift": 136,
+   "rift": 155,
    "expedition": 2
   },
   "records": {

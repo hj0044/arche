@@ -656,7 +656,8 @@ export function advanceDay(tables: GameTables, prev: GameState): { state: GameSt
         state.seed,
         state.day,
         state.mercenaries
-          .filter((m) => isGuildMember(m) && !m.injury && !isOnExpedition(state, m.id) && !assignedFacility(state.facilities, m.id))
+          // 그날 파견을 거부한 계약자는 외곽 임무에도 가지 않는다(2026-11-25 결정)
+          .filter((m) => isGuildMember(m) && !m.injury && !isOnExpedition(state, m.id) && !assignedFacility(state.facilities, m.id) && !refusedToday(state, m))
           .map((m) => ({ id: m.id, level: m.level, cap: m.growth.cap, loyaltyValue: m.loyalty?.value })),
       )
     : [];
