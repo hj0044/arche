@@ -66,6 +66,7 @@
   - 레벨·등급별 승률 표: `npm run balance -- [시드 수]`
   - 상태 효과를 뺀 데이터와 승률 비교(지시서 020): `npm run status-impact -- [시드 수]`
   - 역할별 계약자 스탯 분포(성장률 전후, 지시서 021): `npm run growth-spread -- [레벨,레벨,...]`
+  - 역할별 파티 기여도·기절·표식 효과(지시서 025): `npm run role-balance -- [구성당 시드 수(기본 800)] [--json 출력.json]`
   - 용병 표 다시 만들기(CSV → `src/data/roster.json`): `npm run import-roster`
   - 예상 위험도와 실제 승률 비교표: `npm run risk-check -- [실제 승률용 시드 수]`
   - 충성도 값 조합 비교표: `npm run loyalty-sweep -- [일수] [시드 수]`

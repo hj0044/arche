@@ -135,7 +135,7 @@ describe('020 상태 효과', () => {
     expect(prev.type === 'action' && prev.actor === 'e0').toBe(true);
   });
 
-  it('표식은 받는 피해 ×1.25, 약화는 주는 피해 ×0.75', () => {
+  it('표식은 받는 피해 ×(데이터 배율, 025에서 1.4), 약화는 주는 피해 ×0.75', () => {
     const hitAmount = (allySkills: string[]) => {
       const r = fight([{ unit: unit('a', allySkills, { ...FAST, ...TOUGH }), row: 'front' }], [{ unit: unit('e', ['t_hit'], { ...SLOW, ...TOUGH }), row: 'front' }]);
       const a = actions(r.events);
@@ -146,7 +146,9 @@ describe('020 상태 효과', () => {
     };
     const plain = hitAmount(['t_hit']);
     const marked = hitAmount(['t_hit', 't_mark3']); // 1라운드 표식, 2라운드부터 때리기
-    expect(marked.ally / plain.ally).toBeCloseTo(1.25, 1);
+    const markMul = base.statusEffects.effects.find((e) => e.id === 'mark')!.multiplier!;
+    expect(markMul).toBe(1.4);
+    expect(marked.ally / plain.ally).toBeCloseTo(markMul, 1);
     const weakened = hitAmount(['t_hit', 't_weaken']); // 적이 약화된 채 때림
     expect(weakened.enemy / plain.enemy).toBeCloseTo(0.75, 1);
   });

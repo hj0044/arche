@@ -375,8 +375,8 @@
     "id": "mage_bind",
     "name": "속박",
     "kind": "attack",
-    "target": "enemy",
-    "power": 0.9,
+    "target": "enemyRow",
+    "power": 1.0,
     "cooldown": 5,
     "damageType": "energy",
     "applies": [
@@ -385,7 +385,7 @@
       }
     ],
     "role": "mage",
-    "description": "피해를 주고 대상을 기절시킨다."
+    "description": "적 한 열에 피해를 주고 기절시킨다."
   },
   {
     "id": "mage_curse",
@@ -681,22 +681,23 @@
     "id": "disruptor_expose",
     "name": "약점 노출",
     "kind": "debuff",
-    "target": "enemy",
+    "target": "enemyRow",
     "cooldown": 3,
     "applies": [
       {
-        "status": "mark"
+        "status": "mark",
+        "duration": 3
       }
     ],
     "role": "disruptor",
-    "description": "대상에 표식을 건다."
+    "description": "적 한 열에 3라운드 동안 표식을 건다."
   },
   {
     "id": "disruptor_daze",
     "name": "현혹",
     "kind": "attack",
-    "target": "enemy",
-    "power": 0.6,
+    "target": "enemyRow",
+    "power": 0.7,
     "cooldown": 5,
     "damageType": "energy",
     "applies": [
@@ -705,7 +706,7 @@
       }
     ],
     "role": "disruptor",
-    "description": "피해를 주고 대상을 기절시킨다."
+    "description": "적 한 열에 피해를 주고 기절시킨다."
   },
   {
     "id": "disruptor_miasma",

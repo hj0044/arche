@@ -2301,8 +2301,8 @@
        {
         "kind": "damage",
         "target": "e0",
-        "amount": 54,
-        "hpAfter": 113,
+        "amount": 60,
+        "hpAfter": 107,
         "elementMultiplier": 1,
         "downed": false
        }
@@ -2346,7 +2346,7 @@
       "target": "e0",
       "status": "dot",
       "amount": 6,
-      "hpAfter": 107,
+      "hpAfter": 101,
       "downed": false
      },
      {
