@@ -74,7 +74,8 @@
     "cooldown": 0,
     "damageType": "physical",
     "role": "assassin",
-    "description": "기본 공격. 후열의 가장 약한 적을 노린다."
+    "description": "기본 공격. 후열의 가장 약한 적을 노린다.",
+    "ignoreTaunt": true
   },
   {
     "id": "disruptor_jab",
@@ -584,7 +585,8 @@
     "damageType": "physical",
     "lowHpBonus": 1.0,
     "role": "assassin",
-    "description": "후열의 가장 약한 적을 찌른다. 체력이 낮을수록 피해가 커진다."
+    "description": "후열의 가장 약한 적을 찌른다. 체력이 낮을수록 피해가 커진다.",
+    "ignoreTaunt": true
   },
   {
     "id": "assassin_toxin",
@@ -600,7 +602,8 @@
       }
     ],
     "role": "assassin",
-    "description": "후열의 가장 약한 적에게 피해와 지속 피해."
+    "description": "후열의 가장 약한 적에게 피해와 지속 피해.",
+    "ignoreTaunt": true
   },
   {
     "id": "assassin_shadowstep",
@@ -626,7 +629,8 @@
     "damageType": "physical",
     "hits": 3,
     "role": "assassin",
-    "description": "후열의 가장 약한 적을 세 번 벤다."
+    "description": "후열의 가장 약한 적을 세 번 벤다.",
+    "ignoreTaunt": true
   },
   {
     "id": "assassin_paralyze",
@@ -642,7 +646,8 @@
       }
     ],
     "role": "assassin",
-    "description": "후열의 가장 약한 적을 기절시킨다."
+    "description": "후열의 가장 약한 적을 기절시킨다.",
+    "ignoreTaunt": true
   },
   {
     "id": "assassin_ambush",
@@ -653,7 +658,8 @@
     "cooldown": 5,
     "damageType": "physical",
     "role": "assassin",
-    "description": "적 후열 전체를 습격한다."
+    "description": "적 후열 전체를 습격한다.",
+    "ignoreTaunt": true
   },
   {
     "id": "disruptor_hex",
