@@ -530,7 +530,7 @@
     "name": "구만수",
     "element": "lightning",
     "role": "shield",
-    "level": 8,
+    "level": 4,
     "exp": 0,
     "growth": {
      "cap": 65
@@ -545,10 +545,11 @@
      "race": "human"
     },
     "affiliation": {
-     "kind": "guild"
+     "kind": "faction",
+     "factionId": "dokkaebi"
     },
     "loyalty": {
-     "value": 62,
+     "value": 60,
      "dangerDays": 0,
      "restStreak": 0,
      "refusedOnDay": null,
@@ -654,7 +655,7 @@
     "name": "토니 루소",
     "element": "wind",
     "role": "warrior",
-    "level": 5,
+    "level": 12,
     "exp": 0,
     "growth": {
      "cap": 50
@@ -669,11 +670,10 @@
      "race": "human"
     },
     "affiliation": {
-     "kind": "faction",
-     "factionId": "waypoint"
+     "kind": "guild"
     },
     "loyalty": {
-     "value": 60,
+     "value": 62,
      "dangerDays": 0,
      "restStreak": 0,
      "refusedOnDay": null,
@@ -1200,7 +1200,7 @@
     "variant": "small"
    },
    {
-    "id": "r120",
+    "id": "r126",
     "cityId": "seoul",
     "tier": "crack",
     "name": "서울 골목 끝 균열",
@@ -1211,19 +1211,19 @@
      {
       "monsterId": "void_hound",
       "grade": "mid",
-      "level": 15,
+      "level": 21,
       "row": "front"
      },
      {
       "monsterId": "husk_guard",
       "grade": "mid",
-      "level": 15,
+      "level": 21,
       "row": "front"
      },
      {
       "monsterId": "spore_spitter",
       "grade": "mid",
-      "level": 15,
+      "level": 21,
       "row": "back"
      }
     ],
@@ -1245,7 +1245,7 @@
     }
    },
    {
-    "id": "r122",
+    "id": "r127",
     "cityId": "seoul",
     "tier": "crack",
     "name": "서울 지하 배수로 균열",
@@ -1256,19 +1256,19 @@
      {
       "monsterId": "void_hound",
       "grade": "mid",
-      "level": 17,
+      "level": 22,
       "row": "front"
      },
      {
       "monsterId": "husk_guard",
       "grade": "mid",
-      "level": 17,
+      "level": 22,
       "row": "front"
      },
      {
       "monsterId": "spore_spitter",
       "grade": "mid",
-      "level": 17,
+      "level": 22,
       "row": "back"
      }
     ],
@@ -1287,7 +1287,7 @@
     "variant": "upper"
    },
    {
-    "id": "r124",
+    "id": "r128",
     "cityId": "seoul",
     "tier": "crack",
     "name": "서울 공사장 가림막 균열",
@@ -1298,19 +1298,19 @@
      {
       "monsterId": "void_hound",
       "grade": "mid",
-      "level": 19,
+      "level": 23,
       "row": "front"
      },
      {
       "monsterId": "husk_guard",
       "grade": "mid",
-      "level": 19,
+      "level": 23,
       "row": "front"
      },
      {
       "monsterId": "spore_spitter",
       "grade": "mid",
-      "level": 19,
+      "level": 23,
       "row": "back"
      }
     ],
@@ -1329,7 +1329,7 @@
     "variant": "upper"
    },
    {
-    "id": "r125",
+    "id": "r131",
     "cityId": "seoul",
     "tier": "crack",
     "name": "서울 옥상 물탱크 균열",
@@ -1340,19 +1340,19 @@
      {
       "monsterId": "void_hound",
       "grade": "mid",
-      "level": 20,
+      "level": 26,
       "row": "front"
      },
      {
       "monsterId": "husk_guard",
       "grade": "mid",
-      "level": 20,
+      "level": 26,
       "row": "front"
      },
      {
       "monsterId": "spore_spitter",
       "grade": "mid",
-      "level": 20,
+      "level": 26,
       "row": "back"
      }
     ],
@@ -1371,7 +1371,7 @@
     "variant": "upper"
    },
    {
-    "id": "r126",
+    "id": "r132",
     "cityId": "tokyo",
     "tier": "crack",
     "name": "도쿄 지하 배수로 균열",
@@ -1407,7 +1407,7 @@
     "variant": "small"
    },
    {
-    "id": "r127",
+    "id": "r133",
     "cityId": "tokyo",
     "tier": "crack",
     "name": "도쿄 골목 끝 균열",
@@ -1443,7 +1443,7 @@
     "variant": "base"
    },
    {
-    "id": "r128",
+    "id": "r134",
     "cityId": "tokyo",
     "tier": "gate",
     "name": "도쿄 불 꺼진 항만 관문",
@@ -1487,7 +1487,7 @@
     "variant": "lower"
    },
    {
-    "id": "r129",
+    "id": "r135",
     "cityId": "newyork",
     "tier": "crack",
     "name": "뉴욕 심야 편의점 뒷문 균열",
@@ -1529,7 +1529,7 @@
     "variant": "base"
    },
    {
-    "id": "r130",
+    "id": "r136",
     "cityId": "newyork",
     "tier": "route",
     "name": "뉴욕 가라앉은 도시 항로",
@@ -2452,11 +2452,11 @@
   ],
   "stabilizedRoutes": [],
   "counters": {
-   "rift": 130,
+   "rift": 136,
    "expedition": 2
   },
   "records": {
-   "victories": 0,
+   "victories": 2,
    "victoriesByTier": {}
   },
   "facilities": {

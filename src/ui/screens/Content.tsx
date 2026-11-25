@@ -1,16 +1,17 @@
 /**
  * 콘텐츠(시안 Content·Recruit·Tower·Boss, 지시서 017). 구역 순서: header · subtabs · cities · riskSummary · list.
- * 서브 탭은 탭으로만 이동한다. 탑·보스는 엔진에 없어 "준비 중", 영입은 엔진의 영입 기능에 연결한다.
+ * 서브 탭은 탭으로만 이동한다. 탑·보스는 엔진에 없어 "준비 중", 영입 탭은 Recruit.tsx(지시서 023)가 맡는다.
  */
 import { useEffect, useReducer, useState } from 'react';
 import { tables, travelDays } from '../../data';
 import { visibleRift } from '../../engine/facilities';
-import { recruit, recruitInfo, type MercenaryState } from '../../engine/game';
+import { recruitInfo } from '../../engine/game';
 import { riftVariant, type Rift } from '../../engine/rift';
 import { guildStatusSummary, riftAutoRisk, type RiftAutoRisk } from '../../engine/status';
-import { Banner, Card, Chip, ChipRow, Gauge, Icon, LevelBadge, LogoRow, Portrait, RiskPill, Screen } from '../components';
-import { cityName, factionName, num, roleName, tierName } from '../format';
+import { Banner, Card, Chip, ChipRow, Icon, LogoRow, RiskPill, Screen } from '../components';
+import { cityName, num, tierName } from '../format';
 import type { ContentTab, Ctx } from '../nav';
+import { RecruitHead, RecruitList } from './Recruit';
 import { cityChips, daysLeft, filterAndSortRifts, isUrgent, type RiskLookup } from '../riftFilter';
 import { zeroPerDay } from '../riftInfo';
 
@@ -25,7 +26,7 @@ const SUBTABS: { id: ContentTab; name: string }[] = [
 let remembered: { slotId: string; sub: ContentTab; cityId: string; risk: string | null } | null = null;
 const riskCache = new WeakMap<object, Map<string, RiftAutoRisk | null>>();
 
-export function Content({ ctx, cityId, sub }: { ctx: Ctx; cityId?: string; sub?: ContentTab }) {
+export function Content({ ctx, cityId, sub, openRecruitSheet }: { ctx: Ctx; cityId?: string; sub?: ContentTab; openRecruitSheet?: boolean }) {
   const s = ctx.game.state;
   const mine = remembered?.slotId === ctx.game.slotId ? remembered : null;
   const [tab, setTabRaw] = useState<ContentTab>(sub ?? mine?.sub ?? 'rifts');
@@ -42,7 +43,7 @@ export function Content({ ctx, cityId, sub }: { ctx: Ctx; cityId?: string; sub?:
   const available = guildStatusSummary(tables, s).available;
 
   return (
-    <Screen ctx={ctx} tab="rifts">
+    <Screen ctx={ctx} tab="rifts" fixed={tab === 'recruit'}>
       <div className="pg top" data-role="page">
         <div data-ui="Content.header">
           <LogoRow ctx={ctx} back={{ name: 'rifts' }} right={<span className="logo-meta">{tab === 'recruit' ? `영입 가능 ${ready}명` : `대기 ${available}명`}</span>} />
@@ -55,10 +56,10 @@ export function Content({ ctx, cityId, sub }: { ctx: Ctx; cityId?: string; sub?:
           ))}
         </div>
         {tab === 'rifts' && <RiftsHead ctx={ctx} city={city} setCity={setCity} risk={riskFilter} setRisk={setRisk} />}
-        {tab === 'recruit' && <RecruitHead />}
+        {tab === 'recruit' && <RecruitHead ctx={ctx} />}
       </div>
       {tab === 'rifts' && <RiftsList ctx={ctx} city={city} risk={riskFilter} />}
-      {tab === 'recruit' && <RecruitList ctx={ctx} list={recruitable} />}
+      {tab === 'recruit' && <RecruitList ctx={ctx} openFirst={openRecruitSheet} />}
       {(tab === 'tower' || tab === 'boss') && (
         <div className="pg" data-role="page">
           <Card className="col" style={{ padding: '24px 16px', alignItems: 'center', gap: 6 }}>
@@ -208,107 +209,5 @@ function RiftCardView({ ctx, rift, risk }: { ctx: Ctx; rift: Rift; risk: RiftAut
         </div>
       </div>
     </Card>
-  );
-}
-
-// ── 영입 탭 ───────────────────────────────────────────
-
-type RecruitFilter = 'all' | 'ready' | 'progress' | 'locked';
-let recruitFilter: RecruitFilter = 'all';
-const recruitListeners = new Set<() => void>();
-
-function RecruitHead() {
-  const [f, setF] = useState<RecruitFilter>(recruitFilter);
-  const set = (x: RecruitFilter) => {
-    recruitFilter = x;
-    setF(x);
-    recruitListeners.forEach((l) => l());
-  };
-  const opts: { id: RecruitFilter; name: string }[] = [
-    { id: 'all', name: '전체' },
-    { id: 'ready', name: '영입 가능' },
-    { id: 'progress', name: '진행 중' },
-    { id: 'locked', name: '잠김' },
-  ];
-  return (
-    <ChipRow label="영입 필터">
-      {opts.map((o) => (
-        <Chip key={o.id} on={f === o.id} onClick={() => set(o.id)}>
-          {o.name}
-        </Chip>
-      ))}
-    </ChipRow>
-  );
-}
-
-function RecruitList({ ctx, list }: { ctx: Ctx; list: MercenaryState[] }) {
-  const s = ctx.game.state;
-  const [, bump] = useReducer((x: number) => x + 1, 0);
-  useEffect(() => {
-    recruitListeners.add(bump);
-    return () => void recruitListeners.delete(bump);
-  }, []);
-  const rows = list
-    .map((m) => ({ m, info: recruitInfo(tables, s, m.id) }))
-    .map((x) => ({ ...x, kind: (x.info.unlocked ? 'ready' : (x.info.progress?.current ?? 0) > 0 ? 'progress' : 'locked') as RecruitFilter }))
-    .filter((x) => recruitFilter === 'all' || x.kind === recruitFilter)
-    .sort((a, b) => ['ready', 'progress', 'locked'].indexOf(a.kind) - ['ready', 'progress', 'locked'].indexOf(b.kind) || a.info.cost - b.info.cost);
-  const unlockText = (info: ReturnType<typeof recruitInfo>) =>
-    info.unlock ? (info.unlock.type === 'totalVictories' ? '리프트 공략' : `${tierName(info.unlock.tier)} 공략`) : '';
-  return (
-    <div className="pg" data-role="page" data-ui="Recruit.cards">
-      {rows.map(({ m, info, kind }) => {
-        const p = info.progress;
-        const ratio = info.unlocked ? 1 : p ? p.current / p.required : 0;
-        const aff = m.affiliation.kind === 'faction' ? m.affiliation.factionId : null;
-        const affText = aff === 'free' ? '소속 없음' : aff ? `${factionName(aff)}` : '';
-        return (
-          <div key={m.id} className={`card recruit-card ${kind === 'ready' ? 'ready' : ''} ${kind === 'locked' ? 'locked' : ''}`} data-role="card">
-            <button className="recruit-art" aria-label={`${m.name} 상세`} onClick={() => ctx.go({ name: 'merc', mercId: m.id })}>
-              <Portrait id={m.id} element={m.element} role={m.role} fill />
-              {/* 017c: 최초 레벨/성장 한계. 잠김 카드는 정체를 모르니 숨긴다 */}
-              {kind !== 'locked' && <LevelBadge level={m.initialLevel} cap={m.growth.cap} large ui="recruit.level" />}
-              <span className="el-dot big" data-el={m.element} />
-            </button>
-            <div className="col grow" style={{ padding: '8px 12px', gap: 4, minWidth: 0 }}>
-              <div className="row between">
-                <span style={{ fontSize: 16, fontWeight: 700 }} className="ellipsis">
-                  {m.name} <span style={{ fontSize: 12, fontWeight: 400, color: 'var(--c-text-sub)' }}>{roleName(m.role)}</span>
-                </span>
-                {kind === 'ready' ? (
-                  <button
-                    className="btn-sm-touch"
-                    data-touch
-                    onClick={() => {
-                      try {
-                        ctx.setState(recruit(tables, s, m.id));
-                        ctx.toast(`${m.name} 영입`);
-                      } catch (e) {
-                        ctx.toast((e as Error).message);
-                      }
-                    }}
-                  >
-                    <span className="btn-sm primary">영입</span>
-                  </button>
-                ) : kind === 'locked' ? (
-                  <Icon name="lock" style={{ color: 'var(--c-text-faint)' }} />
-                ) : (
-                  <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--c-info)' }}>{Math.round(ratio * 100)}%</span>
-                )}
-              </div>
-              <span className="sub ellipsis">
-                {m.profile.hometown ? cityName(m.profile.hometown) : '출신 미상'}
-                {affText ? ` · ${affText}` : ''}
-              </span>
-              <Gauge ratio={kind === 'locked' ? 0 : ratio} color={kind === 'ready' ? 'var(--c-ok)' : 'var(--c-info)'} />
-              <div className="row between" style={{ fontSize: 12 }}>
-                <span>{kind === 'locked' ? '???' : info.unlocked && !p ? '조건 없음' : `${unlockText(info)} ${p?.current ?? 0}/${p?.required ?? 0}${info.unlocked ? ' 달성' : ''}`}</span>
-                <span className="gold">{kind === 'locked' ? '???' : `제로 ${num(info.cost)}`}</span>
-              </div>
-            </div>
-          </div>
-        );
-      })}
-    </div>
   );
 }

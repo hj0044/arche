@@ -32,7 +32,8 @@ export function swipeTarget(current: TabName, dx: number, dy: number, startX: nu
   return TAB_ORDER[j] ?? null;
 }
 
-export function Screen({ ctx, tab, children, footer }: { ctx?: Ctx; tab?: TabName; children: ReactNode; footer?: ReactNode }) {
+/** fixed: 본문 전체가 아니라 안쪽 목록만 스크롤하는 화면(영입 탭, 지시서 023) */
+export function Screen({ ctx, tab, children, footer, fixed }: { ctx?: Ctx; tab?: TabName; children: ReactNode; footer?: ReactNode; fixed?: boolean }) {
   const start = useRef<{ x: number; y: number; blocked: boolean } | null>(null);
   const anim = enterFrom;
   enterFrom = null;
@@ -53,7 +54,9 @@ export function Screen({ ctx, tab, children, footer }: { ctx?: Ctx; tab?: TabNam
   };
   return (
     <div className="scr" onTouchStart={tab ? onStart : undefined} onTouchEnd={tab ? onEnd : undefined}>
-      <main className={`scr-body shell-body ${anim ? `slide-${anim}` : ''}`}>{children}</main>
+      <main className={`scr-body shell-body ${anim ? `slide-${anim}` : ''}`} style={fixed ? { overflow: 'hidden' } : undefined}>
+        {children}
+      </main>
       {footer}
       {tab && ctx && <TabBar ctx={ctx} current={tab} />}
     </div>
