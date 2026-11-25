@@ -106,7 +106,7 @@ export function App() {
       screen = <Content ctx={ctx} cityId={route.cityId} sub={route.sub} openRecruitSheet={route.openRecruitSheet} />;
       break;
     case 'party':
-      screen = <PartyBuilder ctx={ctx} riftId={route.riftId} />;
+      screen = <PartyBuilder ctx={ctx} riftId={route.riftId} dragPreview={route.dragPreview} />;
       break;
     case 'mercs':
       screen = <MercList ctx={ctx} />;
@@ -152,7 +152,8 @@ function fixtureRoute(screen: string, s: GameState, events?: DayEvent[]): Route 
     case 'recruitSheet':
       return { name: 'rifts', sub: 'recruit', openRecruitSheet: true };
     case 'party':
-      return { name: 'party', riftId: (baseRifts[2] ?? baseRifts[0]).id };
+    case 'partyDrag':
+      return { name: 'party', riftId: (baseRifts[2] ?? baseRifts[0]).id, ...(screen === 'partyDrag' ? { dragPreview: true } : {}) };
     case 'dayResult':
       return { name: 'dayResult', events: events ?? [] };
     case 'mercs':

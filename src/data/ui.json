@@ -246,5 +246,11 @@
       "id": "capDesc",
       "name": "한계순"
     }
-  ]
+  ],
+  "partyDrag": {
+    "longPressMs": 250,
+    "moveCancelPx": 8,
+    "clickSuppressMs": 400,
+    "_note": "지시서 024: 파티 편성 끌기. longPressMs만큼 누르고 있으면 끌기 시작, 그 전에 moveCancelPx 넘게 움직이면 스크롤로 본다. 끌기를 끝낸 뒤 clickSuppressMs 동안의 클릭은 무시"
+  }
 }

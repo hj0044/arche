@@ -234,6 +234,111 @@ test('주인공·개방자 문구가 화면에 없다(새 게임 포함)', async
   expect(text).not.toMatch(/속성|역할/);
 });
 
+// 024: 파티 편성 — 레벨/한계 배지, 탭 해제, 길게 눌러 끌기(마우스로 흉내), 키보드
+test('파티 배지: N/M 형식, 슬롯에서 넘치지 않음', async ({ page }) => {
+  await open(page, 'party');
+  const badges = await page.$$eval('[data-ui="party.level"]', (els) =>
+    els.map((e) => {
+      const box = e.getBoundingClientRect();
+      const host = (e.closest('[data-role=slot]') ?? e.closest('.mcard'))!.getBoundingClientRect();
+      return { text: e.textContent ?? '', fits: e.scrollWidth <= e.clientWidth + 0.5 && box.right <= host.right + 0.5, oneLine: box.height < 20, slot: !!e.closest('[data-role=slot]'), size: getComputedStyle(e).fontSize, weight: getComputedStyle(e).fontWeight };
+    }),
+  );
+  expect(badges.filter((b) => b.slot).length).toBeGreaterThan(0);
+  expect(badges.filter((b) => !b.slot).length).toBeGreaterThan(0);
+  for (const b of badges) {
+    expect(b.text).toMatch(/^\d+\/\d+$/);
+    expect(b.fits, b.text).toBe(true);
+    expect(b.oneLine, b.text).toBe(true);
+    if (b.slot) expect([b.size, b.weight]).toEqual(['12px', '700']);
+  }
+  // 성장 한계 두 자리 + 레벨 두 자리도 슬롯 폭에 들어간다
+  const wide = await page.$eval('[data-role=slot] [data-ui="party.level"]', (e) => {
+    const keep = e.innerHTML;
+    e.innerHTML = '70<span>/70</span>';
+    const ok = e.getBoundingClientRect().width <= e.closest('[data-role=slot]')!.getBoundingClientRect().width && e.getBoundingClientRect().height < 20;
+    e.innerHTML = keep;
+    return ok;
+  });
+  expect(wide).toBe(true);
+});
+
+/** 마우스로 길게 눌러 끌기 */
+async function longPressDrag(page: Page, from: string, to: string, release = true) {
+  const a = (await page.locator(from).first().boundingBox())!;
+  const b = (await page.locator(to).first().boundingBox())!;
+  await page.mouse.move(a.x + a.width / 2, a.y + a.height / 2);
+  await page.mouse.down();
+  await page.waitForTimeout(400);
+  await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2, { steps: 6 });
+  if (release) await page.mouse.up();
+}
+
+test('파티 끌기: 사본·강조는 끌기 중에만, 놓으면 이동·교체·해제', async ({ page }) => {
+  await open(page, 'party');
+  const front = page.locator('[data-ui="Party.front"] [data-drop^="filled:"]');
+  const back = page.locator('[data-ui="Party.back"] [data-drop^="filled:"]');
+  const nFront = await front.count();
+  const nBack = await back.count();
+  expect(nBack).toBeGreaterThan(0);
+  await expect(page.locator('[data-ui="party.ghost"]')).toHaveCount(0);
+  await expect(page.locator('[data-ui="party.dropTarget"]')).toHaveCount(0);
+  // 후열 첫 칸을 전열 빈 칸으로(놓기 전 상태 확인)
+  await longPressDrag(page, '[data-ui="Party.back"] [data-drop^="filled:"]', '[data-ui="Party.front"] [data-drop="empty:front"]', false);
+  await expect(page.locator('[data-ui="party.ghost"]')).toHaveCount(1);
+  expect(await page.locator('[data-ui="party.dropTarget"]').count()).toBeGreaterThan(0);
+  await expect(page.getByText('놓을 칸을 고르세요 · 대기 목록에 놓으면 해제')).toBeVisible();
+  await page.mouse.up();
+  await expect(page.locator('[data-ui="party.ghost"]')).toHaveCount(0);
+  await expect(page.locator('[data-ui="party.dropTarget"]')).toHaveCount(0);
+  await expect(front).toHaveCount(nFront + 1);
+  await expect(back).toHaveCount(nBack - 1);
+  // 다른 열 교체: 전열 첫 칸을 후열 첫 칸 위로 → 인원 수는 그대로
+  if (nBack - 1 > 0) {
+    const f0 = await front.first().getAttribute('data-drop');
+    const b0 = await back.first().getAttribute('data-drop');
+    await longPressDrag(page, `[data-drop="${f0}"]`, `[data-drop="${b0}"]`);
+    await expect(page.locator(`[data-ui="Party.back"] [data-drop="${f0}"]`)).toHaveCount(1);
+    await expect(page.locator(`[data-ui="Party.front"] [data-drop="${b0}"]`)).toHaveCount(1);
+  }
+  // 대기 목록에 놓으면 해제
+  const total = (await front.count()) + (await back.count());
+  await longPressDrag(page, '[data-ui="Party.front"] [data-drop^="filled:"]', '[data-ui="Party.candidates"] .mcard');
+  await expect(page.locator('[data-ui="Party.front"] [data-drop^="filled:"], [data-ui="Party.back"] [data-drop^="filled:"]')).toHaveCount(total - 1);
+});
+
+test('파티: 편성된 칸을 누르면 바로 해제(시트 없음), 짧은 탭은 끌기가 아님', async ({ page }) => {
+  await open(page, 'party');
+  const filled = page.locator('[data-ui="Party.front"] [data-drop^="filled:"], [data-ui="Party.back"] [data-drop^="filled:"]');
+  const n = await filled.count();
+  await filled.first().click();
+  await expect(filled).toHaveCount(n - 1);
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(page.locator('[data-ui="party.ghost"]')).toHaveCount(0);
+  // 대기 목록의 '편성됨' 카드도 누르면 해제
+  const picked = page.locator('[data-ui="Party.candidates"] .picked-wrap .mcard');
+  const k = await picked.count();
+  if (k) {
+    await picked.first().click();
+    await expect(filled).toHaveCount(n - 2);
+  }
+});
+
+test('파티: 키보드로 같은 일을 할 수 있다(방향키로 칸 고르기, Enter로 놓기)', async ({ page }) => {
+  await open(page, 'party');
+  const back = page.locator('[data-ui="Party.back"] [data-drop^="filled:"]');
+  const nBack = await back.count();
+  const id = await back.first().getAttribute('data-drop');
+  await back.first().focus();
+  // 첫 칸(전열 첫 계약자)부터 → 전열 빈 칸까지 이동
+  const order = await page.$$eval('[data-ui="Party.front"] [data-drop^="filled:"]', (els) => els.length);
+  for (let i = 0; i <= order; i++) await page.keyboard.press('ArrowRight');
+  await expect(page.locator('[data-ui="party.dropTarget"]')).toHaveCount(1);
+  await page.keyboard.press('Enter');
+  await expect(page.locator(`[data-ui="Party.front"] [data-drop="${id}"]`)).toHaveCount(1);
+  await expect(back).toHaveCount(nBack - 1);
+});
+
 // 023: 영입 화면 — 요약·필터·정렬, 구역별 카드, 배지(017c), 잠김은 ??? · 도시만, 상세 시트, 고정 머리와 목록 스크롤, 터치 44px
 test('영입 화면 구역과 카드', async ({ page }) => {
   await open(page, 'recruit');

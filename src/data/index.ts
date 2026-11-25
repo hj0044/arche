@@ -588,6 +588,8 @@ export interface UiTable {
   mercStatusFilters: { id: string; name: string }[];
   /** 계약자 화면 빠른 필터 칩(지시서 017 시안: 대기·부상·충성 낮음). id는 mercStatuses의 상태 */
   mercQuickFilters: { id: string; name: string }[];
+  /** 파티 편성 끌기(지시서 024) */
+  partyDrag: { longPressMs: number; moveCancelPx: number; clickSuppressMs: number };
   /** 영입 탭 정렬(지시서 023): 첫 항목이 기본. 비교 방법은 id로 recruitFilter가 정한다 */
   recruitSort: { id: string; name: string }[];
   /** 리프트 화면 정렬 항목(지시서 013). 비교 방법은 id로 화면 코드가 정한다. 첫 항목이 기본 */
