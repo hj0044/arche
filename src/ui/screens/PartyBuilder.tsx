@@ -1,6 +1,7 @@
 /**
- * 파티 편성(시안 Party, 지시서 017). 구역 순서: header · riftCard · front · back · candidates · summary · actions.
- * 시안에 자리가 없는 열 바꾸기·빼기·훈련 해제는 바텀 시트로 흡수했다.
+ * 파티 편성(시안 Party·PartyDrag, 지시서 017·024). 구역 순서: header · riftCard · front · back · candidates · summary · actions.
+ * 024: 슬롯·대기 카드에 '레벨/성장 한계' 배지, 편성된 계약자를 누르면 바로 해제, 길게 눌러 끌면 이동·교체·해제(usePartyDrag, 규칙은 partyDrag.ts).
+ * 편성되지 않은 계약자의 시트(훈련 해제, 출전 불가 사유)는 그대로다.
  */
 import { useEffect, useMemo, useState } from 'react';
 import { getRole, tables, travelDays, type Row } from '../../data';
@@ -13,17 +14,41 @@ import { BackRow, Card, Icon, MercCard, RiskPill, Screen, Sheet, Slot } from '..
 import { cardName, elementName, num, pct, roleName, rowName, term } from '../format';
 import type { Ctx } from '../nav';
 import { winRateRange } from '../partyInfo';
+import { applyDrop, canDrop, dropKey, type DragSource, type DropRules, type DropTarget } from '../partyDrag';
+import { usePartyDrag, type DragState } from '../usePartyDrag';
 import { isUiFixture } from '../../app/saves';
 import { daysLeft } from '../riftFilter';
 import { latestDeparture } from '../riftInfo';
 
-export function PartyBuilder({ ctx, riftId }: { ctx: Ctx; riftId: string }) {
+export function PartyBuilder({ ctx, riftId, dragPreview }: { ctx: Ctx; riftId: string; dragPreview?: boolean }) {
   const s = ctx.game.state;
   const rift = s.rifts.find((r) => r.id === riftId);
   // 개발용 픽스처에서는 시안처럼 자동 편성된 상태로 연다
   const [party, setParty] = useState<PartyMember[]>(() => (rift && isUiFixture() ? autoParty(tables, s, rift).slice(0, 4) : []));
   const [sheet, setSheet] = useState<string | null>(null);
   const { maxSize, maxPerRow } = tables.combat.party;
+  const blockReason = (id: string) => {
+    const m = s.mercenaries.find((x) => x.id === id);
+    if (!m || m.affiliation.kind !== 'guild') return '길드 소속이 아님';
+    return isAvailable(s, id) ? null : reason(m);
+  };
+  const rules: DropRules = { maxSize, maxPerRow, rowName, blockReason };
+  const nameOf = (id: string) => s.mercenaries.find((m) => m.id === id)?.name ?? id;
+  const onDrop = (src: DragSource, target: DropTarget | null) => {
+    const r = applyDrop(party, src, target, rules);
+    if (!r.ok) return ctx.toast(r.error);
+    if (r.action === 'none') return;
+    setParty(r.party);
+    if (r.action === 'remove') ctx.toast(`${nameOf(src.mercId)} 해제`);
+    if (r.action === 'replace' && r.removed) ctx.toast(`${nameOf(r.removed)} 해제`);
+  };
+  // 개발 픽스처(시안 PartyDrag): 후열 첫 계약자를 끄는 중인 모습으로 연다
+  const preview = (): DragState | null => {
+    if (!dragPreview) return null;
+    const first = (rift && isUiFixture() ? autoParty(tables, s, rift).slice(0, 4) : []).find((p) => p.row === 'back');
+    return first ? { src: { from: 'slot', mercId: first.mercId }, ghost: { x: 150, y: 268 }, over: null } : null;
+  };
+  const { drag, bind, clickAllowed } = usePartyDrag(party, rules, onDrop, preview());
 
   const slots = party.filter((p) => s.mercenaries.some((m) => m.id === p.mercId)).map((p) => ({ unit: mercToUnit(tables, s.mercenaries.find((m) => m.id === p.mercId)!), row: p.row }));
   // 017b: 요약의 위험도·승률은 상세 평가(96회). 파티가 바뀔 때마다 한 번만, 짧게 늦춰 계산하고 그동안 직전 값을 흐리게 둔다.
@@ -71,8 +96,13 @@ export function PartyBuilder({ ctx, riftId }: { ctx: Ctx; riftId: string }) {
     const row: Row = rowCount(def) < maxPerRow ? def : def === 'front' ? 'back' : 'front';
     setParty([...party, { mercId: m.id, row }]);
   };
+  const remove = (id: string) => {
+    setParty(party.filter((p) => p.mercId !== id));
+    ctx.toast(`${nameOf(id)} 해제`);
+  };
   const tapCandidate = (m: MercenaryState) => {
-    if (inParty(m.id)) return setSheet(m.id);
+    if (!clickAllowed()) return;
+    if (inParty(m.id)) return remove(m.id);
     if (isAvailable(s, m.id)) return add(m);
     setSheet(m.id); // 출전할 수 없는 이유(훈련이면 해제)
   };
@@ -88,7 +118,8 @@ export function PartyBuilder({ ctx, riftId }: { ctx: Ctx; riftId: string }) {
 
   const roles = party.map((p) => merc(p.mercId).role);
   const comp = compositionMultiplier(tables, roles);
-  const reason = (m: MercenaryState) =>
+  function reason(m: MercenaryState) {
+    return (
     refusedToday(s, m)
       ? '오늘 거부'
       : m.injury
@@ -97,19 +128,51 @@ export function PartyBuilder({ ctx, riftId }: { ctx: Ctx; riftId: string }) {
           ? '파견 중'
           : assignedFacility(s.facilities, m.id)
             ? '훈련 중'
-            : '불가';
+            : '불가'
+    );
+  }
   const availableCount = guild.filter((m) => isAvailable(s, m.id)).length;
   const sheetMerc = sheet ? merc(sheet) : null;
 
+  // 끌기 중 강조: 놓을 수 있는 열의 '들어갈 빈 칸'(빈 칸은 열 맨 뒤에 붙으므로 첫 빈 칸)과, 손가락 아래의 놓을 수 있는 채워진 칸
+  const lit = (t: DropTarget) => !!drag && canDrop(party, drag.src, t, rules);
+  const hoverRow = drag?.over?.kind === 'empty' ? drag.over.row : null;
+  const srcRow = drag ? inParty(drag.src.mercId)?.row : undefined;
   const rowSlots = (row: Row) => {
     const members = party.filter((p) => p.row === row);
     return Array.from({ length: maxPerRow }, (_, i) => {
       const p = members[i];
-      if (!p) return <Slot key={`e${i}`} onClick={() => ctx.toast(`아래에서 ${term.merc}를 고르세요`)} label={`${rowName[row]} 빈 칸`} />;
+      if (!p) {
+        const landing = i === members.length && lit({ kind: 'empty', row }) && (row !== srcRow || hoverRow === row);
+        return (
+          <Slot
+            key={`e${i}`}
+            className={landing ? 'drop-target' : ''}
+            data-ui={landing ? 'party.dropTarget' : undefined}
+            data-drop={dropKey({ kind: 'empty', row })}
+            onClick={() => clickAllowed() && ctx.toast(`아래에서 ${term.merc}를 고르세요`)}
+            label={`${rowName[row]} 빈 칸`}
+          />
+        );
+      }
       const m = merc(p.mercId);
-      return <Slot key={m.id} filled={{ id: m.id, name: m.name, shortName: cardName(m), element: m.element, role: m.role, level: m.level, roleName: roleName(m.role) }} onClick={() => setSheet(m.id)} label={`${m.name} ${rowName[row]}`} />;
+      const target: DropTarget = { kind: 'filled', mercId: m.id };
+      const hovered = drag?.over?.kind === 'filled' && drag.over.mercId === m.id && lit(target);
+      return (
+        <Slot
+          key={m.id}
+          className={`${drag?.src.mercId === m.id ? 'drag-origin' : ''} ${hovered ? 'drop-target' : ''}`}
+          data-ui={hovered ? 'party.dropTarget' : undefined}
+          data-drop={dropKey(target)}
+          filled={{ id: m.id, name: m.name, shortName: cardName(m), element: m.element, role: m.role, level: m.level, cap: m.growth.cap, roleName: roleName(m.role) }}
+          onClick={() => clickAllowed() && remove(m.id)}
+          label={`${m.name} ${rowName[row]}, 누르면 해제, 길게 눌러 끌기`}
+          {...bind({ from: 'slot', mercId: m.id }, true)}
+        />
+      );
     });
   };
+  const ghostMerc = drag?.ghost ? merc(drag.src.mercId) : null;
 
   return (
     <Screen
@@ -186,11 +249,12 @@ export function PartyBuilder({ ctx, riftId }: { ctx: Ctx; riftId: string }) {
           <span className="sec-title">대기 {term.merc}</span>
           <span className="sub">출전 가능 {availableCount}명</span>
         </div>
-        <div className="merc-grid" data-role="grid">
+        <div className="merc-grid" data-role="grid" data-drop="bench" data-noswipe>
           {guild.map((m) => {
             const free = isAvailable(s, m.id);
+            const src: DragSource = { from: inParty(m.id) ? 'slot' : 'bench', mercId: m.id };
             return (
-              <div key={m.id} className={inParty(m.id) ? 'picked-wrap' : ''}>
+              <div key={m.id} className={`${inParty(m.id) ? 'picked-wrap' : ''} ${drag?.src.mercId === m.id && drag.src.from === 'bench' ? 'drag-origin-wrap' : ''}`} {...bind(src, free || !!inParty(m.id))}>
                 <MercCard
                   compact
                   id={m.id}
@@ -200,6 +264,9 @@ export function PartyBuilder({ ctx, riftId }: { ctx: Ctx; riftId: string }) {
                   role={m.role}
                   roleName={roleName(m.role)}
                   level={m.level}
+                  cap={m.growth.cap}
+                  plainBadge
+                  levelUi="party.level"
                   state={inParty(m.id) ? '편성됨' : free ? '출전 가능' : reason(m)}
                   stateClass={inParty(m.id) ? 'gold' : free ? 'ok' : 'warn'}
                   off={!free && !inParty(m.id)}
@@ -210,27 +277,24 @@ export function PartyBuilder({ ctx, riftId }: { ctx: Ctx; riftId: string }) {
           })}
         </div>
       </div>
-      {sheetMerc && (
+      {drag && (
+        <div className="party-drag-guide" role="status">
+          놓을 칸을 고르세요 · 대기 목록에 놓으면 해제
+        </div>
+      )}
+      {ghostMerc && drag?.ghost && (
+        <div className="party-ghost" data-ui="party.ghost" style={{ left: drag.ghost.x, top: drag.ghost.y }} aria-hidden="true">
+          <Slot
+            filled={{ id: ghostMerc.id, name: ghostMerc.name, shortName: cardName(ghostMerc), element: ghostMerc.element, role: ghostMerc.role, level: ghostMerc.level, cap: ghostMerc.growth.cap, roleName: roleName(ghostMerc.role) }}
+            onClick={() => {}}
+            label=""
+            tabIndex={-1}
+          />
+        </div>
+      )}
+      {sheetMerc && !inParty(sheetMerc.id) && (
         <Sheet title={sheetMerc.name} onClose={() => setSheet(null)}>
-          {inParty(sheetMerc.id) ? (
-            <>
-              {(['front', 'back'] as Row[])
-                .filter((row) => row !== inParty(sheetMerc.id)!.row)
-                .map((row) => (
-                  <button
-                    key={row}
-                    className="btn-act"
-                    disabled={rowCount(row) >= maxPerRow}
-                    onClick={() => (setParty(party.map((p) => (p.mercId === sheetMerc.id ? { ...p, row } : p))), setSheet(null))}
-                  >
-                    {rowName[row]}로 옮기기
-                  </button>
-                ))}
-              <button className="btn-act" onClick={() => (setParty(party.filter((p) => p.mercId !== sheetMerc.id)), setSheet(null))}>
-                파티에서 빼기
-              </button>
-            </>
-          ) : assignedFacility(s.facilities, sheetMerc.id) && !sheetMerc.injury && !isOnExpedition(s, sheetMerc.id) ? (
+          {assignedFacility(s.facilities, sheetMerc.id) && !sheetMerc.injury && !isOnExpedition(s, sheetMerc.id) ? (
             <>
               <p className="t14 dim" style={{ margin: 0 }}>
                 {getFacility(tables, assignedFacility(s.facilities, sheetMerc.id)!).name}에 배치되어 있습니다. 해제하면 오늘 편성에 넣을 수 있습니다(오늘 훈련 경험치는 받지 않음).

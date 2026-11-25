@@ -14,6 +14,8 @@ export const SCREENS: ScreenDef[] = [
   { name: 'Main', screen: 'home' },
   { name: 'Content', screen: 'rifts' },
   { name: 'Party', screen: 'party' },
+  // 시안 PartyDrag: 끌기 중 모습(계약은 Party 구역을 따른다)
+  { name: 'PartyDrag', screen: 'partyDrag', contractOf: 'Party' },
   { name: 'Result', screen: 'dayResult' },
   { name: 'Merc', screen: 'mercs' },
   { name: 'MercDetail', screen: 'merc' },

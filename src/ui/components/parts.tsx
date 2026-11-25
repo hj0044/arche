@@ -1,7 +1,7 @@
 /**
  * 시안에 반복되는 부품(지시서 017 C). 부품 하나가 시안의 모양 하나에 대응한다. 모든 부품은 data-ui를 받는다.
  */
-import type { CSSProperties, ReactNode } from 'react';
+import type { ButtonHTMLAttributes, CSSProperties, ReactNode } from 'react';
 import { tables } from '../../data';
 import type { RiskTierRow } from '../../engine/combatPower';
 import { portraitSvg, riftBannerSvg } from '../art/fallback';
@@ -107,10 +107,13 @@ export function capTier(cap: number) {
 /** 보석 표시 구간(시안: 55~60, 65~) */
 const GEM_TIERS = (): string[] => tables.ui.capTiers.slice(-2).map((t) => t.id);
 
-/** 초상 왼쪽 위 '레벨/성장 한계' 배지(계약자 카드·영입 카드가 같이 쓴다). large는 영입 카드(시안 Recruit: 12px) */
-export function LevelBadge({ level, cap, large, ui }: { level: number; cap?: number; large?: boolean; ui?: string }) {
+/**
+ * 초상 왼쪽 위 '레벨/성장 한계' 배지(계약자 카드·영입 카드·파티 편성이 같이 쓴다).
+ * large: 영입 카드(시안 Recruit: 12px), slot: 파티 슬롯(시안 Party: 12px 굵게), plain: 한계 숫자도 같은 굵기·색(시안 Party 대기 카드)
+ */
+export function LevelBadge({ level, cap, large, slot, plain, ui }: { level: number; cap?: number; large?: boolean; slot?: boolean; plain?: boolean; ui?: string }) {
   return (
-    <span className={`mcard-lv ${large ? 'lg' : ''}`} data-ui={ui}>
+    <span className={`mcard-lv ${large ? 'lg' : ''} ${slot ? 'in-slot' : ''} ${plain ? 'plain' : ''}`} data-ui={ui}>
       {level}
       {cap !== undefined && <span>/{cap}</span>}
     </span>
@@ -135,7 +138,13 @@ export function MercCard({
   onClick,
   compact,
   shortName,
+  plainBadge,
+  levelUi,
 }: {
+  /** 파티 대기 카드처럼 한계 숫자를 흐리게 하지 않는다(지시서 024) */
+  plainBadge?: boolean;
+  /** 배지의 data-ui(파티 편성: party.level) */
+  levelUi?: string;
   /** 파티 후보처럼 작게(초상 52, 막대 없음) */
   compact?: boolean;
   id: string;
@@ -162,7 +171,7 @@ export function MercCard({
     <button className={`mcard ${off ? 'off' : ''} ${compact ? 'compact' : ''}`} data-cap={tier?.id} data-el={element} onClick={onClick} aria-label={`${name} Lv${level}${cap ? `/${cap}` : ''} ${state}`}>
       <div className="mcard-art">
         <Portrait id={id} element={element} role={role} fill />
-        <LevelBadge level={level} cap={cap} />
+        <LevelBadge level={level} cap={cap} plain={plainBadge} ui={levelUi} />
         <span className="mcard-el" />
         {up && <span className="mcard-up">UP</span>}
       </div>
@@ -182,14 +191,26 @@ export function MercCard({
 }
 
 /** 파티 슬롯(+ 또는 계약자: 초상 56 · 이름 · 역할) */
-export function Slot({ filled, onClick, label }: { filled?: { id: string; name: string; shortName?: string; element: string; role: string; level: number; roleName: string }; onClick: () => void; label: string }) {
+export function Slot({
+  filled,
+  onClick,
+  label,
+  className,
+  ...rest
+}: {
+  filled?: { id: string; name: string; shortName?: string; element: string; role: string; level: number; cap?: number; roleName: string };
+  onClick: () => void;
+  label: string;
+  className?: string;
+} & Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'onClick' | 'className'>) {
   return (
-    <button className={`slot ${filled ? '' : 'empty'}`} data-role="slot" onClick={onClick} aria-label={label}>
+    <button className={`slot ${filled ? '' : 'empty'} ${className ?? ''}`} data-role="slot" onClick={onClick} aria-label={label} {...rest}>
       {filled ? (
         <>
           <span className="slot-art">
             <Portrait id={filled.id} element={filled.element} role={filled.role} fill />
-            <span className="slot-lv">{filled.level}</span>
+            {/* 지시서 024: 레벨/성장 한계 배지 */}
+            <LevelBadge level={filled.level} cap={filled.cap} slot plain ui="party.level" />
           </span>
           <span className="slot-info">
             <span className="slot-name">{filled.shortName ?? filled.name}</span>

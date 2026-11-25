@@ -6,7 +6,8 @@ export type Route =
   | { name: 'home' }
   /** 콘텐츠 화면. sub: 서브 탭(리프트·탑·보스·영입, 지시서 017) */
   | { name: 'rifts'; cityId?: string; sub?: ContentTab; /** 개발 픽스처(시안 RecruitSheet): 첫 영입 가능 카드의 시트를 열어 둔다 */ openRecruitSheet?: boolean }
-  | { name: 'party'; riftId: string }
+  /** dragPreview: 개발 픽스처(시안 PartyDrag)에서 끌기 중 모습으로 연다 */
+  | { name: 'party'; riftId: string; dragPreview?: boolean }
   | { name: 'mercs' }
   | { name: 'merc'; mercId: string }
   | { name: 'base' }

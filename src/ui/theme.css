@@ -78,6 +78,7 @@
   --status-weaken: #B58AF0;
   --status-weaken-ink: #1D0F36;
   --c-sheet-dim: rgba(5, 7, 11, 0.62);
+  --c-shadow-ghost: rgba(0, 0, 0, 0.6); /* 끄는 카드 그림자(시안 PartyDrag) */
   --c-chip-faint: rgba(255, 255, 255, 0.06); /* 스킬 종류 칩 바탕(시안 MercDetail) */
   --c-scrim-status: rgba(14, 17, 24, 0.75);
 
