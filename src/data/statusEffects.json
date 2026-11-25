@@ -32,8 +32,8 @@
       "name": "표식",
       "kind": "mark",
       "defaultDuration": 2,
-      "multiplier": 1.25,
-      "description": "받는 피해가 25% 늘어난다.",
+      "multiplier": 1.4,
+      "description": "받는 피해가 40% 늘어난다.",
       "cleansable": true
     },
     {

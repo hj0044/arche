@@ -9,7 +9,7 @@
   },
   "Recruit": {
     "mismatchRatio": 0.1159,
-    "refRetakeMismatch": null
+    "refRetakeMismatch": 0
   },
   "Party": {
     "mismatchRatio": 0.0611,
@@ -17,7 +17,7 @@
   },
   "Result": {
     "mismatchRatio": 0.0888,
-    "refRetakeMismatch": null
+    "refRetakeMismatch": 0
   },
   "Merc": {
     "mismatchRatio": 0.1562,
@@ -37,7 +37,7 @@
   },
   "Settings": {
     "mismatchRatio": 0.044,
-    "refRetakeMismatch": null
+    "refRetakeMismatch": 0
   },
   "Tower": {
     "mismatchRatio": 0.0769,
@@ -57,7 +57,7 @@
   },
   "RecruitSheet": {
     "mismatchRatio": 0.0761,
-    "refRetakeMismatch": null
+    "refRetakeMismatch": 0
   },
   "PartyDrag": {
     "mismatchRatio": 0.0636,
