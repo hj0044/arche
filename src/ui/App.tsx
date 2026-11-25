@@ -103,7 +103,7 @@ export function App() {
       screen = <GuildHome ctx={ctx} />;
       break;
     case 'rifts':
-      screen = <Content ctx={ctx} cityId={route.cityId} sub={route.sub} />;
+      screen = <Content ctx={ctx} cityId={route.cityId} sub={route.sub} openRecruitSheet={route.openRecruitSheet} />;
       break;
     case 'party':
       screen = <PartyBuilder ctx={ctx} riftId={route.riftId} />;
@@ -149,6 +149,8 @@ function fixtureRoute(screen: string, s: GameState, events?: DayEvent[]): Route 
     case 'boss':
     case 'recruit':
       return { name: 'rifts', sub: screen };
+    case 'recruitSheet':
+      return { name: 'rifts', sub: 'recruit', openRecruitSheet: true };
     case 'party':
       return { name: 'party', riftId: (baseRifts[2] ?? baseRifts[0]).id };
     case 'dayResult':

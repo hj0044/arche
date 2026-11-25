@@ -22,11 +22,14 @@ let s: GameState = newGame(t, {
 });
 
 // ── 계약자 20명: 로스터 앞 20명을 길드로, 레벨은 시작값 + 조금씩
-const guildIds = t.roster.slice(0, 20).map((r) => r.id);
+// 지시서 023: 영입 화면에 진행 중·잠김이 함께 보이도록 m17(총 승리 조건)은 길드 밖에 두고 m21을 넣는다
+const guildIds = t.roster.slice(0, 21).map((r) => r.id).filter((id) => id !== 'm17');
 s = {
   ...s,
   day: DAY,
   resources: { zero: 1240, arche: 86, materials: { earth_parts: 3 } },
+  // 영입 해금 진행(023): 총 승리 2 → m17 진행 중(2/5), 관문 승리 0 → m26 잠김
+  records: { victories: 2, victoriesByTier: {} },
   mercenaries: s.mercenaries.map((m, i): MercenaryState => {
     if (!guildIds.includes(m.id)) return m;
     const level = Math.min(m.growth.cap, 6 + (i % 7));

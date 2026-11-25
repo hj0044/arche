@@ -17,8 +17,8 @@ async function open(page: Page, screen: string) {
 
 // 계약에는 있지만 아직 지시서가 구현하지 않은 구역. 해당 지시서에서 구현하면 이 목록에서 지운다.
 const PENDING: Record<string, string[]> = {};
-// 계약이 이미 다음 지시서 기준으로 바뀌어 구역 검사를 미루는 화면(그 지시서에서 지운다)
-const REBUILD: Record<string, string> = { Recruit: '지시서 023에서 영입 화면을 새 계약대로 다시 만든다' };
+// 흐름 순서 밖에 있는 구역: 바텀 시트(열어야 보임)와 스크롤 영역(목록 구역들을 감싼다). 별도 테스트로 확인한다
+const OUT_OF_FLOW: Record<string, string[]> = { Recruit: ['sheet', 'scroll'] };
 // 서브 탭 화면에서 같이 보이는 부모 화면 구역
 const PARENT_SECTIONS = ['header', 'subtabs'];
 
@@ -31,22 +31,23 @@ for (const sc of SCREENS) {
     test('구역 계약: 순서와 이름', async ({ page }) => {
       // 제안 화면(탑·보스·영입)은 콘텐츠의 서브 탭이고 계약에 구역이 없다
       test.skip(spec.sections.length === 0, '계약에 구역이 없는 제안 화면');
-      test.skip(!!REBUILD[cname], REBUILD[cname]);
       // 구역 이름은 '화면.구역'(대문자 시작). 소문자로 시작하는 data-ui(예: recruit.level)는 요소 표시라 구역이 아니다
       const found: string[] = (await page.$$eval('[data-ui]', (els) => els.map((e) => e.getAttribute('data-ui')!))).filter((x) => /^[A-Z]/.test(x));
       const prefix = `${cname}.`;
-      const mine = found.filter((x) => x.startsWith(prefix)).map((x) => x.slice(prefix.length));
+      const outOfFlow = OUT_OF_FLOW[cname] ?? [];
+      const allMine = found.filter((x) => x.startsWith(prefix)).map((x) => x.slice(prefix.length));
+      const mine = allMine.filter((x) => !outOfFlow.includes(x));
       const parentIds = sc.parent ? PARENT_SECTIONS.map((id) => `${sc.parent}.${id}`) : [];
       const others = found.filter((x) => !x.startsWith(prefix) && !parentIds.includes(x));
       expect(others, '다른 화면의 data-ui').toEqual([]);
       const ids: string[] = spec.sections.map((s: { id: string }) => s.id);
-      const unknown = mine.filter((x) => !ids.includes(x));
+      const unknown = allMine.filter((x) => !ids.includes(x));
       expect(unknown, '계약에 없는 구역').toEqual([]);
       const pending = PENDING[cname] ?? [];
       const required = spec.sections
         .filter((s: { optionalChildren?: boolean }) => !s.optionalChildren)
         .map((s: { id: string }) => s.id)
-        .filter((id: string) => !pending.includes(id));
+        .filter((id: string) => !pending.includes(id) && !outOfFlow.includes(id));
       for (const id of required) expect(mine, `구역 ${id}`).toContain(id);
       // 순서: 계약 순서대로 나와야 한다
       const order = mine.map((x) => ids.indexOf(x));
@@ -233,24 +234,69 @@ test('주인공·개방자 문구가 화면에 없다(새 게임 포함)', async
   expect(text).not.toMatch(/속성|역할/);
 });
 
-// 017c: 영입 가능·진행 중 카드마다 '레벨/성장 한계' 배지(숫자/숫자), 잠김 카드에는 없다
-test('영입 카드 레벨/성장 한계 배지', async ({ page }) => {
+// 023: 영입 화면 — 요약·필터·정렬, 구역별 카드, 배지(017c), 잠김은 ??? · 도시만, 상세 시트, 고정 머리와 목록 스크롤, 터치 44px
+test('영입 화면 구역과 카드', async ({ page }) => {
   await open(page, 'recruit');
-  const cards = await page.$$eval('[data-ui="Recruit.cards"] [data-role=card]', (els) =>
-    els.map((e) => ({
-      locked: e.classList.contains('locked'),
-      badges: [...e.querySelectorAll('[data-ui="recruit.level"]')].map((b) => b.textContent ?? ''),
-    })),
-  );
-  const open_ = cards.filter((c) => !c.locked);
-  const locked = cards.filter((c) => c.locked);
-  expect(open_.length, '영입 가능·진행 중 카드').toBeGreaterThan(0);
-  expect(locked.length, '잠김 카드').toBeGreaterThan(0);
-  for (const c of open_) {
-    expect(c.badges.length, '배지 1개').toBe(1);
-    expect(c.badges[0]).toMatch(/^\d+\/\d+$/);
+  for (const id of ['recruit.summary', 'recruit.filter', 'recruit.sort']) await expect(page.locator(`[data-ui="${id}"]`), id).toHaveCount(1);
+  for (const k of ['ready', 'progress', 'locked']) expect(await page.locator(`[data-ui="recruit.card.${k}"]`).count(), k).toBeGreaterThan(0);
+  // 터치 44px: 필터 버튼, 정렬, 영입 버튼, 잠김 카드
+  for (const sel of ['[data-ui="recruit.filter"]', '[data-ui="recruit.sort"]', '[data-ui="recruit.card.ready"] .rc-on', '[data-ui="recruit.card.locked"]']) {
+    const b = (await page.locator(sel).first().boundingBox())!;
+    expect(Math.min(b.width, b.height), sel).toBeGreaterThanOrEqual(44);
   }
-  for (const c of locked) expect(c.badges, '잠김 카드 배지 없음').toEqual([]);
+  const prog = (await page.locator('[data-ui="recruit.card.progress"]').first().boundingBox())!;
+  expect(Math.round(prog.height)).toBe(68);
+  // 배지: 영입 가능·진행 중에는 숫자/숫자, 잠김에는 없음(017c)
+  for (const k of ['ready', 'progress']) {
+    const badges = await page.$$eval(`[data-ui="recruit.card.${k}"]`, (els) => els.map((e) => [...e.querySelectorAll('[data-ui="recruit.level"]')].map((b) => b.textContent ?? '')));
+    for (const b of badges) {
+      expect(b.length).toBe(1);
+      expect(b[0]).toMatch(/^\d+\/\d+$/);
+    }
+  }
+  const locked = await page.$$eval('[data-ui="recruit.card.locked"]', (els) => els.map((e) => ({ badge: e.querySelectorAll('[data-ui="recruit.level"]').length, text: (e.textContent ?? '').trim() })));
+  for (const l of locked) {
+    expect(l.badge).toBe(0);
+    expect(l.text.startsWith('???')).toBe(true);
+  }
+  // 잠김 카드는 시트를 열지 않는다
+  await page.locator('[data-ui="recruit.card.locked"]').first().click();
+  await expect(page.locator('[data-ui="recruit.sheet"]')).toHaveCount(0);
+  // 머리는 고정, 목록만 스크롤
+  const sc = await page.$eval('[data-ui="Recruit.scroll"]', (e) => ({ ov: getComputedStyle(e).overflowY, h: e.clientHeight, sh: e.scrollHeight }));
+  expect(sc.ov).toBe('auto');
+  expect(sc.sh).toBeGreaterThan(sc.h);
+  const before = (await page.locator('[data-ui="Recruit.summary"]').boundingBox())!.y;
+  await page.$eval('[data-ui="Recruit.scroll"]', (e) => (e.scrollTop = 400));
+  expect((await page.locator('[data-ui="Recruit.summary"]').boundingBox())!.y).toBe(before);
+});
+
+test('영입 상세 시트와 필터 시트', async ({ page }) => {
+  await open(page, 'recruit');
+  await page.locator('[data-ui="recruit.card.progress"]').first().click();
+  const sheet = page.locator('[data-ui="recruit.sheet"]');
+  await expect(sheet).toBeVisible();
+  await expect(sheet).toContainText('영입 조건');
+  await expect(sheet).toContainText(/성장률 ★/);
+  const buy = sheet.getByRole('button', { name: /제로/ });
+  await expect(buy).toBeDisabled(); // 진행 중 = 조건 미달
+  await expect(buy).toContainText('조건 미달');
+  expect(Math.round((await buy.boundingBox())!.height)).toBe(52);
+  await sheet.getByRole('button', { name: '상세 보기' }).click();
+  await expect(page.locator('[data-ui="MercDetail.identity"]')).toBeVisible();
+  // 필터 시트: 역할·속성·도시·소속, 적용하면 칩 숫자가 줄고 잠김은 도시로만 걸린다
+  await open(page, 'recruit');
+  const allChip = await page.locator('[data-ui="Recruit.chips"] .chip').first().innerText();
+  await page.locator('[data-ui="recruit.filter"]').click();
+  for (const g of ['역할', '속성', '도시', '소속']) await expect(page.getByRole('group', { name: g })).toBeVisible();
+  await page.getByRole('group', { name: '역할' }).getByRole('button', { name: '수호자' }).click();
+  await page.getByRole('button', { name: /명 보기$/ }).click();
+  expect(await page.locator('[data-ui="Recruit.chips"] .chip').first().innerText()).not.toBe(allChip);
+  await expect(page.locator('[data-ui="recruit.card.locked"]')).toHaveCount(0);
+  // 탭을 바꿔도 필터 유지
+  await page.getByRole('tab', { name: '리프트' }).click();
+  await page.getByRole('tab', { name: '영입' }).click();
+  await expect(page.locator('[data-ui="recruit.filter"]')).toHaveAttribute('aria-pressed', 'true');
 });
 
 test('계약자 그리드 4열, 파티 슬롯 줄당 5', async ({ page }) => {

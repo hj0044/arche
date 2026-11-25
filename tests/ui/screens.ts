@@ -24,6 +24,8 @@ export const SCREENS: ScreenDef[] = [
   { name: 'Boss', screen: 'boss', parent: 'Content' },
   { name: 'Recruit', screen: 'recruit', parent: 'Content' },
   { name: 'Help', screen: 'help' },
+  // 시안 RecruitSheet: 영입 탭 위의 상세 시트(계약은 Recruit 구역을 따른다)
+  { name: 'RecruitSheet', screen: 'recruitSheet', contractOf: 'Recruit', parent: 'Content' },
   // 시안 HelpSheet: 전투 위의 상태 설명 시트(계약은 Battle 구역을 따른다)
   { name: 'HelpSheet', screen: 'helpSheet', contractOf: 'Battle' },
 ];

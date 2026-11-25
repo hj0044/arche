@@ -5,7 +5,7 @@ export type Route =
   | { name: 'newGame' }
   | { name: 'home' }
   /** 콘텐츠 화면. sub: 서브 탭(리프트·탑·보스·영입, 지시서 017) */
-  | { name: 'rifts'; cityId?: string; sub?: ContentTab }
+  | { name: 'rifts'; cityId?: string; sub?: ContentTab; /** 개발 픽스처(시안 RecruitSheet): 첫 영입 가능 카드의 시트를 열어 둔다 */ openRecruitSheet?: boolean }
   | { name: 'party'; riftId: string }
   | { name: 'mercs' }
   | { name: 'merc'; mercId: string }
