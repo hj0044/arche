@@ -82,3 +82,23 @@ describe('지시서 026b: 충성도 시뮬레이션 대상', () => {
     expect(tables.loyalty.simulatedAffiliations).toEqual(['guild']);
   });
 });
+
+describe('지시서 027: 활약도 데이터', () => {
+  it('항목·가중치·기준값이 모든 사용 역할에 있고 값은 0 이상, 시즌 길이 30일', () => {
+    const c = tables.contribution;
+    expect(c.seasonDays).toBe(30);
+    expect(c.items).toHaveLength(8);
+    for (const r of tables.roles.filter((x) => x.enabled)) {
+      for (const it of c.items) {
+        expect(c.weights[r.id]?.[it.id] ?? -1, `${r.id}.${it.id} 가중치`).toBeGreaterThanOrEqual(0);
+        expect(c.baselines[r.id]?.[it.id] ?? -1, `${r.id}.${it.id} 기준값`).toBeGreaterThanOrEqual(0);
+      }
+      // 처치 가중치는 피해보다 낮다(마무리만 노리는 쪽이 유리하지 않게)
+      expect(c.weights[r.id].kill).toBeLessThan(c.weights[r.id].damage);
+    }
+  });
+  it('쓰러짐은 영구 사망이 아니다: 데이터 문구에 죽음·전사·사망이 없다', () => {
+    const text = JSON.stringify(tables.contribution) + JSON.stringify(tables.terms);
+    for (const w of ['죽음', '전사', '사망']) expect(text).not.toContain(w);
+  });
+});

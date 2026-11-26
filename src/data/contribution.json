@@ -1,0 +1,214 @@
+{
+  "_note": "활약도(지시서 027, 임시값). 활약도 = 100 × Σ(가중치[역할][항목] × 내 값 ÷ 기준값[역할][항목]) ÷ Σ 가중치[역할]. 누적(시즌·통산)은 항목 합계 ÷ 출전 수를 기준값(공략 1회 평균)과 비교한다. 가중치나 기준값이 0인 항목은 그 역할에서 빼고 화면에 '이 역할은 해당 없음'으로 흐리게 표시한다. 처치 가중치는 피해보다 낮게 둔다(마무리만 노리는 쪽이 유리하지 않게). 기준값은 `npm run contribution-baseline -- [표본 수] --write`가 같은 시드 표본으로 다시 채운다. seasonDays: 시즌 길이(028 리그 시즌이 생기면 그쪽으로 바꾼다), recentLimit: 최근 공략 기록 수, pastSeasonsLimit: 계약자별로 남기는 지난 시즌 수.",
+  "seasonDays": 30,
+  "recentLimit": 10,
+  "pastSeasonsLimit": 5,
+  "items": [
+    {
+      "id": "damage",
+      "name": "입힌 피해"
+    },
+    {
+      "id": "kill",
+      "name": "처치"
+    },
+    {
+      "id": "guard",
+      "name": "막은 피해"
+    },
+    {
+      "id": "heal",
+      "name": "회복"
+    },
+    {
+      "id": "status",
+      "name": "상태이상 부여"
+    },
+    {
+      "id": "cleanse",
+      "name": "상태이상 해제"
+    },
+    {
+      "id": "buff",
+      "name": "아군 강화"
+    },
+    {
+      "id": "debuff",
+      "name": "적 약화"
+    }
+  ],
+  "weights": {
+    "shield": {
+      "damage": 0.4,
+      "kill": 0.2,
+      "guard": 1.5,
+      "heal": 0,
+      "status": 0.5,
+      "cleanse": 0,
+      "buff": 0.5,
+      "debuff": 0.3
+    },
+    "warrior": {
+      "damage": 1,
+      "kill": 0.6,
+      "guard": 0.8,
+      "heal": 0,
+      "status": 0.4,
+      "cleanse": 0,
+      "buff": 0.3,
+      "debuff": 0
+    },
+    "archer": {
+      "damage": 1,
+      "kill": 0.6,
+      "guard": 0,
+      "heal": 0,
+      "status": 0.4,
+      "cleanse": 0,
+      "buff": 0,
+      "debuff": 0
+    },
+    "mage": {
+      "damage": 1,
+      "kill": 0.6,
+      "guard": 0,
+      "heal": 0,
+      "status": 0.5,
+      "cleanse": 0,
+      "buff": 0,
+      "debuff": 0.3
+    },
+    "healer": {
+      "damage": 0.2,
+      "kill": 0.1,
+      "guard": 0.8,
+      "heal": 1.5,
+      "status": 0,
+      "cleanse": 0.6,
+      "buff": 0.4,
+      "debuff": 0
+    },
+    "commander": {
+      "damage": 0.3,
+      "kill": 0.2,
+      "guard": 0.5,
+      "heal": 0,
+      "status": 0.5,
+      "cleanse": 0,
+      "buff": 1.2,
+      "debuff": 1
+    },
+    "assassin": {
+      "damage": 1,
+      "kill": 0.8,
+      "guard": 0,
+      "heal": 0,
+      "status": 0.5,
+      "cleanse": 0,
+      "buff": 0.2,
+      "debuff": 0
+    },
+    "disruptor": {
+      "damage": 0.5,
+      "kill": 0.3,
+      "guard": 0,
+      "heal": 0,
+      "status": 1.2,
+      "cleanse": 0,
+      "buff": 0,
+      "debuff": 1
+    }
+  },
+  "baselines": {
+    "shield": {
+      "damage": 31.678,
+      "kill": 0.179,
+      "guard": 58.982,
+      "heal": 0,
+      "status": 0.367,
+      "cleanse": 0,
+      "buff": 2.039,
+      "debuff": 0.263
+    },
+    "assassin": {
+      "damage": 164,
+      "kill": 0.648,
+      "guard": 0,
+      "heal": 0,
+      "status": 0.838,
+      "cleanse": 0,
+      "buff": 0.171,
+      "debuff": 0
+    },
+    "commander": {
+      "damage": 38.669,
+      "kill": 0.24,
+      "guard": 13.77,
+      "heal": 0,
+      "status": 0.65,
+      "cleanse": 0,
+      "buff": 9.605,
+      "debuff": 0.373
+    },
+    "mage": {
+      "damage": 333,
+      "kill": 1.317,
+      "guard": 0,
+      "heal": 0,
+      "status": 0.752,
+      "cleanse": 0,
+      "buff": 0,
+      "debuff": 0.141
+    },
+    "disruptor": {
+      "damage": 153,
+      "kill": 0.617,
+      "guard": 0,
+      "heal": 0,
+      "status": 2.982,
+      "cleanse": 0,
+      "buff": 0,
+      "debuff": 2.978
+    },
+    "warrior": {
+      "damage": 199,
+      "kill": 0.754,
+      "guard": 0,
+      "heal": 0,
+      "status": 0.481,
+      "cleanse": 0,
+      "buff": 0.188,
+      "debuff": 0
+    },
+    "healer": {
+      "damage": 40.888,
+      "kill": 0.187,
+      "guard": 47.856,
+      "heal": 113,
+      "status": 0,
+      "cleanse": 0,
+      "buff": 0,
+      "debuff": 0
+    },
+    "archer": {
+      "damage": 299,
+      "kill": 1.202,
+      "guard": 0,
+      "heal": 0,
+      "status": 0.632,
+      "cleanse": 0,
+      "buff": 0,
+      "debuff": 0
+    }
+  },
+  "baselineSample": {
+    "fights": 4000,
+    "levels": [
+      5,
+      10,
+      20,
+      30
+    ],
+    "seed": "contribution-baseline"
+  }
+}

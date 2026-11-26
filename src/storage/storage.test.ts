@@ -162,9 +162,43 @@ describe('세이브 v6(리프트 영역 세력)', () => {
   });
 });
 
+describe('세이브 v13(지시서 027, AGENTS.md: 마이그레이션 없음)', () => {
+  /** 파견에서 돌아와 활약도 기록이 생길 때까지 진행 */
+  const withActivity = (): GameState => {
+    let s = playedState();
+    for (let i = 0; i < 6 && !s.mercenaries.some((m) => m.activity); i++) s = advanceDay(tables, s).state;
+    return s;
+  };
+  it('버전은 13이고 v12 세이브는 지원하지 않는 세이브로 거절한다', () => {
+    expect(SAVE_VERSION).toBe(13);
+    const file = JSON.parse(serializeSave(createSaveFile(playedState(), 'manual')));
+    expect(() => parseSave(JSON.stringify({ ...file, version: 12 }))).toThrow(/지원하지 않는 세이브/);
+  });
+  it('활약도 기록을 저장하고 불러오면 그대로 돌아오고 의미 검증을 통과한다', () => {
+    const s = withActivity();
+    const m = s.mercenaries.find((x) => x.activity)!;
+    expect(m.activity!.career.sorties).toBeGreaterThan(0);
+    const back = parseSave(serializeSave(createSaveFile(s, 'manual')), { ...tables, limits: saveLimits });
+    expect(back.state).toEqual(s);
+  });
+  it('무결성: 시즌 합계가 통산을 넘거나, 클리어가 출전보다 많거나, 없는 항목 id면 거절한다', () => {
+    const s = withActivity();
+    const id = s.mercenaries.find((x) => x.activity)!.id;
+    const bad = (f: (a: NonNullable<GameState['mercenaries'][number]['activity']>) => void) => {
+      const c = structuredClone(s);
+      f(c.mercenaries.find((x) => x.id === id)!.activity!);
+      return () => parseSave(serializeSave(createSaveFile(c, 'manual')), { ...tables, limits: saveLimits });
+    };
+    expect(bad((a) => (a.season.items.damage = a.career.items.damage + 1))).toThrow(/통산/);
+    expect(bad((a) => (a.career.clears = a.career.sorties + 1))).toThrow(/출전/);
+    expect(bad((a) => (a.career.items.bogus = 1))).toThrow(/활약도 항목/);
+    expect(bad((a) => (a.season.no = 99))).toThrow(/시즌/);
+    expect(bad(() => {})).not.toThrow();
+  });
+});
+
 describe('세이브 v12(지시서 026, AGENTS.md: 마이그레이션 없음)', () => {
-  it('버전은 12이고 v11 세이브(삭제한 세력 id가 있는 세이브 포함)는 지원하지 않는 세이브로 거절한다', () => {
-    expect(SAVE_VERSION).toBe(12);
+  it('v11 세이브(삭제한 세력 id가 있는 세이브 포함)는 지원하지 않는 세이브로 거절한다', () => {
     const file = JSON.parse(serializeSave(createSaveFile(playedState(), 'manual')));
     expect(() => parseSave(JSON.stringify({ ...file, version: 11 }))).toThrow(/지원하지 않는 세이브/);
     const old = { ...file, version: 11, state: { ...file.state, mercenaries: file.state.mercenaries.map((m: { id: string }) => (m.id === 'm16' ? { ...m, affiliation: { kind: 'faction', factionId: 'dokk' + 'aebi' } } : m)) } };

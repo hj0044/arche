@@ -456,3 +456,53 @@ test('카드 이름이 말줄임(…)으로 잘리지 않는다(30명 전원, �
   );
   expect(slotOverflow).toEqual([]);
 });
+
+// 027: 계약자 기록 — 상세 하단 '기록'으로 진입, 시즌/통산 토글, 항목 8칸, 해당 없음 칸, 본문만 스크롤, 금지어 없음
+test('027 기록: 상세에서 진입하고 시즌·통산을 바꾼다', async ({ page }) => {
+  await open(page, 'merc');
+  await page.locator('[data-ui="merc.records"]').click();
+  await expect(page.locator('[data-ui="Records.header"]')).toContainText('기록');
+  await expect(page.locator('.rec-metric')).toHaveCount(8);
+  // 기록이 없는 계약자(첫 길드원은 픽스처에서 출전하지 않음)
+  await expect(page.locator('[data-ui="records.scoreValue"]')).toHaveText('—');
+  await expect(page.locator('[data-ui="Records.recent"]')).toContainText('아직 공략 기록이 없습니다');
+  await page.locator('[data-ui="Records.actions"] button').click();
+  await expect(page.locator('[data-ui="MercDetail.actions"]')).toBeVisible();
+});
+
+test('027 기록: 기록 있는 계약자 — 점수·최근 공략·해당 없음·고정 헤더와 하단 버튼', async ({ page }) => {
+  await open(page, 'records');
+  await expect(page.locator('[data-ui="records.scoreValue"]')).toHaveText(/^\d+$/);
+  await expect(page.locator('.rec-row')).toHaveCount(4);
+  await expect(page.locator('.rec-metric[data-na]').first()).toContainText('이 역할은 해당 없음');
+  const seasonTxt = await page.locator('[data-ui="Records.counts"]').innerText();
+  await page.locator('[data-ui="Records.range"] button', { hasText: '통산' }).click();
+  await expect(page.locator('[data-ui="Records.range"] button[aria-selected=true]')).toHaveText('통산');
+  expect(await page.locator('[data-ui="Records.counts"]').innerText()).toBe(seasonTxt); // 1시즌 안이라 같다
+  // 본문만 스크롤: 헤더와 하단 버튼은 스크롤 영역 밖
+  const fixed = await page.evaluate(() => {
+    const sc = document.querySelector('[data-ui="records.scroll"]')!;
+    return !sc.contains(document.querySelector('[data-ui="Records.header"]')) && !sc.contains(document.querySelector('[data-ui="Records.actions"]')) && getComputedStyle(sc).overflowY === 'auto';
+  });
+  expect(fixed).toBe(true);
+  const text = await page.locator('body').innerText();
+  for (const w of ['죽음', '전사', '사망']) expect(text).not.toContain(w);
+});
+
+// 027: 상세 하단에 '기록'이 더해져도 레벨업 버튼의 긴 문구가 넘치지 않는다
+test('027 상세 하단 버튼: 기록·훈련·레벨업 긴 문구가 한 줄에 들어간다', async ({ page }) => {
+  await open(page, 'merc');
+  const res = await page.evaluate(() => {
+    const btn = document.querySelector('[data-ui="MercDetail.actions"] .btn-big') as HTMLElement;
+    const out: string[] = [];
+    for (const t of ['레벨업 (경험치 1,399/1,400)', '파견 중에는 레벨업할 수 없음', '레벨업 (아르케 12,345)', '성장 한계에 도달']) {
+      btn.textContent = t;
+      const range = document.createRange();
+      range.selectNodeContents(btn);
+      const lines = new Set([...range.getClientRects()].map((r) => Math.round(r.top))).size;
+      if (lines > 1 || btn.scrollWidth > btn.clientWidth + 0.5 || btn.getBoundingClientRect().height > 48.5) out.push(`${t} ${btn.scrollWidth}/${btn.clientWidth} h${btn.getBoundingClientRect().height}`);
+    }
+    return out;
+  });
+  expect(res).toEqual([]);
+});

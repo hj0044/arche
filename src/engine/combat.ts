@@ -41,7 +41,15 @@ export interface Status {
   effectId?: string;
   /** 지속 피해: 한 번의 피해량(걸 때 정함), 보호막: 남은 흡수량 */
   value?: number;
+  /** 건 유닛(지시서 027 활약도 귀속). 다시 걸면 마지막에 건 유닛으로 바뀐다. 전투 결과에는 영향이 없다 */
+  sourceKey?: CombatantKey;
 }
+
+/** 활약도 측정값(지시서 027). id는 contribution.json 항목 id와 같다 */
+export const CONTRIBUTION_MEASURES = ['damage', 'kill', 'guard', 'heal', 'status', 'cleanse', 'buff', 'debuff'] as const;
+export type ContributionMeasure = (typeof CONTRIBUTION_MEASURES)[number];
+export type ContributionTally = Record<ContributionMeasure, number>;
+export const emptyTally = (): ContributionTally => Object.fromEntries(CONTRIBUTION_MEASURES.map((k) => [k, 0])) as ContributionTally;
 
 /** 전투 로그에서 유닛을 가리키는 키. 아군은 a0.., 적은 e0.. */
 export type CombatantKey = string;
@@ -114,6 +122,12 @@ export interface CombatResult {
   finalHp: Record<string, number>;
   /** 쓰러진 유닛 id (양 진영) */
   downedUnitIds: string[];
+  /**
+   * 유닛 id → 이번 전투의 기여 측정값(지시서 027). 전투 판정과 난수에 관여하지 않는 집계라 이벤트 로그는 그대로다.
+   * 피해(보호막 흡수 포함, 지속 피해 틱 포함), 처치(마지막 일격), 막은 피해(내 보호막이 흡수한 양 + 도발 중 내가 받은 체력 피해),
+   * 회복(넘친 양 제외), 상태이상 부여(적에게 기절·지속 피해·표식, 면역 제외), 해제(아군 상태 개수), 강화(아군 대상 수), 약화(적 대상 수).
+   */
+  contributions: Record<string, ContributionTally>;
 }
 
 interface Combatant {
@@ -284,6 +298,18 @@ export function resolveCombat(tables: GameTables, input: CombatInput): CombatRes
     },
   ];
 
+  const tally: Record<CombatantKey, ContributionTally> = Object.fromEntries(all.map((c) => [c.key, emptyTally()]));
+  const credit = (key: CombatantKey | undefined, m: ContributionMeasure, v: number) => {
+    if (key !== undefined && v) tally[key][m] += v;
+  };
+  /** 피해를 받은 뒤의 귀속: 내 보호막을 건 유닛은 흡수량, 도발 중이면 받은 체력 피해는 내 몫, 마지막 일격은 처치 */
+  const creditHit = (source: CombatantKey | undefined, target: Combatant, amount: number, hit: { absorbed: number; shieldSource?: CombatantKey }, wasTaunting: boolean, wasAlive: boolean) => {
+    credit(source, 'damage', amount);
+    credit(hit.shieldSource, 'guard', hit.absorbed);
+    if (wasTaunting) credit(target.key, 'guard', amount - hit.absorbed);
+    if (wasAlive && target.downed) credit(source, 'kill', 1);
+  };
+
   const alive = (side: Side) => all.filter((c) => c.side === side && !c.downed);
   const opponentSide = (side: Side): Side => (side === 'ally' ? 'enemy' : 'ally');
   const exposedRow = (cs: Combatant[]) => (cs.some((c) => c.row === 'front') ? cs.filter((c) => c.row === 'front') : cs);
@@ -326,10 +352,11 @@ export function resolveCombat(tables: GameTables, input: CombatInput): CombatRes
   };
 
   /** 피해를 보호막부터 깎는다. 체력이 0이면 쓰러진다 */
-  const takeDamage = (target: Combatant, amount: number): number => {
+  const takeDamage = (target: Combatant, amount: number): { absorbed: number; shieldSource?: CombatantKey } => {
     let rest = amount;
     let absorbed = 0;
     const sh = statusOf(target, 'shield');
+    const shieldSource = sh?.sourceKey;
     if (sh && (sh.value ?? 0) > 0 && rest > 0) {
       absorbed = Math.min(sh.value!, rest);
       sh.value! -= absorbed;
@@ -341,7 +368,7 @@ export function resolveCombat(tables: GameTables, input: CombatInput): CombatRes
       target.downed = true;
       target.statuses = [];
     }
-    return absorbed;
+    return { absorbed, shieldSource };
   };
 
   const effectMul = (c: Combatant, type: 'mark' | 'weaken') => {
@@ -373,7 +400,11 @@ export function resolveCombat(tables: GameTables, input: CombatInput): CombatRes
     dmg *= variance;
     if (crit) dmg *= a.critDmg;
     const amount = evaded ? 0 : Math.max(cfg.damage.minimum, Math.round(dmg));
-    const absorbed = takeDamage(target, amount);
+    const wasTaunting = isTaunting(target);
+    const wasAlive = !target.downed;
+    const hit = takeDamage(target, amount);
+    const absorbed = hit.absorbed;
+    creditHit(actor.key, target, amount, hit, wasTaunting, wasAlive);
     return {
       kind: 'damage',
       target: target.key,
@@ -399,13 +430,15 @@ export function resolveCombat(tables: GameTables, input: CombatInput): CombatRes
       effectMul(actor, 'weaken');
     const amount = Math.min(target.maxHp - target.hp, Math.round(power));
     target.hp += amount;
+    credit(actor.key, 'heal', amount);
     return { kind: 'heal', target: target.key, amount, hpAfter: target.hp };
   };
 
-  const addStatus = (target: Combatant, skill: SkillRow, type: StatusType): CombatEffect => {
+  const addStatus = (actor: Combatant, target: Combatant, skill: SkillRow, type: StatusType): CombatEffect => {
     const duration = skill.duration ?? 1;
     target.statuses = target.statuses.filter((s) => s.skillId !== skill.id);
     target.statuses.push({ type, skillId: skill.id, stats: skill.stats, amount: skill.amount, remaining: duration });
+    if (type === 'buff' && target.side === actor.side) credit(actor.key, 'buff', 1);
     return { kind: 'status', target: target.key, status: type, stats: skill.stats, amount: skill.amount, duration };
   };
 
@@ -435,7 +468,12 @@ export function resolveCombat(tables: GameTables, input: CombatInput): CombatRes
       old.remaining = Math.max(old.remaining, dur);
       if (value !== undefined) old.value = Math.max(old.value ?? 0, value);
       old.skillId = skill.id;
-    } else target.statuses.push({ type: row.kind, skillId: skill.id, remaining: dur, effectId: row.id, ...(value !== undefined ? { value } : {}) });
+      old.sourceKey = actor.key;
+    } else target.statuses.push({ type: row.kind, skillId: skill.id, remaining: dur, effectId: row.id, sourceKey: actor.key, ...(value !== undefined ? { value } : {}) });
+    if (target.side !== actor.side) {
+      if (row.kind === 'stun' || row.kind === 'dot' || row.kind === 'mark') credit(actor.key, 'status', 1);
+      else if (row.kind === 'weaken') credit(actor.key, 'debuff', 1);
+    }
     return { kind: 'status', target: target.key, status: row.kind, duration: dur, ...(value !== undefined ? { value } : {}) };
   };
 
@@ -444,10 +482,11 @@ export function resolveCombat(tables: GameTables, input: CombatInput): CombatRes
     for (const a of skill.applies ?? []) effects.push(applyEffect(actor, target, skill, a.status, a.duration));
   };
 
-  const cleanse = (target: Combatant): CombatEffect | undefined => {
+  const cleanse = (actor: Combatant, target: Combatant): CombatEffect | undefined => {
     const removed = target.statuses.filter((s) => s.effectId && getStatusEffect(tables, s.effectId).cleansable);
     if (!removed.length) return undefined;
     target.statuses = target.statuses.filter((s) => !removed.includes(s));
+    credit(actor.key, 'cleanse', removed.length);
     return { kind: 'cleanse', target: target.key, removed: removed.map((s) => s.type) };
   };
 
@@ -509,11 +548,11 @@ export function resolveCombat(tables: GameTables, input: CombatInput): CombatRes
       if (skill.kind === 'heal') {
         effects.push(heal(actor, t, skill));
         if (skill.cleanse) {
-          const c = cleanse(t);
+          const c = cleanse(actor, t);
           if (c) effects.push(c);
         }
       } else if (skill.kind === 'shield') effects.push(applyEffect(actor, t, skill, 'shield', skill.duration));
-      else effects.push(addStatus(t, skill, 'buff'));
+      else effects.push(addStatus(actor, t, skill, 'buff'));
     };
     const multiHit = (pick: () => Combatant | undefined) => {
       let target = pick();
@@ -540,7 +579,7 @@ export function resolveCombat(tables: GameTables, input: CombatInput): CombatRes
         for (const t of alive(opponentSide(actor.side))) hitEnemy(t);
         break;
       case 'self':
-        effects.push(addStatus(actor, skill, skill.kind === 'taunt' ? 'taunt' : 'buff'));
+        effects.push(addStatus(actor, actor, skill, skill.kind === 'taunt' ? 'taunt' : 'buff'));
         break;
       case 'allyLowest': {
         if (skill.kind === 'shield') {
@@ -549,7 +588,7 @@ export function resolveCombat(tables: GameTables, input: CombatInput): CombatRes
         } else {
           const target = [...alive(actor.side)].sort((a, b) => hpRatio(a) - hpRatio(b))[0];
           if (skill.kind === 'heal') helpAlly(target);
-          else effects.push(addStatus(actor, skill, 'buff'));
+          else effects.push(addStatus(actor, actor, skill, 'buff'));
         }
         break;
       }
@@ -604,7 +643,10 @@ export function resolveCombat(tables: GameTables, input: CombatInput): CombatRes
       const dot = statusOf(actor, 'dot');
       if (dot) {
         const amount = dot.value ?? 0;
-        const absorbed = takeDamage(actor, amount);
+        const wasTaunting = isTaunting(actor);
+        const hit = takeDamage(actor, amount);
+        const absorbed = hit.absorbed;
+        creditHit(dot.sourceKey, actor, amount, hit, wasTaunting, true);
         events.push({ type: 'tick', round, target: actor.key, status: 'dot', amount, ...(absorbed ? { absorbed } : {}), hpAfter: actor.hp, downed: actor.downed });
         outcome = decided();
         if (outcome) break;
@@ -639,5 +681,6 @@ export function resolveCombat(tables: GameTables, input: CombatInput): CombatRes
     events,
     finalHp: Object.fromEntries(all.map((c) => [c.unit.id, c.hp])),
     downedUnitIds: all.filter((c) => c.downed).map((c) => c.unit.id),
+    contributions: Object.fromEntries(all.map((c) => [c.unit.id, tally[c.key]])),
   };
 }

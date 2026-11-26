@@ -17,7 +17,9 @@ export type Route =
   /** openStatus: 개발 픽스처(시안 HelpSheet)에서 상태 설명 시트를 열어 둔다 */
   | { name: 'replay'; expeditionId: string; back: Route; openStatus?: boolean }
   /** 도움말(지시서 020). topic: 처음 펼칠 항목 id */
-  | { name: 'help'; topic?: string; back?: Route };
+  | { name: 'help'; topic?: string; back?: Route }
+  /** 계약자 기록(지시서 027). back: 돌아갈 화면(기본은 그 계약자 상세) */
+  | { name: 'records'; mercId: string; back?: Route };
 
 export type ContentTab = 'rifts' | 'tower' | 'boss' | 'recruit';
 

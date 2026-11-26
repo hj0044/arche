@@ -38,6 +38,21 @@ const rift: Schema = {
 
 const partyMember: Schema = { fields: { mercId: 'string', row: { oneOf: ['front', 'back'] } } };
 
+/** 활약도 합계(지시서 027) */
+const activityTally = { sorties: 'number', clears: 'number', downs: 'number', items: { record: 'number' } } as const;
+const activity: Schema = {
+  fields: {
+    career: { fields: activityTally },
+    season: { fields: { no: 'number', ...activityTally } },
+    pastSeasons: { arrayOf: { fields: { no: 'number', ...activityTally } } },
+    recent: {
+      arrayOf: {
+        fields: { day: 'number', riftName: 'string', tier: 'string', score: { nullable: 'number' }, outcome: { oneOf: ['victory', 'retreat', 'defeat'] } },
+      },
+    },
+  },
+};
+
 const mercenary: Schema = {
   fields: {
     id: 'string',
@@ -56,6 +71,7 @@ const mercenary: Schema = {
     unpaidUpkeep: { fields: { days: 'number', zero: 'number' } },
     departedDay: 'number',
     traitRanks: { record: 'number' },
+    activity,
     loyalty: {
       fields: {
         value: 'number',

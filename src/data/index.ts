@@ -4,6 +4,7 @@ import elementsJson from './elements.json';
 import rolesJson from './roles.json';
 import skillsJson from './skills.json';
 import statusEffectsJson from './statusEffects.json';
+import contributionJson from './contribution.json';
 import helpJson from './help.json';
 import statsJson from './stats.json';
 import monsterGradesJson from './monster-grades.json';
@@ -322,7 +323,20 @@ export interface InjuryTable {
 }
 
 /** 규칙 엔진이 받는 데이터 표 묶음. 테스트에서는 일부를 바꿔 넣을 수 있다. */
+/** 활약도(지시서 027): 항목 행, 역할별 가중치·기준값(공략 1회 평균), 시즌 길이 */
+export interface ContributionTable {
+  seasonDays: number;
+  recentLimit: number;
+  pastSeasonsLimit: number;
+  items: { id: string; name: string }[];
+  weights: Record<string, Record<string, number>>;
+  baselines: Record<string, Record<string, number>>;
+  /** 기준값을 뽑은 표본(스크립트가 채운다) */
+  baselineSample: { fights: number; levels: number[]; seed: string } | null;
+}
+
 export interface GameTables {
+  contribution: ContributionTable;
   elements: ElementRow[];
   roles: RoleRow[];
   skills: SkillRow[];
@@ -595,6 +609,7 @@ export interface UiTable {
 export const cities: readonly CityRow[] = citiesJson as CityRow[];
 
 export const tables: GameTables = {
+  contribution: contributionJson as ContributionTable,
   elements: elementsJson,
   roles: rolesJson as RoleRow[],
   skills: skillsJson as SkillRow[],
