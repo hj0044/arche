@@ -66,9 +66,9 @@ describe('결정성 회귀(충성도: 미납·거부·이탈이 일어나는 길
   });
 });
 
-describe('결정성 회귀(대기 하락·무소속 이동)', () => {
-  it('대기 하락과 이동이 일어나는 길드를 15일 동안 매일 저장 왕복해도 상태·이벤트가 같다', () => {
-    const t = { ...tables, poaching: { ...tables.poaching, dailyChance: 0.2 } };
+describe('결정성 회귀(대기 하락)', () => {
+  it('대기 하락이 일어나는 길드를 15일 동안 매일 저장 왕복해도 상태·이벤트가 같다', () => {
+    const t = tables;
     let origin = start([{ mercId: 'm02', row: 'back' }]);
     origin = {
       ...origin,
@@ -89,7 +89,7 @@ describe('결정성 회귀(대기 하락·무소속 이동)', () => {
       memory = a.state;
       loaded = parseSave(serializeSave(createSaveFile(b.state, 'auto'))).state;
     }
-    expect(kinds.has('poached')).toBe(true);
+    expect(kinds.has('poached')).toBe(false);
     expect(reasons.has('idleDecay')).toBe(true);
   });
 });

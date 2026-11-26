@@ -11,9 +11,10 @@ import { validateSemantics, type SemanticTables } from './saveSemantics';
  * v9: 스킬 구조(기본 공격 + 액티브 3)·자객·기만자·계약자 36명(지시서 020). 전투 안의 상태 효과는 저장하지 않는다.
  * v10: 성장 속도 삭제(growth.speed 없음)·계약자별 성장률(지시서 021).
  * v11: 주인공 캐릭터·개방자 모드 폐지(protagonist는 이름·배경만), 외곽 임무·자동 배치 설정(지시서 022). v10은 불러오지 않는다(마이그레이션 없음).
+ * v12: 세력 정리(지시서 026). 옛 소수 용병단 세력 삭제(소속 계약자는 독립 강자 모임 indie), 불워크 시스템즈 추가, 무소속 스카우트 이동 폐지. v11은 불러오지 않는다(마이그레이션 없음).
  */
 export const SAVE_FORMAT = 'arche-save';
-export const SAVE_VERSION = 11;
+export const SAVE_VERSION = 12;
 
 export type SaveKind = 'manual' | 'auto';
 

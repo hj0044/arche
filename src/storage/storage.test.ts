@@ -162,9 +162,24 @@ describe('세이브 v6(리프트 영역 세력)', () => {
   });
 });
 
+describe('세이브 v12(지시서 026, AGENTS.md: 마이그레이션 없음)', () => {
+  it('버전은 12이고 v11 세이브(삭제한 세력 id가 있는 세이브 포함)는 지원하지 않는 세이브로 거절한다', () => {
+    expect(SAVE_VERSION).toBe(12);
+    const file = JSON.parse(serializeSave(createSaveFile(playedState(), 'manual')));
+    expect(() => parseSave(JSON.stringify({ ...file, version: 11 }))).toThrow(/지원하지 않는 세이브/);
+    const old = { ...file, version: 11, state: { ...file.state, mercenaries: file.state.mercenaries.map((m: { id: string }) => (m.id === 'm16' ? { ...m, affiliation: { kind: 'faction', factionId: 'dokk' + 'aebi' } } : m)) } };
+    expect(() => parseSave(JSON.stringify(old))).toThrow(/지원하지 않는 세이브/);
+  });
+  it('v12 세이브에서 없는 세력 id는 의미 검증에서 거절한다', () => {
+    const file = JSON.parse(serializeSave(createSaveFile(playedState(), 'manual')));
+    const bad = { ...file, state: { ...file.state, mercenaries: file.state.mercenaries.map((m: { id: string }) => (m.id === 'm16' ? { ...m, affiliation: { kind: 'faction', factionId: 'dokk' + 'aebi' } } : m)) } };
+    expect(() => parseSave(JSON.stringify(bad), { ...tables, limits: saveLimits })).toThrow(SaveFormatError);
+    expect(parseSave(JSON.stringify(file), { ...tables, limits: saveLimits }).state.mercenaries.find((m) => m.id === 'm16')!.affiliation).toEqual({ kind: 'faction', factionId: 'indie' });
+  });
+});
+
 describe('세이브 v11(지시서 022, AGENTS.md: 마이그레이션 없음)', () => {
-  it('버전은 11이고 v10 세이브(주인공이 있던 세이브 포함)는 지원하지 않는 세이브로 거절한다', () => {
-    expect(SAVE_VERSION).toBe(11);
+  it('v10 세이브(주인공이 있던 세이브 포함)는 지원하지 않는 세이브로 거절한다', () => {
     const file = JSON.parse(serializeSave(createSaveFile(playedState(), 'manual')));
     expect(() => parseSave(JSON.stringify({ ...file, version: 10 }))).toThrow(/지원하지 않는 세이브/);
     const withHero = { ...file, version: 10, state: { ...file.state, protagonist: { mode: 'opener', name: 'p', background: 'survivor', mercId: 'hero' } } };

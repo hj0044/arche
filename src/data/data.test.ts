@@ -45,3 +45,34 @@ describe('017b: 카드용 짧은 이름', () => {
     expect(tables.roster.find((r) => r.name === '강태산')?.shortName).toBe('강태산');
   });
 });
+
+describe('지시서 026: 세력 정리', () => {
+  it('모든 계약자의 소속은 길드이거나 factions.json에 있다', () => {
+    const ids = new Set(tables.factions.map((f) => f.id));
+    expect(tables.roster.filter((r) => r.faction !== 'guild' && !ids.has(r.faction)).map((r) => r.id)).toEqual([]);
+  });
+  it('독립 강자 모임과 불워크 시스템즈가 있고 세력 행에 영입 비용 배율이 없다', () => {
+    expect(tables.factions.find((f) => f.id === 'indie')).toMatchObject({ name: '독립 강자 모임', type: 'elite' });
+    expect(tables.factions.find((f) => f.id === 'bulwark')).toMatchObject({ name: '불워크 시스템즈', type: 'megacorp' });
+    expect(tables.roster.filter((r) => r.faction === 'indie')).toHaveLength(6);
+    for (const f of tables.factions) expect(f).not.toHaveProperty('recruitCostMultiplier');
+  });
+  it('코드·데이터·화면 문구에 삭제한 세력 이름이 남지 않는다', async () => {
+    const { readdirSync, readFileSync, statSync } = await import('node:fs');
+    const { join } = await import('node:path');
+    const banned = ['dokk' + 'aebi', '도깨' + '비불'];
+    const hits: string[] = [];
+    const walk = (dir: string) => {
+      for (const name of readdirSync(dir)) {
+        const p = join(dir, name);
+        if (statSync(p).isDirectory()) walk(p);
+        else if (/\.(ts|tsx|json|css|html)$/.test(name)) {
+          const text = readFileSync(p, 'utf8');
+          for (const b of banned) if (text.includes(b)) hits.push(`${p}: ${b}`);
+        }
+      }
+    };
+    for (const d of ['src', 'scripts', 'docs/design/ui']) walk(d);
+    expect(hits).toEqual([]);
+  });
+});

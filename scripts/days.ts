@@ -23,7 +23,6 @@ const sorties = new Map<string, { n: number; win: number }>();
 let refusals = 0;
 let idleDecays = 0;
 const departures: string[] = [];
-const poaches: string[] = [];
 
 let trainingExpTotal = 0;
 let unpaidDays = 0;
@@ -70,10 +69,6 @@ for (let d = 0; d < Number(daysArg); d++) {
       unpaidMercDays += e.unpaidMercIds.length;
     }
     if (e.type === 'facilityBuilt') console.log(`${s.day}일 완공: ${tables.facilities.facilities.find((f) => f.id === e.facilityId)!.name} Lv${e.level}`);
-    if (e.type === 'poached') {
-      const m = s.mercenaries.find((x) => x.id === e.mercId)!;
-      poaches.push(`${s.day}일 ${m.name}→${tables.factions.find((f) => f.id === e.toFactionId)?.name}`);
-    }
     if (e.type === 'departed') {
       const m = s.mercenaries.find((x) => x.id === e.mercId)!;
       departures.push(`${s.day}일 ${m.name}`);
@@ -98,7 +93,7 @@ const dist = new Map<string, number>(tables.loyalty.tiers.map((t) => [t.name, 0]
 for (const m of s.mercenaries) if (m.loyalty && m.affiliation.kind === 'guild') dist.set(loyaltyTier(tables, m.loyalty.value).name, (dist.get(loyaltyTier(tables, m.loyalty.value).name) ?? 0) + 1);
 console.log(`구간 분포: ${[...dist].map(([k, v]) => `${k} ${v}`).join(', ')}`);
 console.log(`거부 ${refusals}회, 이탈 ${departures.length}회${departures.length ? ` (${departures.join(', ')})` : ''}`);
-console.log(`대기 하락 ${idleDecays}회, 무소속 이동 ${poaches.length}회${poaches.length ? ` (${poaches.join(', ')})` : ''}`);
+console.log(`대기 하락 ${idleDecays}회`);
 
 console.log('\n거점 시설');
 console.log(`레벨: ${tables.facilities.facilities.map((f) => `${f.name} Lv${s.facilities.levels[f.id] ?? 0}`).join(', ')}${s.facilities.construction ? ` (진행 중: ${tables.facilities.facilities.find((f) => f.id === s.facilities.construction!.facilityId)!.name})` : ''}`);

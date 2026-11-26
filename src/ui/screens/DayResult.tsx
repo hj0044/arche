@@ -40,7 +40,6 @@ export function DayResult({ ctx, events }: { ctx: Ctx; events: DayEvent[] }) {
     if (e.type === 'loyaltyTier') cards.push({ key: `l${e.mercId}`, color: 'var(--c-warn)', icon: 'heart', title: '충성도 변화', text: `${name(e.mercId)} ${loyaltyTierName(e.from)} → ${loyaltyTierName(e.to)}` });
     if (e.type === 'facilityBuilt') cards.push({ key: `f${e.facilityId}`, color: 'var(--c-info)', icon: 'plus', title: '완공', text: `${facName(e.facilityId)} Lv ${e.level}` });
     if (e.type === 'unassigned') cards.push({ key: `u${e.mercId}`, color: 'var(--c-warn)', icon: 'plus', title: '배치 해제', text: `${name(e.mercId)}(${e.reason})` });
-    if (e.type === 'poached') cards.push({ key: `q${e.mercId}`, color: 'var(--c-info)', icon: 'users', title: '세력 이동', text: `${e.wasDeparted ? '이탈했던 ' : ''}${name(e.mercId)}${josa(name(e.mercId), '이', '가')} ${factionName(e.toFactionId)}에 합류했습니다.` });
     if (e.type === 'upkeep' && e.unpaid > 0) cards.push({ key: 'unpaid', color: 'var(--c-bad)', icon: 'zero', title: '유지비 미납', text: `${num(e.unpaid)} 제로 (${e.unpaidMercIds.map(name).join(', ')})` });
   }
   const trained = events.flatMap((e) => (e.type === 'trained' ? [e] : []));
