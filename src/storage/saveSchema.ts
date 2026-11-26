@@ -98,7 +98,7 @@ const league: Schema = {
           id: 'string',
           name: 'string',
           kind: { oneOf: ['named', 'civil'] },
-          faction: 'string',
+          faction: { nullable: 'string' },
           homeCity: { nullable: 'string' },
           scaleTier: 'number',
           tier: 'string',

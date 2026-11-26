@@ -236,7 +236,7 @@ describe('거부와 이탈', () => {
     }
     expect(gone).toBeDefined();
     const m = getMerc(s, gone!);
-    expect(m.affiliation).toEqual({ kind: 'faction', factionId: L.departure.toFaction });
+    expect(m.affiliation).toEqual({ kind: 'unaffiliated' }); // 026c: 무소속은 세력이 아닌 상태
     expect(m.loyalty).toMatchObject({ value: L.start, dangerDays: 0, restStreak: 0 }); // 시작값으로 되돌려 보관
     expect(m.departedDay).toBe(s.day);
     expect(isAvailable(s, gone!)).toBe(false);

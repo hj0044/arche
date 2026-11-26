@@ -10,5 +10,5 @@
     "noDeadline": true,
     "appearedToday": true
   },
-  "territoryExcludeFactions": ["free"]
+  "territoryExcludeFactions": []
 }

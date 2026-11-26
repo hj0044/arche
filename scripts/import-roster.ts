@@ -15,6 +15,7 @@ const DRAFT = 'docs/design/roster-v2-draft.json';
 const fromDraft = process.argv.includes('--from-draft');
 const OUT = 'src/data/roster.json';
 const START_GUILD = '시작 길드';
+const UNAFFILIATED = '무소속';
 
 function lookup<T extends { id: string }>(rows: T[], value: string, keys: ((r: T) => string | string[])[], what: string): string {
   const row = rows.find((r) => keys.some((k) => ([] as string[]).concat(k(r)).includes(value)));
@@ -45,7 +46,8 @@ const rows = lines.map((line) => {
     role: lookup(roles, col(c, '역할'), [(r) => r.name, (r) => r.aliases ?? []], '역할'),
     element: lookup(elements, col(c, '속성'), [(r) => r.loreName, (r) => r.name], '속성'),
     hometown: lookup(cities, col(c, '고향'), [(r) => r.name], '고향'),
-    faction: affiliation === START_GUILD ? 'guild' : lookup(factions, affiliation, [(r) => r.name], '소속'),
+    // 무소속은 세력이 아니라 상태다(지시서 026c): null
+    faction: affiliation === START_GUILD ? 'guild' : affiliation === UNAFFILIATED ? null : lookup(factions, affiliation, [(r) => r.name], '소속'),
     startingCandidate: affiliation === START_GUILD,
     background: lookup(backgrounds, col(c, '배경'), [(r) => r.aliases, (r) => r.shortName, (r) => r.name], '배경'),
     growth: {

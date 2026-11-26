@@ -47,12 +47,12 @@ describe('017b: 카드용 짧은 이름', () => {
 });
 
 describe('지시서 026: 세력 정리', () => {
-  it('모든 계약자의 소속은 길드이거나 factions.json에 있다', () => {
+  it('모든 계약자의 소속은 길드, 세력 id, 또는 null(무소속)이다', () => {
     const ids = new Set(tables.factions.map((f) => f.id));
-    expect(tables.roster.filter((r) => r.faction !== 'guild' && !ids.has(r.faction)).map((r) => r.id)).toEqual([]);
+    expect(tables.roster.filter((r) => r.faction !== 'guild' && r.faction !== null && !ids.has(r.faction)).map((r) => r.id)).toEqual([]);
   });
-  it('독립 강자 모임과 불워크 시스템즈가 있고 세력 행에 영입 비용 배율이 없다', () => {
-    expect(tables.factions.find((f) => f.id === 'indie')).toMatchObject({ name: '독립 강자 모임', type: 'elite' });
+  it('에지 서클(id indie)과 불워크 시스템즈가 있고 세력 행에 영입 비용 배율이 없다', () => {
+    expect(tables.factions.find((f) => f.id === 'indie')).toMatchObject({ name: '에지 서클', type: 'elite', typeName: '독립 강자 모임' });
     expect(tables.factions.find((f) => f.id === 'bulwark')).toMatchObject({ name: '불워크 시스템즈', type: 'megacorp' });
     expect(tables.roster.filter((r) => r.faction === 'indie')).toHaveLength(6);
     for (const f of tables.factions) expect(f).not.toHaveProperty('recruitCostMultiplier');
@@ -100,5 +100,38 @@ describe('지시서 027: 활약도 데이터', () => {
   it('쓰러짐은 영구 사망이 아니다: 데이터 문구에 죽음·전사·사망이 없다', () => {
     const text = JSON.stringify(tables.contribution) + JSON.stringify(tables.terms);
     for (const w of ['죽음', '전사', '사망']) expect(text).not.toContain(w);
+  });
+});
+
+describe('지시서 026c: 세력 10개, 무소속은 상태', () => {
+  const IDS = ['rrb', 'archon', 'bulwark', 'indie', 'lantern', 'prism', 'rose', 'beacon', 'anchor', 'gray'];
+  it('세력은 정확히 10개이고 id가 정해진 순서와 같다. 도시 영향력 합은 1.0', () => {
+    expect(tables.factions.map((f) => f.id)).toEqual(IDS);
+    for (const f of tables.factions) expect(Object.values(f.cityInfluence).reduce((a, x) => a + x, 0), f.id).toBeCloseTo(1, 9);
+  });
+  it('로스터와 NPC 팀 소속은 세력 id 10개 중 하나이거나 null(무소속). 로스터 무소속 7명, 옛 웨이포인트 6명은 새 세력에 한 명씩', () => {
+    const ok = (f: string | null) => f === null || IDS.includes(f);
+    expect(tables.roster.filter((r) => r.faction !== 'guild' && !ok(r.faction)).map((r) => r.id)).toEqual([]);
+    expect(tables.league.teams.filter((x) => !ok(x.faction)).map((x) => x.id)).toEqual([]);
+    expect(tables.roster.filter((r) => r.faction === null)).toHaveLength(7);
+    for (const id of ['lantern', 'prism', 'rose', 'beacon', 'anchor', 'gray']) expect(tables.roster.filter((r) => r.faction === id), id).toHaveLength(1);
+  });
+  it('삭제한 세력 id(free·waypoint·옛 소수 용병단)가 코드·데이터·화면 문구에 값으로 남지 않는다', async () => {
+    const { readdirSync, readFileSync, statSync } = await import('node:fs');
+    const { join } = await import('node:path');
+    const banned = new RegExp(`["'](${['fr' + 'ee', 'way' + 'point', 'dokk' + 'aebi'].join('|')})["']`);
+    const hits: string[] = [];
+    const walk = (dir: string) => {
+      for (const name of readdirSync(dir)) {
+        const p = join(dir, name);
+        if (statSync(p).isDirectory()) walk(p);
+        else if (/\.(ts|tsx|json|html)$/.test(name) && !p.includes('fixtures')) {
+          const m = readFileSync(p, 'utf8').match(banned);
+          if (m) hits.push(`${p}: ${m[0]}`);
+        }
+      }
+    };
+    for (const d of ['src', 'scripts', 'docs/design/ui']) walk(d);
+    expect(hits).toEqual([]);
   });
 });

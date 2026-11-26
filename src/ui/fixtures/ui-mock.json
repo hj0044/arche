@@ -1,6 +1,6 @@
 {
  "format": "arche-save",
- "version": 14,
+ "version": 15,
  "savedAt": "2026-11-23T00:00:00.000Z",
  "kind": "manual",
  "summary": {
@@ -958,7 +958,7 @@
     },
     "affiliation": {
      "kind": "faction",
-     "factionId": "waypoint"
+     "factionId": "lantern"
     },
     "loyalty": {
      "value": 60,
@@ -990,7 +990,7 @@
     },
     "affiliation": {
      "kind": "faction",
-     "factionId": "waypoint"
+     "factionId": "beacon"
     },
     "loyalty": {
      "value": 60,
@@ -1022,7 +1022,7 @@
     },
     "affiliation": {
      "kind": "faction",
-     "factionId": "waypoint"
+     "factionId": "rose"
     },
     "loyalty": {
      "value": 60,
@@ -1054,7 +1054,7 @@
     },
     "affiliation": {
      "kind": "faction",
-     "factionId": "waypoint"
+     "factionId": "prism"
     },
     "loyalty": {
      "value": 60,
@@ -1085,8 +1085,7 @@
      "race": "human"
     },
     "affiliation": {
-     "kind": "faction",
-     "factionId": "free"
+     "kind": "unaffiliated"
     },
     "loyalty": {
      "value": 60,
@@ -1117,8 +1116,7 @@
      "race": "human"
     },
     "affiliation": {
-     "kind": "faction",
-     "factionId": "free"
+     "kind": "unaffiliated"
     },
     "loyalty": {
      "value": 60,
@@ -1149,8 +1147,7 @@
      "race": "human"
     },
     "affiliation": {
-     "kind": "faction",
-     "factionId": "free"
+     "kind": "unaffiliated"
     },
     "loyalty": {
      "value": 60,
@@ -1181,8 +1178,7 @@
      "race": "human"
     },
     "affiliation": {
-     "kind": "faction",
-     "factionId": "free"
+     "kind": "unaffiliated"
     },
     "loyalty": {
      "value": 60,
@@ -1213,8 +1209,7 @@
      "race": "human"
     },
     "affiliation": {
-     "kind": "faction",
-     "factionId": "free"
+     "kind": "unaffiliated"
     },
     "loyalty": {
      "value": 60,
@@ -1245,8 +1240,7 @@
      "race": "human"
     },
     "affiliation": {
-     "kind": "faction",
-     "factionId": "free"
+     "kind": "unaffiliated"
     },
     "loyalty": {
      "value": 60,
@@ -1278,7 +1272,7 @@
     },
     "affiliation": {
      "kind": "faction",
-     "factionId": "waypoint"
+     "factionId": "gray"
     },
     "loyalty": {
      "value": 60,
@@ -1405,8 +1399,7 @@
      "race": "human"
     },
     "affiliation": {
-     "kind": "faction",
-     "factionId": "free"
+     "kind": "unaffiliated"
     },
     "loyalty": {
      "value": 60,
@@ -1452,7 +1445,7 @@
      "countOffset": 1,
      "rewardU": 0.265
     },
-    "territoryFactionId": "archon",
+    "territoryFactionId": "indie",
     "variant": "small"
    },
    {
@@ -1488,7 +1481,7 @@
      "countOffset": 1,
      "rewardU": 0.265
     },
-    "territoryFactionId": "archon",
+    "territoryFactionId": "indie",
     "variant": "upper",
     "omen": {
      "textId": "drain_echo"
@@ -1527,7 +1520,7 @@
      "countOffset": 1,
      "rewardU": 0.265
     },
-    "territoryFactionId": "archon",
+    "territoryFactionId": "indie",
     "variant": "upper"
    },
    {
@@ -1563,7 +1556,7 @@
      "countOffset": 1,
      "rewardU": 0.265
     },
-    "territoryFactionId": "archon",
+    "territoryFactionId": "indie",
     "variant": "upper"
    },
    {
@@ -1599,7 +1592,7 @@
      "countOffset": 1,
      "rewardU": 0.265
     },
-    "territoryFactionId": "archon",
+    "territoryFactionId": "indie",
     "variant": "upper"
    },
    {
@@ -1635,7 +1628,7 @@
      "countOffset": 1,
      "rewardU": 0.968
     },
-    "territoryFactionId": "archon",
+    "territoryFactionId": "bulwark",
     "variant": "small"
    },
    {
@@ -1671,7 +1664,7 @@
      "countOffset": 0,
      "rewardU": 0.318
     },
-    "territoryFactionId": "bulwark",
+    "territoryFactionId": "beacon",
     "variant": "base"
    },
    {
@@ -1715,7 +1708,7 @@
      "countOffset": 1,
      "rewardU": 0.379
     },
-    "territoryFactionId": "bulwark",
+    "territoryFactionId": "prism",
     "variant": "lower"
    },
    {
@@ -1757,7 +1750,7 @@
      "countOffset": 1,
      "rewardU": 0.026
     },
-    "territoryFactionId": "waypoint",
+    "territoryFactionId": "gray",
     "variant": "base"
    },
    {
@@ -1810,7 +1803,7 @@
      "countOffset": 0,
      "rewardU": 0.629
     },
-    "territoryFactionId": "waypoint"
+    "territoryFactionId": "gray"
    }
   ],
   "expeditions": [
@@ -1855,7 +1848,7 @@
       "countOffset": 1,
       "rewardU": 0.674
      },
-     "territoryFactionId": "waypoint",
+     "territoryFactionId": "gray",
      "variant": "upper"
     },
     "party": [
@@ -1923,7 +1916,7 @@
       "countOffset": 0,
       "rewardU": 0.594
      },
-     "territoryFactionId": "indie",
+     "territoryFactionId": "prism",
      "variant": "lower"
     },
     "party": [
@@ -1983,7 +1976,7 @@
       "countOffset": 1,
       "rewardU": 0.674
      },
-     "territoryFactionId": "waypoint",
+     "territoryFactionId": "gray",
      "variant": "upper"
     },
     "party": [
@@ -2809,7 +2802,7 @@
      "id": "joint-special",
      "name": "연합군 특수 중대",
      "kind": "named",
-     "faction": "free",
+     "faction": "rrb",
      "homeCity": null,
      "scaleTier": 2,
      "tier": "gangjin",
@@ -2820,7 +2813,7 @@
      "id": "healing-battalion",
      "name": "치유 대대",
      "kind": "named",
-     "faction": "free",
+     "faction": "prism",
      "homeCity": null,
      "scaleTier": 4,
      "tier": "gangjin",
@@ -2842,7 +2835,7 @@
      "id": "waypoint-main",
      "name": "웨이포인트 본대",
      "kind": "named",
-     "faction": "waypoint",
+     "faction": null,
      "homeCity": null,
      "scaleTier": 5,
      "tier": "gangjin",
@@ -2864,7 +2857,7 @@
      "id": "observation-unit",
      "name": "관측 부대",
      "kind": "named",
-     "faction": "free",
+     "faction": "beacon",
      "homeCity": null,
      "scaleTier": 3,
      "tier": "jungjin",
@@ -2875,7 +2868,7 @@
      "id": "roofline",
      "name": "지붕길",
      "kind": "civil",
-     "faction": "waypoint",
+     "faction": "beacon",
      "homeCity": "seoul",
      "scaleTier": 1,
      "tier": "yakjin",
@@ -2886,7 +2879,7 @@
      "id": "night-transfer",
      "name": "심야환승",
      "kind": "civil",
-     "faction": "free",
+     "faction": "lantern",
      "homeCity": "seoul",
      "scaleTier": 3,
      "tier": "jungjin",
@@ -2897,7 +2890,7 @@
      "id": "tool-rack",
      "name": "공구걸이",
      "kind": "civil",
-     "faction": "free",
+     "faction": null,
      "homeCity": "seoul",
      "scaleTier": 4,
      "tier": "mijin",
@@ -2908,7 +2901,7 @@
      "id": "evening-gate",
      "name": "유나기",
      "kind": "civil",
-     "faction": "free",
+     "faction": "beacon",
      "homeCity": "tokyo",
      "scaleTier": 1,
      "tier": "mijin",
@@ -2919,7 +2912,7 @@
      "id": "fittings",
      "name": "가나구",
      "kind": "civil",
-     "faction": "waypoint",
+     "faction": null,
      "homeCity": "tokyo",
      "scaleTier": 2,
      "tier": "yakjin",
@@ -2930,7 +2923,7 @@
      "id": "underpass-lamp",
      "name": "굴다리불",
      "kind": "civil",
-     "faction": "free",
+     "faction": null,
      "homeCity": "tokyo",
      "scaleTier": 3,
      "tier": "yakjin",
@@ -2941,7 +2934,7 @@
      "id": "sidewalk-ledger",
      "name": "보도장부",
      "kind": "civil",
-     "faction": "waypoint",
+     "faction": null,
      "homeCity": "newyork",
      "scaleTier": 2,
      "tier": "mijin",
@@ -2952,7 +2945,7 @@
      "id": "ferry-shift",
      "name": "페리 교대조",
      "kind": "civil",
-     "faction": "free",
+     "faction": "anchor",
      "homeCity": "newyork",
      "scaleTier": 3,
      "tier": "jungjin",
@@ -2963,7 +2956,7 @@
      "id": "common-depot",
      "name": "공동차고",
      "kind": "civil",
-     "faction": "waypoint",
+     "faction": null,
      "homeCity": "newyork",
      "scaleTier": 5,
      "tier": "mijin",
@@ -2974,7 +2967,7 @@
      "id": "lamplighters",
      "name": "등잔지기",
      "kind": "civil",
-     "faction": "free",
+     "faction": "lantern",
      "homeCity": "london",
      "scaleTier": 2,
      "tier": "yakjin",
@@ -2985,7 +2978,7 @@
      "id": "slate-yard",
      "name": "슬레이트 뜰",
      "kind": "civil",
-     "faction": "waypoint",
+     "faction": null,
      "homeCity": "london",
      "scaleTier": 3,
      "tier": "yakjin",
@@ -2996,7 +2989,7 @@
      "id": "bridge-lock",
      "name": "수문열쇠",
      "kind": "civil",
-     "faction": "free",
+     "faction": "rose",
      "homeCity": "london",
      "scaleTier": 4,
      "tier": "mijin",
@@ -3007,7 +3000,7 @@
      "id": "street-bell",
      "name": "골목종",
      "kind": "civil",
-     "faction": "free",
+     "faction": "lantern",
      "homeCity": "lagos",
      "scaleTier": 1,
      "tier": "mijin",
@@ -3018,7 +3011,7 @@
      "id": "rain-trace",
      "name": "빗길표식",
      "kind": "civil",
-     "faction": "free",
+     "faction": "lantern",
      "homeCity": "lagos",
      "scaleTier": 2,
      "tier": "yakjin",
@@ -3029,7 +3022,7 @@
      "id": "motor-yard",
      "name": "모터마당",
      "kind": "civil",
-     "faction": "waypoint",
+     "faction": null,
      "homeCity": "lagos",
      "scaleTier": 3,
      "tier": "yakjin",
@@ -3040,7 +3033,7 @@
      "id": "rua-aberta",
      "name": "루아 아베르타",
      "kind": "civil",
-     "faction": "free",
+     "faction": "lantern",
      "homeCity": "saopaulo",
      "scaleTier": 2,
      "tier": "yakjin",
@@ -3051,7 +3044,7 @@
      "id": "turning-crane",
      "name": "회전기중기",
      "kind": "civil",
-     "faction": "free",
+     "faction": "anchor",
      "homeCity": "saopaulo",
      "scaleTier": 3,
      "tier": "jungjin",
@@ -3062,7 +3055,7 @@
      "id": "courtyard-clinic",
      "name": "안마당 의무조",
      "kind": "civil",
-     "faction": "waypoint",
+     "faction": "prism",
      "homeCity": "saopaulo",
      "scaleTier": 4,
      "tier": "mijin",
@@ -3073,7 +3066,7 @@
      "id": "station-shelf",
      "name": "역전선반",
      "kind": "civil",
-     "faction": "free",
+     "faction": "gray",
      "homeCity": "mumbai",
      "scaleTier": 1,
      "tier": "yakjin",
@@ -3084,7 +3077,7 @@
      "id": "shade-passage",
      "name": "그늘회랑",
      "kind": "civil",
-     "faction": "free",
+     "faction": "prism",
      "homeCity": "mumbai",
      "scaleTier": 3,
      "tier": "jungjin",
@@ -3095,7 +3088,7 @@
      "id": "cooling-house",
      "name": "냉각실",
      "kind": "civil",
-     "faction": "free",
+     "faction": "gray",
      "homeCity": "dubai",
      "scaleTier": 2,
      "tier": "mijin",
@@ -3106,7 +3099,7 @@
      "id": "ramp-watch",
      "name": "경사로 순번",
      "kind": "civil",
-     "faction": "free",
+     "faction": "rose",
      "homeCity": "dubai",
      "scaleTier": 4,
      "tier": "jungjin",
@@ -3117,7 +3110,7 @@
      "id": "breakwater-shift",
      "name": "방파제 순찰",
      "kind": "civil",
-     "faction": "waypoint",
+     "faction": "anchor",
      "homeCity": "sydney",
      "scaleTier": 3,
      "tier": "jungjin",
@@ -3128,7 +3121,7 @@
      "id": "saltbox",
      "name": "소금상자",
      "kind": "civil",
-     "faction": "free",
+     "faction": "gray",
      "homeCity": "sydney",
      "scaleTier": 3,
      "tier": "yakjin",
@@ -3139,7 +3132,7 @@
      "id": "folding-base",
      "name": "접이식 본부",
      "kind": "civil",
-     "faction": "free",
+     "faction": null,
      "homeCity": null,
      "scaleTier": 3,
      "tier": "mijin",

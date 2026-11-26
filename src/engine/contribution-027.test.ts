@@ -300,7 +300,7 @@ describe('027 게임 진행과 기록', () => {
     }
     expect(departed).toBe(true);
     const m = cur.mercenaries.find((x) => x.id === id)!;
-    expect(m.affiliation.kind).toBe('faction');
+    expect(m.affiliation.kind).toBe('unaffiliated');
     expect(m.activity).toEqual(before);
   });
 });

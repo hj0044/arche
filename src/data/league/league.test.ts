@@ -7,7 +7,8 @@ import roster from '../roster.json';
 import featured from './featured.json';
 import teams from './teams.json';
 
-const factions = ['rrb', 'archon', 'bulwark', 'waypoint', 'indie', 'free'];
+// 지시서 026c: 세력 10개, 무소속은 세력이 아니라 null(상태)
+const factions = ['rrb', 'archon', 'bulwark', 'indie', 'lantern', 'prism', 'rose', 'beacon', 'anchor', 'gray', null];
 const cities = [
   'seoul', 'tokyo', 'newyork', 'london', 'lagos', 'saopaulo', 'mumbai', 'dubai', 'sydney',
 ];
@@ -51,8 +52,8 @@ describe('리그 용병단', () => {
   });
 
   it('민간 용병단의 소속과 도시 분포가 맞다', () => {
-    expect(civilTeams.filter(({ faction }) => faction === 'waypoint')).toHaveLength(8);
-    expect(civilTeams.filter(({ faction }) => faction === 'free')).toHaveLength(17);
+    const count = (f: string | null) => civilTeams.filter(({ faction }) => faction === f).length;
+    expect([count('lantern'), count('anchor'), count('gray'), count('rose'), count('beacon'), count('prism'), count(null)]).toEqual([5, 3, 3, 2, 2, 2, 8]);
     for (const city of cities) {
       const count = civilTeams.filter(({ homeCity }) => homeCity === city).length;
       expect(count, city).toBeOneOf([2, 3]);
