@@ -2,6 +2,7 @@ import { getRiftTier, travelDays, type GameTables, type Outcome, type Row, type 
 import { activeTraits, newlyUnlockedTraits, roleBaseStats, statsAtLevel, type GrowthRates } from './stats';
 import { emptyTally, resolveCombat, validateParty, type CombatEvent, type CombatSlot } from './combat';
 import { recordSortie, type ActivityRecord } from './contribution';
+import { advanceLeagueDay, initLeague, type LeagueState } from './league/league';
 import { rollInjuries, type Injury } from './injury';
 import { rollPreemption } from './preemption';
 import { expShare, generateRift, riftEnemySlots, riftModifiers, riftReward, type Rift, type RiftReward } from './rift';
@@ -130,6 +131,8 @@ export interface GameState {
   facilities: FacilitiesState;
   /** 세이브에 저장하는 게임 설정(지시서 022). autoOuter: 쉬는 계약자 외곽 임무 자동 배치 */
   settings: { autoOuter: boolean };
+  /** 리그 세계(지시서 028a): NPC 용병단·명단·시즌 곡선. 우리 용병단 점수 연결은 028b */
+  league: LeagueState;
 }
 
 export type DayEvent =
@@ -367,6 +370,8 @@ export function newGame(tables: GameTables, opts: NewGameOptions): GameState {
     records: { victories: 0, victoriesByTier: {} },
     facilities: initialFacilities(tables),
     settings: { autoOuter: tables.outerMissions.autoOuterDefault },
+    // NPC 이름은 우리 계약자 이름과 겹치지 않게 만든다
+    league: initLeague(tables, opts.seed, tables.roster.map((r) => r.name)),
   };
   for (const city of tables.cities) {
     for (let i = 0; i < city.riftSpawn.initialCount; i++) {
@@ -699,6 +704,8 @@ export function advanceDay(tables: GameTables, prev: GameState): { state: GameSt
 
 
   state.day += 1;
+  // 리그(지시서 028a): 끝난 날 기준 간이 정산·시즌 정산. 게임 진행에는 아직 영향이 없다(028b에서 연결)
+  advanceLeagueDay(tables, state.league, state.day - 1);
 
   // 건설·강화 완료(완료일이 된 날 시작에 레벨이 오른다)
   const job = state.facilities.construction;
