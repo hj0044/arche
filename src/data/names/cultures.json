@@ -5,5 +5,13 @@
   {"id": "vietnam", "name": "베트남", "continent": "southeast_asia", "population": 100, "order": "family_first", "surnameCount": [1, 1]},
   {"id": "thailand", "name": "태국", "continent": "southeast_asia", "population": 70, "order": "given_first", "surnameCount": [1, 1]},
   {"id": "indonesia_malaysia", "name": "인도네시아·말레이시아", "continent": "southeast_asia", "population": 300, "order": "given_first", "surnameCount": [1, 1], "note": "가문명과 성을 쓰는 경우의 재료를 담았다."},
-  {"id": "philippines", "name": "필리핀", "continent": "southeast_asia", "population": 115, "order": "given_first", "surnameCount": [1, 1]}
+  {"id": "philippines", "name": "필리핀", "continent": "southeast_asia", "population": 115, "order": "given_first", "surnameCount": [1, 1]},
+  {"id": "india_north", "name": "인도 북부", "continent": "south_asia", "population": 700, "order": "given_first", "surnameCount": [1, 1]},
+  {"id": "india_south", "name": "인도 남부", "continent": "south_asia", "population": 270, "order": "given_first", "surnameCount": [1, 1], "note": "세습 성과 가문명을 쓰는 경우의 재료를 담았다."},
+  {"id": "pakistan_bangladesh", "name": "파키스탄·방글라데시", "continent": "south_asia", "population": 400, "order": "given_first", "surnameCount": [1, 1]},
+  {"id": "central_asia", "name": "몽골·중앙아시아", "continent": "central_asia", "population": 90, "order": "given_first", "surnameCount": [1, 1], "note": "몽골의 가문명과 중앙아시아의 성을 함께 담았다."},
+  {"id": "arab_gulf_levant", "name": "아랍 걸프·레반트", "continent": "west_asia_north_africa", "population": 150, "order": "given_first", "surnameCount": [1, 1]},
+  {"id": "egypt_maghreb", "name": "이집트·마그레브", "continent": "west_asia_north_africa", "population": 200, "order": "given_first", "surnameCount": [1, 1]},
+  {"id": "turkey", "name": "튀르키예", "continent": "west_asia_north_africa", "population": 85, "order": "given_first", "surnameCount": [1, 1]},
+  {"id": "iran", "name": "이란", "continent": "west_asia_north_africa", "population": 90, "order": "given_first", "surnameCount": [1, 1]}
 ]
