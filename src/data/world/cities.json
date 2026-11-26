@@ -1,0 +1,258 @@
+[
+  {
+    "id": "seoul",
+    "name": "서울",
+    "summary": "균열이 잦아 입문하기 좋은 도시.",
+    "lore": "심야에도 환승로 가까이에서 등록소가 업무를 본다. 교대조는 방어선이 바뀔 때마다 역 입구의 안내도를 고쳐 붙인다.",
+    "openerRate": 1.0,
+    "riftSpawn": {
+      "maxActive": 8,
+      "dailySpawnChance": 0.7,
+      "dailySpawnRolls": 2,
+      "initialCount": 3,
+      "initialGuaranteed": [
+        {
+          "tier": "crack",
+          "grade": "low"
+        },
+        {
+          "tier": "crack",
+          "grade": "low"
+        }
+      ],
+      "tierWeights": {
+        "crack": 7,
+        "gate": 3,
+        "route": 0.5
+      },
+      "levelSkew": 2.5
+    },
+    "recruitment": {
+      "otherHometownCostMultiplier": 1.5
+    }
+  },
+  {
+    "id": "tokyo",
+    "name": "도쿄",
+    "summary": "관문 비중이 높고 항로는 열리지 않는 도시.",
+    "lore": "등록소와 방어선 사이에 장비 점검대가 놓여 있다. 관문 파견대는 귀환하는 조와 시간을 나누어 점검대를 쓴다.",
+    "openerRate": 0.8,
+    "riftSpawn": {
+      "maxActive": 6,
+      "dailySpawnChance": 0.42,
+      "dailySpawnRolls": 2,
+      "initialCount": 3,
+      "initialGuaranteed": [
+        {
+          "tier": "crack",
+          "grade": "low"
+        }
+      ],
+      "tierWeights": {
+        "crack": 4,
+        "gate": 6,
+        "route": 0
+      },
+      "levelSkew": 1.8
+    },
+    "recruitment": {
+      "otherHometownCostMultiplier": 1.5
+    }
+  },
+  {
+    "id": "newyork",
+    "name": "뉴욕",
+    "summary": "영입 기회가 많고 항로가 가끔 열리는 도시.",
+    "lore": "교통이 붐비는 길목마다 파견 계약을 중개하는 창구가 열린다. 다른 도시에서 온 계약자는 이곳에서 통역을 구하거나 새 팀에 합류한다.",
+    "openerRate": 1.2,
+    "riftSpawn": {
+      "maxActive": 7,
+      "dailySpawnChance": 0.42,
+      "dailySpawnRolls": 2,
+      "initialCount": 3,
+      "initialGuaranteed": [
+        {
+          "tier": "crack",
+          "grade": "low"
+        }
+      ],
+      "tierWeights": {
+        "crack": 5,
+        "gate": 4,
+        "route": 1.5
+      },
+      "levelSkew": 1.8
+    },
+    "recruitment": {
+      "otherHometownCostMultiplier": 1.0
+    }
+  },
+  {
+    "id": "london",
+    "name": "런던",
+    "summary": "오랜 기사 가문의 회관과 방어선이 나란히 선 도시.",
+    "lore": "오래된 기사 가문의 회관이 방어선 가까이에 남아 있다. 가문에서 맡아 오던 현장 인계 절차를 이제 민간 용병단도 함께 쓴다.",
+    "openerRate": 0.95,
+    "riftSpawn": {
+      "maxActive": 6,
+      "dailySpawnChance": 0.46,
+      "dailySpawnRolls": 2,
+      "initialCount": 3,
+      "initialGuaranteed": [
+        {
+          "tier": "crack",
+          "grade": "low"
+        }
+      ],
+      "tierWeights": {
+        "crack": 5,
+        "gate": 4,
+        "route": 1
+      },
+      "levelSkew": 1.9
+    },
+    "recruitment": {
+      "otherHometownCostMultiplier": 1.35
+    }
+  },
+  {
+    "id": "lagos",
+    "name": "라고스",
+    "summary": "균열 경보가 잦고 새 개방자가 많이 등록하는 도시.",
+    "lore": "등록소 인근 훈련장에는 최근 개방한 주민들의 발길이 이어진다. 여러 동네에서 꾸린 교대조가 시장과 골목의 균열 경보를 나누어 살핀다.",
+    "openerRate": 2.0,
+    "riftSpawn": {
+      "maxActive": 9,
+      "dailySpawnChance": 0.75,
+      "dailySpawnRolls": 3,
+      "initialCount": 3,
+      "initialGuaranteed": [
+        {
+          "tier": "crack",
+          "grade": "low"
+        }
+      ],
+      "tierWeights": {
+        "crack": 8,
+        "gate": 3,
+        "route": 0.5
+      },
+      "levelSkew": 2.35
+    },
+    "recruitment": {
+      "otherHometownCostMultiplier": 1.2
+    }
+  },
+  {
+    "id": "saopaulo",
+    "name": "상파울루",
+    "summary": "자경단과 용병단이 순찰을 나누는 대도시.",
+    "lore": "구역마다 주민 자경단과 용병단이 순찰 구간을 나눈다. 하루에 여러 균열이 열리는 날에는 공동 연락소에 파견대의 귀환 소식과 보급 요청이 모인다.",
+    "openerRate": 1.45,
+    "riftSpawn": {
+      "maxActive": 9,
+      "dailySpawnChance": 0.68,
+      "dailySpawnRolls": 3,
+      "initialCount": 3,
+      "initialGuaranteed": [
+        {
+          "tier": "crack",
+          "grade": "low"
+        }
+      ],
+      "tierWeights": {
+        "crack": 7,
+        "gate": 4,
+        "route": 1
+      },
+      "levelSkew": 2.15
+    },
+    "recruitment": {
+      "otherHometownCostMultiplier": 1.25
+    }
+  },
+  {
+    "id": "mumbai",
+    "name": "뭄바이",
+    "summary": "균열 경보와 파견 제안이 자주 들어오는 도시.",
+    "lore": "영화 촬영소와 상가가 모인 거리에도 계약 중개 창구가 들어섰다. 등록소 주변에는 파견 제안을 비교하는 계약자와 현장 장비를 빌리러 온 사람들이 모인다.",
+    "openerRate": 1.75,
+    "riftSpawn": {
+      "maxActive": 9,
+      "dailySpawnChance": 0.7,
+      "dailySpawnRolls": 3,
+      "initialCount": 3,
+      "initialGuaranteed": [
+        {
+          "tier": "crack",
+          "grade": "low"
+        }
+      ],
+      "tierWeights": {
+        "crack": 6,
+        "gate": 5,
+        "route": 1
+      },
+      "levelSkew": 2.1
+    },
+    "recruitment": {
+      "otherHometownCostMultiplier": 1.0
+    }
+  },
+  {
+    "id": "dubai",
+    "name": "두바이",
+    "summary": "관문 감시 시설과 아르케 정제 시설을 갖춘 계획 도시.",
+    "lore": "계획 지구의 바깥에 관문을 감시하는 방어 시설이 줄지어 있다. 아르케 정제 시설과 보급 창고 사이에는 교대 차량이 오간다.",
+    "openerRate": 1.05,
+    "riftSpawn": {
+      "maxActive": 6,
+      "dailySpawnChance": 0.48,
+      "dailySpawnRolls": 2,
+      "initialCount": 3,
+      "initialGuaranteed": [
+        {
+          "tier": "crack",
+          "grade": "low"
+        }
+      ],
+      "tierWeights": {
+        "crack": 3,
+        "gate": 7,
+        "route": 0.35
+      },
+      "levelSkew": 1.85
+    },
+    "recruitment": {
+      "otherHometownCostMultiplier": 1.15
+    }
+  },
+  {
+    "id": "sydney",
+    "name": "시드니",
+    "summary": "먼 방어 거점의 보급을 맡고 항로가 자주 열리는 항구 도시.",
+    "lore": "도심에서 떨어진 방어 거점들이 항만을 중심으로 보급을 받는다. 항로 안정화 작업이 이어지는 부두에서는 파견대와 조합이 장비를 함께 점검한다.",
+    "openerRate": 0.8,
+    "riftSpawn": {
+      "maxActive": 5,
+      "dailySpawnChance": 0.38,
+      "dailySpawnRolls": 2,
+      "initialCount": 3,
+      "initialGuaranteed": [
+        {
+          "tier": "crack",
+          "grade": "low"
+        }
+      ],
+      "tierWeights": {
+        "crack": 4,
+        "gate": 4,
+        "route": 2
+      },
+      "levelSkew": 1.7
+    },
+    "recruitment": {
+      "otherHometownCostMultiplier": 1.35
+    }
+  }
+]
