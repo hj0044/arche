@@ -1,0 +1,12 @@
+{
+  "rrb": {"seoul": 0.29, "tokyo": 0.15, "newyork": 0.14, "london": 0.12, "lagos": 0.05, "saopaulo": 0.06, "mumbai": 0.06, "dubai": 0.07, "sydney": 0.06},
+  "archon": {"seoul": 0.08, "tokyo": 0.18, "newyork": 0.17, "london": 0.15, "lagos": 0.04, "saopaulo": 0.05, "mumbai": 0.08, "dubai": 0.21, "sydney": 0.04},
+  "bulwark": {"seoul": 0.07, "tokyo": 0.18, "newyork": 0.2, "london": 0.16, "lagos": 0.04, "saopaulo": 0.05, "mumbai": 0.06, "dubai": 0.19, "sydney": 0.05},
+  "indie": {"seoul": 0.13, "tokyo": 0.11, "newyork": 0.12, "london": 0.12, "lagos": 0.11, "saopaulo": 0.11, "mumbai": 0.1, "dubai": 0.1, "sydney": 0.1},
+  "lantern": {"seoul": 0.06, "tokyo": 0.04, "newyork": 0.06, "london": 0.05, "lagos": 0.28, "saopaulo": 0.32, "mumbai": 0.08, "dubai": 0.04, "sydney": 0.07},
+  "prism": {"seoul": 0.23, "tokyo": 0.2, "newyork": 0.1, "london": 0.18, "lagos": 0.05, "saopaulo": 0.05, "mumbai": 0.08, "dubai": 0.06, "sydney": 0.05},
+  "rose": {"seoul": 0.05, "tokyo": 0.04, "newyork": 0.11, "london": 0.49, "lagos": 0.04, "saopaulo": 0.04, "mumbai": 0.07, "dubai": 0.09, "sydney": 0.07},
+  "beacon": {"seoul": 0.17, "tokyo": 0.09, "newyork": 0.22, "london": 0.09, "lagos": 0.05, "saopaulo": 0.07, "mumbai": 0.2, "dubai": 0.06, "sydney": 0.05},
+  "anchor": {"seoul": 0.06, "tokyo": 0.09, "newyork": 0.1, "london": 0.11, "lagos": 0.05, "saopaulo": 0.08, "mumbai": 0.05, "dubai": 0.06, "sydney": 0.4},
+  "gray": {"seoul": 0.06, "tokyo": 0.05, "newyork": 0.09, "london": 0.06, "lagos": 0.27, "saopaulo": 0.08, "mumbai": 0.07, "dubai": 0.26, "sydney": 0.06}
+}
