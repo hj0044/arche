@@ -1,5 +1,5 @@
 {
-  "_note": "활약도(지시서 027, 임시값). 활약도 = 100 × Σ(가중치[역할][항목] × 내 값 ÷ 기준값[역할][항목]) ÷ Σ 가중치[역할]. 누적(시즌·통산)은 항목 합계 ÷ 출전 수를 기준값(공략 1회 평균)과 비교한다. 가중치나 기준값이 0인 항목은 그 역할에서 빼고 화면에 '이 역할은 해당 없음'으로 흐리게 표시한다. 처치 가중치는 피해보다 낮게 둔다(마무리만 노리는 쪽이 유리하지 않게). 기준값은 `npm run contribution-baseline -- [표본 수] --write`가 같은 시드 표본으로 다시 채운다. 시즌 길이는 리그 규칙(league/rules.json season.length, 지시서 028a에서 60일로 일원화)을 읽는다. recentLimit: 최근 공략 기록 수, pastSeasonsLimit: 계약자별로 남기는 지난 시즌 수.",
+  "_note": "활약도(지시서 027·027b, 임시값). 기준값은 역할 × 레벨 구간 × 항목(공략 1회 평균)이고 가중치는 역할 × 항목(레벨과 무관). 공략 한 번의 활약도 = 100 × Σ(가중치 × 값 ÷ 그 공략 레벨 구간의 기준값) ÷ Σ가중치 → 같은 역할·같은 레벨대 평균이 100. 누적(시즌·통산)은 항목별 비율 합계 ÷ 그 항목이 들어간 공략 수로 다시 계산한다. 가중치나 그 구간 기준값이 0인 항목은 빠지고 화면에 '이 역할은 해당 없음'. 처치 가중치는 피해보다 낮다. 레벨 구간(levelBands)은 행 추가로 늘린다. 기준값은 `npm run contribution-baseline -- [구간당 전투 수] --write`가 같은 시드 표본으로 다시 채운다. 시즌 길이는 리그 규칙(league/rules.json season.length)을 읽는다. recentLimit: 최근 공략 기록 수, pastSeasonsLimit: 계약자별로 남기는 지난 시즌 수.",
   "recentLimit": 10,
   "pastSeasonsLimit": 5,
   "items": [
@@ -118,96 +118,632 @@
       "debuff": 1
     }
   },
-  "baselines": {
-    "shield": {
-      "damage": 31.678,
-      "kill": 0.179,
-      "guard": 58.982,
-      "heal": 0,
-      "status": 0.367,
-      "cleanse": 0,
-      "buff": 2.039,
-      "debuff": 0.263
+  "levelBands": [
+    {
+      "id": "1-10",
+      "min": 1,
+      "max": 10
     },
-    "assassin": {
-      "damage": 164,
-      "kill": 0.648,
-      "guard": 0,
-      "heal": 0,
-      "status": 0.838,
-      "cleanse": 0,
-      "buff": 0.171,
-      "debuff": 0
+    {
+      "id": "11-20",
+      "min": 11,
+      "max": 20
+    },
+    {
+      "id": "21-30",
+      "min": 21,
+      "max": 30
+    },
+    {
+      "id": "31-40",
+      "min": 31,
+      "max": 40
+    },
+    {
+      "id": "41-50",
+      "min": 41,
+      "max": 50
+    },
+    {
+      "id": "51-60",
+      "min": 51,
+      "max": 60
+    },
+    {
+      "id": "61-70",
+      "min": 61,
+      "max": 70
+    }
+  ],
+  "baselines": {
+    "healer": {
+      "1-10": {
+        "damage": 24.289,
+        "kill": 0.21,
+        "guard": 23.008,
+        "heal": 41.541,
+        "status": 0,
+        "cleanse": 0,
+        "buff": 0,
+        "debuff": 0
+      },
+      "11-20": {
+        "damage": 35.81,
+        "kill": 0.204,
+        "guard": 39.229,
+        "heal": 81.657,
+        "status": 0,
+        "cleanse": 0,
+        "buff": 0,
+        "debuff": 0
+      },
+      "21-30": {
+        "damage": 51.664,
+        "kill": 0.175,
+        "guard": 63.613,
+        "heal": 136,
+        "status": 0,
+        "cleanse": 0,
+        "buff": 0,
+        "debuff": 0
+      },
+      "31-40": {
+        "damage": 80.633,
+        "kill": 0.211,
+        "guard": 89.593,
+        "heal": 237,
+        "status": 0,
+        "cleanse": 0,
+        "buff": 0,
+        "debuff": 0
+      },
+      "41-50": {
+        "damage": 108,
+        "kill": 0.181,
+        "guard": 125,
+        "heal": 332,
+        "status": 0,
+        "cleanse": 0,
+        "buff": 0,
+        "debuff": 0
+      },
+      "51-60": {
+        "damage": 158,
+        "kill": 0.169,
+        "guard": 175,
+        "heal": 529,
+        "status": 0,
+        "cleanse": 0,
+        "buff": 0,
+        "debuff": 0
+      },
+      "61-70": {
+        "damage": 233,
+        "kill": 0.173,
+        "guard": 264,
+        "heal": 736,
+        "status": 0,
+        "cleanse": 0,
+        "buff": 0,
+        "debuff": 0
+      }
     },
     "commander": {
-      "damage": 38.669,
-      "kill": 0.24,
-      "guard": 13.77,
-      "heal": 0,
-      "status": 0.65,
-      "cleanse": 0,
-      "buff": 9.605,
-      "debuff": 0.373
+      "1-10": {
+        "damage": 18.873,
+        "kill": 0.228,
+        "guard": 5.837,
+        "heal": 0,
+        "status": 0.559,
+        "cleanse": 0,
+        "buff": 8.975,
+        "debuff": 0.26
+      },
+      "11-20": {
+        "damage": 28.6,
+        "kill": 0.211,
+        "guard": 10.857,
+        "heal": 0,
+        "status": 0.586,
+        "cleanse": 0,
+        "buff": 9.081,
+        "debuff": 0.28
+      },
+      "21-30": {
+        "damage": 46.601,
+        "kill": 0.214,
+        "guard": 15.765,
+        "heal": 0,
+        "status": 0.641,
+        "cleanse": 0,
+        "buff": 9.666,
+        "debuff": 0.351
+      },
+      "31-40": {
+        "damage": 67.578,
+        "kill": 0.197,
+        "guard": 24.402,
+        "heal": 0,
+        "status": 0.621,
+        "cleanse": 0,
+        "buff": 9.536,
+        "debuff": 0.374
+      },
+      "41-50": {
+        "damage": 94.966,
+        "kill": 0.217,
+        "guard": 37.162,
+        "heal": 0,
+        "status": 0.624,
+        "cleanse": 0,
+        "buff": 9.366,
+        "debuff": 0.348
+      },
+      "51-60": {
+        "damage": 134,
+        "kill": 0.17,
+        "guard": 49.46,
+        "heal": 0,
+        "status": 0.678,
+        "cleanse": 0,
+        "buff": 9.091,
+        "debuff": 0.394
+      },
+      "61-70": {
+        "damage": 192,
+        "kill": 0.179,
+        "guard": 69.929,
+        "heal": 0,
+        "status": 0.639,
+        "cleanse": 0,
+        "buff": 9.105,
+        "debuff": 0.375
+      }
     },
     "mage": {
-      "damage": 333,
-      "kill": 1.317,
-      "guard": 0,
-      "heal": 0,
-      "status": 0.752,
-      "cleanse": 0,
-      "buff": 0,
-      "debuff": 0.141
-    },
-    "disruptor": {
-      "damage": 153,
-      "kill": 0.617,
-      "guard": 0,
-      "heal": 0,
-      "status": 2.982,
-      "cleanse": 0,
-      "buff": 0,
-      "debuff": 2.978
+      "1-10": {
+        "damage": 177,
+        "kill": 1.383,
+        "guard": 0,
+        "heal": 0,
+        "status": 0.463,
+        "cleanse": 0,
+        "buff": 0,
+        "debuff": 0.039
+      },
+      "11-20": {
+        "damage": 275,
+        "kill": 1.356,
+        "guard": 0,
+        "heal": 0,
+        "status": 0.566,
+        "cleanse": 0,
+        "buff": 0,
+        "debuff": 0.063
+      },
+      "21-30": {
+        "damage": 423,
+        "kill": 1.327,
+        "guard": 0,
+        "heal": 0,
+        "status": 0.66,
+        "cleanse": 0,
+        "buff": 0,
+        "debuff": 0.099
+      },
+      "31-40": {
+        "damage": 656,
+        "kill": 1.333,
+        "guard": 0,
+        "heal": 0,
+        "status": 0.684,
+        "cleanse": 0,
+        "buff": 0,
+        "debuff": 0.156
+      },
+      "41-50": {
+        "damage": 930,
+        "kill": 1.323,
+        "guard": 0,
+        "heal": 0,
+        "status": 0.645,
+        "cleanse": 0,
+        "buff": 0,
+        "debuff": 0.109
+      },
+      "51-60": {
+        "damage": 1388,
+        "kill": 1.28,
+        "guard": 0,
+        "heal": 0,
+        "status": 0.688,
+        "cleanse": 0,
+        "buff": 0,
+        "debuff": 0.135
+      },
+      "61-70": {
+        "damage": 1927,
+        "kill": 1.221,
+        "guard": 0,
+        "heal": 0,
+        "status": 0.631,
+        "cleanse": 0,
+        "buff": 0,
+        "debuff": 0.113
+      }
     },
     "warrior": {
-      "damage": 199,
-      "kill": 0.754,
-      "guard": 0,
-      "heal": 0,
-      "status": 0.481,
-      "cleanse": 0,
-      "buff": 0.188,
-      "debuff": 0
+      "1-10": {
+        "damage": 124,
+        "kill": 0.982,
+        "guard": 0,
+        "heal": 0,
+        "status": 0.378,
+        "cleanse": 0,
+        "buff": 0.156,
+        "debuff": 0
+      },
+      "11-20": {
+        "damage": 182,
+        "kill": 0.878,
+        "guard": 0,
+        "heal": 0,
+        "status": 0.403,
+        "cleanse": 0,
+        "buff": 0.146,
+        "debuff": 0
+      },
+      "21-30": {
+        "damage": 272,
+        "kill": 0.871,
+        "guard": 0,
+        "heal": 0,
+        "status": 0.425,
+        "cleanse": 0,
+        "buff": 0.181,
+        "debuff": 0
+      },
+      "31-40": {
+        "damage": 399,
+        "kill": 0.741,
+        "guard": 0,
+        "heal": 0,
+        "status": 0.456,
+        "cleanse": 0,
+        "buff": 0.196,
+        "debuff": 0
+      },
+      "41-50": {
+        "damage": 568,
+        "kill": 0.762,
+        "guard": 0,
+        "heal": 0,
+        "status": 0.434,
+        "cleanse": 0,
+        "buff": 0.162,
+        "debuff": 0
+      },
+      "51-60": {
+        "damage": 804,
+        "kill": 0.685,
+        "guard": 0,
+        "heal": 0,
+        "status": 0.433,
+        "cleanse": 0,
+        "buff": 0.167,
+        "debuff": 0
+      },
+      "61-70": {
+        "damage": 1108,
+        "kill": 0.649,
+        "guard": 0,
+        "heal": 0,
+        "status": 0.414,
+        "cleanse": 0,
+        "buff": 0.171,
+        "debuff": 0
+      }
     },
-    "healer": {
-      "damage": 40.888,
-      "kill": 0.187,
-      "guard": 47.856,
-      "heal": 113,
-      "status": 0,
-      "cleanse": 0,
-      "buff": 0,
-      "debuff": 0
+    "disruptor": {
+      "1-10": {
+        "damage": 74.004,
+        "kill": 0.576,
+        "guard": 0,
+        "heal": 0,
+        "status": 2.427,
+        "cleanse": 0,
+        "buff": 0,
+        "debuff": 2.281
+      },
+      "11-20": {
+        "damage": 118,
+        "kill": 0.622,
+        "guard": 0,
+        "heal": 0,
+        "status": 2.652,
+        "cleanse": 0,
+        "buff": 0,
+        "debuff": 2.554
+      },
+      "21-30": {
+        "damage": 186,
+        "kill": 0.587,
+        "guard": 0,
+        "heal": 0,
+        "status": 2.856,
+        "cleanse": 0,
+        "buff": 0,
+        "debuff": 2.8
+      },
+      "31-40": {
+        "damage": 277,
+        "kill": 0.623,
+        "guard": 0,
+        "heal": 0,
+        "status": 2.867,
+        "cleanse": 0,
+        "buff": 0,
+        "debuff": 2.859
+      },
+      "41-50": {
+        "damage": 399,
+        "kill": 0.589,
+        "guard": 0,
+        "heal": 0,
+        "status": 2.783,
+        "cleanse": 0,
+        "buff": 0,
+        "debuff": 2.892
+      },
+      "51-60": {
+        "damage": 571,
+        "kill": 0.514,
+        "guard": 0,
+        "heal": 0,
+        "status": 2.763,
+        "cleanse": 0,
+        "buff": 0,
+        "debuff": 2.788
+      },
+      "61-70": {
+        "damage": 842,
+        "kill": 0.553,
+        "guard": 0,
+        "heal": 0,
+        "status": 2.857,
+        "cleanse": 0,
+        "buff": 0,
+        "debuff": 2.876
+      }
     },
     "archer": {
-      "damage": 299,
-      "kill": 1.202,
-      "guard": 0,
-      "heal": 0,
-      "status": 0.632,
-      "cleanse": 0,
-      "buff": 0,
-      "debuff": 0
+      "1-10": {
+        "damage": 156,
+        "kill": 1.106,
+        "guard": 0,
+        "heal": 0,
+        "status": 0.467,
+        "cleanse": 0,
+        "buff": 0,
+        "debuff": 0
+      },
+      "11-20": {
+        "damage": 251,
+        "kill": 1.163,
+        "guard": 0,
+        "heal": 0,
+        "status": 0.523,
+        "cleanse": 0,
+        "buff": 0,
+        "debuff": 0
+      },
+      "21-30": {
+        "damage": 386,
+        "kill": 1.151,
+        "guard": 0,
+        "heal": 0,
+        "status": 0.557,
+        "cleanse": 0,
+        "buff": 0,
+        "debuff": 0
+      },
+      "31-40": {
+        "damage": 584,
+        "kill": 1.16,
+        "guard": 0,
+        "heal": 0,
+        "status": 0.612,
+        "cleanse": 0,
+        "buff": 0,
+        "debuff": 0
+      },
+      "41-50": {
+        "damage": 810,
+        "kill": 1.124,
+        "guard": 0,
+        "heal": 0,
+        "status": 0.552,
+        "cleanse": 0,
+        "buff": 0,
+        "debuff": 0
+      },
+      "51-60": {
+        "damage": 1182,
+        "kill": 1.072,
+        "guard": 0,
+        "heal": 0,
+        "status": 0.588,
+        "cleanse": 0,
+        "buff": 0,
+        "debuff": 0
+      },
+      "61-70": {
+        "damage": 1685,
+        "kill": 1.058,
+        "guard": 0,
+        "heal": 0,
+        "status": 0.612,
+        "cleanse": 0,
+        "buff": 0,
+        "debuff": 0
+      }
+    },
+    "shield": {
+      "1-10": {
+        "damage": 17.952,
+        "kill": 0.219,
+        "guard": 18.594,
+        "heal": 0,
+        "status": 0.319,
+        "cleanse": 0,
+        "buff": 1.604,
+        "debuff": 0.205
+      },
+      "11-20": {
+        "damage": 27.261,
+        "kill": 0.195,
+        "guard": 40.84,
+        "heal": 0,
+        "status": 0.347,
+        "cleanse": 0,
+        "buff": 1.701,
+        "debuff": 0.23
+      },
+      "21-30": {
+        "damage": 40.663,
+        "kill": 0.201,
+        "guard": 66.751,
+        "heal": 0,
+        "status": 0.368,
+        "cleanse": 0,
+        "buff": 1.84,
+        "debuff": 0.257
+      },
+      "31-40": {
+        "damage": 56.615,
+        "kill": 0.173,
+        "guard": 121,
+        "heal": 0,
+        "status": 0.381,
+        "cleanse": 0,
+        "buff": 1.985,
+        "debuff": 0.258
+      },
+      "41-50": {
+        "damage": 86.369,
+        "kill": 0.179,
+        "guard": 154,
+        "heal": 0,
+        "status": 0.39,
+        "cleanse": 0,
+        "buff": 1.883,
+        "debuff": 0.274
+      },
+      "51-60": {
+        "damage": 119,
+        "kill": 0.134,
+        "guard": 251,
+        "heal": 0,
+        "status": 0.393,
+        "cleanse": 0,
+        "buff": 1.907,
+        "debuff": 0.274
+      },
+      "61-70": {
+        "damage": 172,
+        "kill": 0.156,
+        "guard": 360,
+        "heal": 0,
+        "status": 0.385,
+        "cleanse": 0,
+        "buff": 1.814,
+        "debuff": 0.28
+      }
+    },
+    "assassin": {
+      "1-10": {
+        "damage": 103,
+        "kill": 0.828,
+        "guard": 0,
+        "heal": 0,
+        "status": 0.857,
+        "cleanse": 0,
+        "buff": 0.183,
+        "debuff": 0
+      },
+      "11-20": {
+        "damage": 154,
+        "kill": 0.771,
+        "guard": 0,
+        "heal": 0,
+        "status": 0.803,
+        "cleanse": 0,
+        "buff": 0.163,
+        "debuff": 0
+      },
+      "21-30": {
+        "damage": 218,
+        "kill": 0.679,
+        "guard": 0,
+        "heal": 0,
+        "status": 0.783,
+        "cleanse": 0,
+        "buff": 0.17,
+        "debuff": 0
+      },
+      "31-40": {
+        "damage": 321,
+        "kill": 0.608,
+        "guard": 0,
+        "heal": 0,
+        "status": 0.754,
+        "cleanse": 0,
+        "buff": 0.136,
+        "debuff": 0
+      },
+      "41-50": {
+        "damage": 465,
+        "kill": 0.636,
+        "guard": 0,
+        "heal": 0,
+        "status": 0.758,
+        "cleanse": 0,
+        "buff": 0.146,
+        "debuff": 0
+      },
+      "51-60": {
+        "damage": 658,
+        "kill": 0.561,
+        "guard": 0,
+        "heal": 0,
+        "status": 0.72,
+        "cleanse": 0,
+        "buff": 0.093,
+        "debuff": 0
+      },
+      "61-70": {
+        "damage": 877,
+        "kill": 0.489,
+        "guard": 0,
+        "heal": 0,
+        "status": 0.67,
+        "cleanse": 0,
+        "buff": 0.096,
+        "debuff": 0
+      }
     }
   },
   "baselineSample": {
-    "fights": 4000,
-    "levels": [
-      5,
-      10,
-      20,
-      30
-    ],
-    "seed": "contribution-baseline"
+    "fightsPerBand": 2000,
+    "seed": "contribution-baseline",
+    "winRates": {
+      "1-10": 0.989,
+      "11-20": 0.968,
+      "21-30": 0.924,
+      "31-40": 0.876,
+      "41-50": 0.882,
+      "51-60": 0.785,
+      "61-70": 0.758
+    }
   }
 }

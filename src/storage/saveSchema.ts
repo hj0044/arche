@@ -39,7 +39,15 @@ const rift: Schema = {
 const partyMember: Schema = { fields: { mercId: 'string', row: { oneOf: ['front', 'back'] } } };
 
 /** 활약도 합계(지시서 027) */
-const activityTally = { sorties: 'number', clears: 'number', downs: 'number', items: { record: 'number' } } as const;
+const activityTally = {
+  sorties: 'number',
+  clears: 'number',
+  downs: 'number',
+  items: { record: 'number' },
+  // 지시서 027b: 레벨 구간 기준값으로 낸 항목별 비율 합계와 그 항목이 들어간 공략 수
+  ratios: { record: 'number' },
+  ratioCounts: { record: 'number' },
+} as const;
 const activity: Schema = {
   fields: {
     career: { fields: activityTally },

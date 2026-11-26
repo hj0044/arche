@@ -172,7 +172,7 @@ function fixtureRoute(screen: string, s: GameState, events?: DayEvent[]): Route 
       return { name: 'help', topic: 'status', back: { name: 'saves' } };
     case 'records':
       // 기록이 있는 계약자 중 통산 활약도가 가장 높은 쪽(시안 예시처럼 평균 위)
-      return { name: 'records', mercId: ([...guild].filter((m) => m.activity).sort((a, b) => (activityScore(tables, b.role, b.activity!.career.items, b.activity!.career.sorties) ?? 0) - (activityScore(tables, a.role, a.activity!.career.items, a.activity!.career.sorties) ?? 0))[0] ?? guild[0]).id };
+      return { name: 'records', mercId: ([...guild].filter((m) => m.activity).sort((a, b) => (activityScore(tables, b.role, b.activity!.career) ?? 0) - (activityScore(tables, a.role, a.activity!.career) ?? 0))[0] ?? guild[0]).id };
     case 'base':
       return { name: 'base' };
     case 'saves':

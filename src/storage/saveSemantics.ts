@@ -58,7 +58,7 @@ export function validateSemantics(state: GameState, t: SemanticTables): string[]
    * 이번 시즌과 남은 지난 시즌 합계의 합은 통산을 넘지 않는다(지난 시즌은 최근 몇 개만 남기므로 ≤), 시즌 번호는 오름차순이고 오늘 시즌 이하.
    */
   const itemIds = new Set(t.contribution.items.map((i) => i.id));
-  const checkTally = (p: string, x: { sorties: number; clears: number; downs: number; items: Record<string, number> }) => {
+  const checkTally = (p: string, x: { sorties: number; clears: number; downs: number; items: Record<string, number>; ratios: Record<string, number>; ratioCounts: Record<string, number> }) => {
     atLeast(`${p}.sorties`, x.sorties, 0);
     atLeast(`${p}.clears`, x.clears, 0);
     atLeast(`${p}.downs`, x.downs, 0);
@@ -67,6 +67,18 @@ export function validateSemantics(state: GameState, t: SemanticTables): string[]
     for (const [k, v] of Object.entries(x.items)) {
       if (!itemIds.has(k)) errors.push(`${p}.items.${k}: 없는 활약도 항목 id`);
       atLeast(`${p}.items.${k}`, v, 0);
+    }
+    // 지시서 027b: 비율 합계 ≥ 0, 공략 수는 0 이상 정수이고 출전 수를 넘지 않는다
+    for (const [k, v] of Object.entries(x.ratios)) {
+      if (!itemIds.has(k)) errors.push(`${p}.ratios.${k}: 없는 활약도 항목 id`);
+      atLeast(`${p}.ratios.${k}`, v, 0);
+    }
+    for (const [k, v] of Object.entries(x.ratioCounts)) {
+      if (!itemIds.has(k)) errors.push(`${p}.ratioCounts.${k}: 없는 활약도 항목 id`);
+      atLeast(`${p}.ratioCounts.${k}`, v, 0);
+      if (!Number.isInteger(v)) errors.push(`${p}.ratioCounts.${k}: 정수가 아님(${v})`);
+      if (v > x.sorties) errors.push(`${p}.ratioCounts.${k}: 출전(${x.sorties})보다 많음(${v})`);
+      if (v === 0 && (x.ratios[k] ?? 0) > 0) errors.push(`${p}.ratios.${k}: 공략 수 0인데 비율 합계가 있음`);
     }
   };
   const checkActivity = (p: string, a: NonNullable<GameState['mercenaries'][number]['activity']>) => {

@@ -333,9 +333,12 @@ export interface ContributionTable {
   pastSeasonsLimit: number;
   items: { id: string; name: string }[];
   weights: Record<string, Record<string, number>>;
-  baselines: Record<string, Record<string, number>>;
+  /** 레벨 구간(지시서 027b). 행 추가로 늘린다 */
+  levelBands: { id: string; min: number; max: number }[];
+  /** 역할 → 레벨 구간 id → 항목 → 기준값(공략 1회 평균) */
+  baselines: Record<string, Record<string, Record<string, number>>>;
   /** 기준값을 뽑은 표본(스크립트가 채운다) */
-  baselineSample: { fights: number; levels: number[]; seed: string } | null;
+  baselineSample: { fightsPerBand: number; seed: string; winRates: Record<string, number> } | null;
 }
 
 /** 리그 규칙(지시서 028a, league/rules.json) */

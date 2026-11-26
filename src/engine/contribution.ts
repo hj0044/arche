@@ -6,12 +6,18 @@
 import type { GameTables } from '../data';
 import type { CombatOutcome, ContributionTally } from './combat';
 
-/** 항목 합계 + 출전·클리어·쓰러짐(부상) 횟수. items 키는 contribution.json 항목 id */
+/**
+ * 항목 합계 + 출전·클리어·쓰러짐(부상) 횟수. items 키는 contribution.json 항목 id.
+ * 지시서 027b: 활약도는 공략마다 그 레벨 구간 기준값으로 낸 항목별 비율(값 ÷ 기준값)의 합(ratios)과,
+ * 그 항목이 계산에 들어간 공략 수(ratioCounts)로 누적한다. items는 화면에 보여 줄 원값이다.
+ */
 export interface ActivityTally {
   sorties: number;
   clears: number;
   downs: number;
   items: Record<string, number>;
+  ratios: Record<string, number>;
+  ratioCounts: Record<string, number>;
 }
 
 export interface ActivityRecent {
@@ -33,11 +39,14 @@ export interface ActivityRecord {
   recent: ActivityRecent[];
 }
 
+const zeros = (tables: GameTables) => Object.fromEntries(tables.contribution.items.map((i) => [i.id, 0]));
 export const emptyActivityTally = (tables: GameTables): ActivityTally => ({
   sorties: 0,
   clears: 0,
   downs: 0,
-  items: Object.fromEntries(tables.contribution.items.map((i) => [i.id, 0])),
+  items: zeros(tables),
+  ratios: zeros(tables),
+  ratioCounts: zeros(tables),
 });
 
 export const newActivityRecord = (tables: GameTables, day: number): ActivityRecord => ({
@@ -56,47 +65,89 @@ export function seasonDayOf(tables: Pick<GameTables, 'league'>, day: number): nu
   return ((Math.max(1, day) - 1) % tables.league.rules.season.length) + 1;
 }
 
-/** 이 역할에서 계산에 넣는 항목인가(가중치와 기준값이 모두 0보다 크다). 아니면 화면에 '이 역할은 해당 없음' */
-export function isApplicable(tables: GameTables, role: string, item: string): boolean {
-  const w = tables.contribution.weights[role]?.[item] ?? 0;
-  const b = tables.contribution.baselines[role]?.[item] ?? 0;
-  return w > 0 && b > 0;
+/** 레벨 구간(지시서 027b, contribution.json levelBands). 범위 밖이면 가장 가까운 구간 */
+export function levelBandOf(tables: GameTables, level: number) {
+  const bands = tables.contribution.levelBands;
+  return bands.find((b) => level >= b.min && level <= b.max) ?? (level < bands[0].min ? bands[0] : bands[bands.length - 1]);
 }
 
-/** 항목 하나의 역할 평균 대비 비율(1 = 평균). 공략 1회 평균(합계 ÷ 출전)을 기준값과 비교한다. 해당 없거나 출전 0이면 null */
-export function itemRatio(tables: GameTables, role: string, item: string, total: number, sorties: number): number | null {
-  if (sorties <= 0 || !isApplicable(tables, role, item)) return null;
-  return total / sorties / tables.contribution.baselines[role][item];
+/** 역할·레벨 구간·항목의 기준값(공략 1회 평균). 없으면 0 */
+export function baselineAt(tables: GameTables, role: string, level: number, item: string): number {
+  return tables.contribution.baselines[role]?.[levelBandOf(tables, level).id]?.[item] ?? 0;
+}
+
+/** 이 역할·레벨에서 계산에 넣는 항목인가(가중치와 그 구간 기준값이 모두 0보다 크다) */
+export function isApplicableAt(tables: GameTables, role: string, level: number, item: string): boolean {
+  return (tables.contribution.weights[role]?.[item] ?? 0) > 0 && baselineAt(tables, role, level, item) > 0;
 }
 
 /**
- * 활약도 = 100 × Σ(가중치 × 내 값 ÷ 기준값) ÷ Σ 가중치. 누적은 항목 합계로 다시 계산한다(공략별 점수의 평균이 아니다).
- * 출전 0이거나 계산할 항목이 없으면 null(화면 "—").
+ * 화면용 '해당 없음' 판정: 가중치가 0이거나, 누적에 그 항목이 한 번도 들어가지 않았고 지금 레벨 구간에서도 기준값이 0이면 해당 없음.
  */
-export function activityScore(tables: GameTables, role: string, items: Record<string, number>, sorties: number): number | null {
-  if (sorties <= 0) return null;
+export function isApplicable(tables: GameTables, role: string, item: string, tally?: ActivityTally, level?: number): boolean {
+  if ((tables.contribution.weights[role]?.[item] ?? 0) <= 0) return false;
+  if (tally && (tally.ratioCounts[item] ?? 0) > 0) return true;
+  return level === undefined ? true : baselineAt(tables, role, level, item) > 0;
+}
+
+/** 공략 한 번의 항목별 비율(값 ÷ 그 레벨 구간 기준값). 계산에 들어가지 않는 항목은 빠진다 */
+export function sortieRatios(tables: GameTables, role: string, level: number, items: Record<string, number>): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const { id } of tables.contribution.items) {
+    if (!isApplicableAt(tables, role, level, id)) continue;
+    out[id] = (items[id] ?? 0) / baselineAt(tables, role, level, id);
+  }
+  return out;
+}
+
+/** 비율 합계와 공략 수로 낸 활약도: 100 × Σ(가중치 × 비율 합 ÷ 공략 수) ÷ Σ가중치(공략 수가 0인 항목은 빠짐). 없으면 null */
+function scoreFrom(tables: GameTables, role: string, ratios: Record<string, number>, counts: Record<string, number>): number | null {
   let num = 0;
   let den = 0;
   for (const { id } of tables.contribution.items) {
-    const r = itemRatio(tables, role, id, items[id] ?? 0, sorties);
-    if (r === null) continue;
-    const w = tables.contribution.weights[role][id];
-    num += w * r;
+    const n = counts[id] ?? 0;
+    const w = tables.contribution.weights[role]?.[id] ?? 0;
+    if (n <= 0 || w <= 0) continue;
+    num += (w * (ratios[id] ?? 0)) / n;
     den += w;
   }
   return den > 0 ? (100 * num) / den : null;
 }
 
-const addTally = (t: ActivityTally, items: ContributionTally | Record<string, number>, clear: boolean, down: boolean) => {
+/** 공략 한 번의 활약도(전투 시작 때 레벨의 구간 기준값). 같은 역할·같은 레벨대 평균이 100 */
+export function sortieScore(tables: GameTables, role: string, level: number, items: Record<string, number>): number | null {
+  const r = sortieRatios(tables, role, level, items);
+  return scoreFrom(tables, role, r, Object.fromEntries(Object.keys(r).map((k) => [k, 1])));
+}
+
+/** 누적(시즌·통산) 활약도. 공략별 비율 합계로 다시 계산한다(레벨이 다른 공략을 섞어도 각자 구간으로 정규화). 출전 0이면 null */
+export function activityScore(tables: GameTables, role: string, tally: ActivityTally): number | null {
+  if (tally.sorties <= 0) return null;
+  return scoreFrom(tables, role, tally.ratios, tally.ratioCounts);
+}
+
+/** 항목 하나의 같은 역할·레벨대 평균 대비 비율(1 = 평균). 그 항목이 들어간 공략이 없으면 null */
+export function itemRatio(tally: ActivityTally, item: string): number | null {
+  const n = tally.ratioCounts[item] ?? 0;
+  return n > 0 ? (tally.ratios[item] ?? 0) / n : null;
+}
+
+const addTally = (t: ActivityTally, items: ContributionTally | Record<string, number>, ratios: Record<string, number>, clear: boolean, down: boolean) => {
   t.sorties += 1;
   if (clear) t.clears += 1;
   if (down) t.downs += 1;
   for (const [k, v] of Object.entries(items)) if (k in t.items) t.items[k] += v;
+  for (const [k, v] of Object.entries(ratios)) {
+    t.ratios[k] = (t.ratios[k] ?? 0) + v;
+    t.ratioCounts[k] = (t.ratioCounts[k] ?? 0) + 1;
+  }
 };
 
 export interface SortieInput {
   day: number;
   role: string;
+  /** 전투 시작 때 레벨(그 공략의 기준값 구간) */
+  level: number;
   riftName: string;
   tier: string;
   outcome: CombatOutcome;
@@ -109,9 +160,11 @@ export function recordSortie(tables: GameTables, prev: ActivityRecord | undefine
   const rec: ActivityRecord = prev ? structuredClone(prev) : newActivityRecord(tables, s.day);
   rollSeason(tables, rec, s.day);
   const clear = s.outcome === 'victory';
-  addTally(rec.career, s.tally, clear, s.downed);
-  addTally(rec.season, s.tally, clear, s.downed);
-  const score = activityScore(tables, s.role, s.tally, 1);
+  const ratios = sortieRatios(tables, s.role, s.level, s.tally);
+  addTally(rec.career, s.tally, ratios, clear, s.downed);
+  addTally(rec.season, s.tally, ratios, clear, s.downed);
+  // 최근 공략 점수는 그 시점 기준값으로 저장한다(나중에 기준값이 바뀌어도 그대로)
+  const score = sortieScore(tables, s.role, s.level, s.tally);
   rec.recent = [{ day: s.day, riftName: s.riftName, tier: s.tier, score: score === null ? null : Math.round(score), outcome: s.outcome }, ...rec.recent].slice(
     0,
     tables.contribution.recentLimit,
