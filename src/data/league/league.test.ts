@@ -53,7 +53,10 @@ describe('리그 용병단', () => {
 
   it('민간 용병단의 소속과 도시 분포가 맞다', () => {
     const count = (f: string | null) => civilTeams.filter(({ faction }) => faction === f).length;
-    expect([count('lantern'), count('anchor'), count('gray'), count('rose'), count('beacon'), count('prism'), count(null)]).toEqual([5, 3, 3, 2, 2, 2, 8]);
+    // 026d: 컨셉과 도시 색에 맞춘 배분(상파울루·라고스 랜턴, 런던 장미, 시드니 앵커, 라고스 그레이 등). 무소속 9팀
+    expect(
+      ['rrb', 'archon', 'bulwark', 'lantern', 'prism', 'rose', 'beacon', 'anchor', 'gray', null].map(count),
+    ).toEqual([2, 1, 2, 3, 2, 1, 1, 2, 2, 9]);
     for (const city of cities) {
       const count = civilTeams.filter(({ homeCity }) => homeCity === city).length;
       expect(count, city).toBeOneOf([2, 3]);

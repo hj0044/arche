@@ -178,7 +178,7 @@ describe('세이브 v15(지시서 026c, AGENTS.md: 마이그레이션 없음)', 
   });
   it('무소속 계약자(affiliation.kind unaffiliated)를 저장하고 불러올 수 있다', () => {
     const s = playedState();
-    expect(s.mercenaries.filter((m) => m.affiliation.kind === 'unaffiliated')).toHaveLength(7);
+    expect(s.mercenaries.filter((m) => m.affiliation.kind === 'unaffiliated')).toHaveLength(10); // 026d 재배분
     const back = parseSave(serializeSave(createSaveFile(s, 'manual')), { ...tables, limits: saveLimits });
     expect(back.state).toEqual(s);
   });

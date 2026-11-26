@@ -54,7 +54,7 @@ describe('지시서 026: 세력 정리', () => {
   it('에지 서클(id indie)과 불워크 시스템즈가 있고 세력 행에 영입 비용 배율이 없다', () => {
     expect(tables.factions.find((f) => f.id === 'indie')).toMatchObject({ name: '에지 서클', type: 'elite', typeName: '독립 강자 모임' });
     expect(tables.factions.find((f) => f.id === 'bulwark')).toMatchObject({ name: '불워크 시스템즈', type: 'megacorp' });
-    expect(tables.roster.filter((r) => r.faction === 'indie')).toHaveLength(6);
+    expect(tables.roster.filter((r) => r.faction === 'indie')).toHaveLength(4); // 026d 재배분
     for (const f of tables.factions) expect(f).not.toHaveProperty('recruitCostMultiplier');
   });
   it('코드·데이터·화면 문구에 삭제한 세력 이름이 남지 않는다', async () => {
@@ -109,12 +109,16 @@ describe('지시서 026c: 세력 10개, 무소속은 상태', () => {
     expect(tables.factions.map((f) => f.id)).toEqual(IDS);
     for (const f of tables.factions) expect(Object.values(f.cityInfluence).reduce((a, x) => a + x, 0), f.id).toBeCloseTo(1, 9);
   });
-  it('로스터와 NPC 팀 소속은 세력 id 10개 중 하나이거나 null(무소속). 로스터 무소속 7명, 옛 웨이포인트 6명은 새 세력에 한 명씩', () => {
+  it('로스터와 NPC 팀 소속은 세력 id 10개 중 하나이거나 null(무소속). 무소속은 로스터의 약 3분의 1, 모든 세력에 계약자가 있다(026d)', () => {
     const ok = (f: string | null) => f === null || IDS.includes(f);
     expect(tables.roster.filter((r) => r.faction !== 'guild' && !ok(r.faction)).map((r) => r.id)).toEqual([]);
     expect(tables.league.teams.filter((x) => !ok(x.faction)).map((x) => x.id)).toEqual([]);
-    expect(tables.roster.filter((r) => r.faction === null)).toHaveLength(7);
-    for (const id of ['lantern', 'prism', 'rose', 'beacon', 'anchor', 'gray']) expect(tables.roster.filter((r) => r.faction === id), id).toHaveLength(1);
+    const outside = tables.roster.filter((r) => r.faction !== 'guild');
+    const none = outside.filter((r) => r.faction === null).length;
+    expect(none / outside.length).toBeGreaterThanOrEqual(0.25);
+    for (const id of IDS) expect(tables.roster.filter((r) => r.faction === id).length, id).toBeGreaterThan(0);
+    // 정보·AI 업종 팀은 세력 id가 없다(세계관 요약 3절)
+    expect(tables.league.teams.find((x) => x.id === 'observation-unit')!.faction).toBeNull();
   });
   it('삭제한 세력 id(free·waypoint·옛 소수 용병단)가 코드·데이터·화면 문구에 값으로 남지 않는다', async () => {
     const { readdirSync, readFileSync, statSync } = await import('node:fs');

@@ -1650,7 +1650,7 @@
    "shortName": "사쿠",
    "element": "earth",
    "hometown": "tokyo",
-   "faction": "archon",
+   "faction": null,
    "background": "corporate",
    "age": 33,
    "gender": "남",

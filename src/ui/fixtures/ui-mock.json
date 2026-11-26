@@ -958,7 +958,7 @@
     },
     "affiliation": {
      "kind": "faction",
-     "factionId": "lantern"
+     "factionId": "rose"
     },
     "loyalty": {
      "value": 60,
@@ -1021,8 +1021,7 @@
      "race": "human"
     },
     "affiliation": {
-     "kind": "faction",
-     "factionId": "rose"
+     "kind": "unaffiliated"
     },
     "loyalty": {
      "value": 60,
@@ -1053,8 +1052,7 @@
      "race": "human"
     },
     "affiliation": {
-     "kind": "faction",
-     "factionId": "prism"
+     "kind": "unaffiliated"
     },
     "loyalty": {
      "value": 60,
@@ -1085,7 +1083,8 @@
      "race": "human"
     },
     "affiliation": {
-     "kind": "unaffiliated"
+     "kind": "faction",
+     "factionId": "lantern"
     },
     "loyalty": {
      "value": 60,
@@ -1147,7 +1146,8 @@
      "race": "human"
     },
     "affiliation": {
-     "kind": "unaffiliated"
+     "kind": "faction",
+     "factionId": "prism"
     },
     "loyalty": {
      "value": 60,
@@ -1367,8 +1367,7 @@
      "race": "human"
     },
     "affiliation": {
-     "kind": "faction",
-     "factionId": "archon"
+     "kind": "unaffiliated"
     },
     "loyalty": {
      "value": 60,
@@ -2857,7 +2856,7 @@
      "id": "observation-unit",
      "name": "관측 부대",
      "kind": "named",
-     "faction": "beacon",
+     "faction": null,
      "homeCity": null,
      "scaleTier": 3,
      "tier": "jungjin",
@@ -2879,7 +2878,7 @@
      "id": "night-transfer",
      "name": "심야환승",
      "kind": "civil",
-     "faction": "lantern",
+     "faction": null,
      "homeCity": "seoul",
      "scaleTier": 3,
      "tier": "jungjin",
@@ -2901,7 +2900,7 @@
      "id": "evening-gate",
      "name": "유나기",
      "kind": "civil",
-     "faction": "beacon",
+     "faction": "rrb",
      "homeCity": "tokyo",
      "scaleTier": 1,
      "tier": "mijin",
@@ -2912,7 +2911,7 @@
      "id": "fittings",
      "name": "가나구",
      "kind": "civil",
-     "faction": null,
+     "faction": "bulwark",
      "homeCity": "tokyo",
      "scaleTier": 2,
      "tier": "yakjin",
@@ -2923,7 +2922,7 @@
      "id": "underpass-lamp",
      "name": "굴다리불",
      "kind": "civil",
-     "faction": null,
+     "faction": "rrb",
      "homeCity": "tokyo",
      "scaleTier": 3,
      "tier": "yakjin",
@@ -3011,7 +3010,7 @@
      "id": "rain-trace",
      "name": "빗길표식",
      "kind": "civil",
-     "faction": "lantern",
+     "faction": null,
      "homeCity": "lagos",
      "scaleTier": 2,
      "tier": "yakjin",
@@ -3022,7 +3021,7 @@
      "id": "motor-yard",
      "name": "모터마당",
      "kind": "civil",
-     "faction": null,
+     "faction": "gray",
      "homeCity": "lagos",
      "scaleTier": 3,
      "tier": "yakjin",
@@ -3044,7 +3043,7 @@
      "id": "turning-crane",
      "name": "회전기중기",
      "kind": "civil",
-     "faction": "anchor",
+     "faction": null,
      "homeCity": "saopaulo",
      "scaleTier": 3,
      "tier": "jungjin",
@@ -3066,7 +3065,7 @@
      "id": "station-shelf",
      "name": "역전선반",
      "kind": "civil",
-     "faction": "gray",
+     "faction": null,
      "homeCity": "mumbai",
      "scaleTier": 1,
      "tier": "yakjin",
@@ -3088,7 +3087,7 @@
      "id": "cooling-house",
      "name": "냉각실",
      "kind": "civil",
-     "faction": "gray",
+     "faction": "archon",
      "homeCity": "dubai",
      "scaleTier": 2,
      "tier": "mijin",
@@ -3099,7 +3098,7 @@
      "id": "ramp-watch",
      "name": "경사로 순번",
      "kind": "civil",
-     "faction": "rose",
+     "faction": "bulwark",
      "homeCity": "dubai",
      "scaleTier": 4,
      "tier": "jungjin",
