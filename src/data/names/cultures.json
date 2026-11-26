@@ -22,5 +22,11 @@
   {"id": "nordic", "name": "북유럽", "continent": "europe", "population": 28, "order": "given_first", "surnameCount": [1, 1]},
   {"id": "eastern_europe", "name": "동유럽", "continent": "europe", "population": 90, "order": "given_first", "surnameCount": [1, 1]},
   {"id": "russia_ukraine", "name": "러시아·우크라이나", "continent": "europe", "population": 185, "order": "given_first", "surnameCount": [1, 1]},
-  {"id": "greece_balkans", "name": "그리스·발칸", "continent": "europe", "population": 40, "order": "given_first", "surnameCount": [1, 1]}
+  {"id": "greece_balkans", "name": "그리스·발칸", "continent": "europe", "population": 40, "order": "given_first", "surnameCount": [1, 1]},
+  {"id": "west_africa", "name": "서아프리카", "continent": "sub_saharan_africa", "population": 400, "order": "given_first", "surnameCount": [1, 1]},
+  {"id": "east_africa", "name": "동아프리카", "continent": "sub_saharan_africa", "population": 400, "order": "given_first", "surnameCount": [1, 1]},
+  {"id": "south_africa", "name": "남아프리카", "continent": "sub_saharan_africa", "population": 90, "order": "given_first", "surnameCount": [1, 1]},
+  {"id": "brazil", "name": "브라질", "continent": "americas", "population": 215, "order": "given_first", "surnameCount": [1, 2]},
+  {"id": "latin_spanish", "name": "스페인어권 중남미", "continent": "americas", "population": 430, "order": "given_first", "surnameCount": [1, 2]},
+  {"id": "oceania", "name": "오세아니아", "continent": "oceania", "population": 30, "order": "given_first", "surnameCount": [1, 1]}
 ]

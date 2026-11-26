@@ -29,6 +29,10 @@ function validateEntries(entries: Surname[]) {
 }
 
 describe('문화권 이름 풀', () => {
+  it('문화권은 정확히 서른 곳이다', () => {
+    expect(cultures).toHaveLength(30);
+  });
+
   it('문화권 행과 이름 풀 파일은 일대일로 대응한다', () => {
     const ids = cultures.map(({ id }) => id);
     expect(new Set(ids).size).toBe(ids.length);
@@ -43,7 +47,8 @@ describe('문화권 이름 풀', () => {
     expect(Number.isFinite(population)).toBe(true);
     expect(population).toBeGreaterThan(0);
     expect(order).toBeOneOf(['family_first', 'given_first']);
-    expect(surnameCount).toBeOneOf([[1, 1], [1, 2]]);
+    const usesTwoSurnames = ['iberia', 'brazil', 'latin_spanish'].includes(id);
+    expect(surnameCount).toEqual([1, usesTwoSurnames ? 2 : 1]);
     expect(Object.keys(culture).sort()).toEqual([
       'continent', 'id', 'name', ...('note' in culture ? ['note'] : []),
       'order', 'population', 'surnameCount',
