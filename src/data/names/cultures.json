@@ -18,5 +18,9 @@
   {"id": "france", "name": "프랑스", "continent": "europe", "population": 68, "order": "given_first", "surnameCount": [1, 1]},
   {"id": "germany_netherlands", "name": "독일·네덜란드", "continent": "europe", "population": 100, "order": "given_first", "surnameCount": [1, 1]},
   {"id": "italy", "name": "이탈리아", "continent": "europe", "population": 59, "order": "given_first", "surnameCount": [1, 1]},
-  {"id": "iberia", "name": "스페인·포르투갈", "continent": "europe", "population": 58, "order": "given_first", "surnameCount": [1, 2]}
+  {"id": "iberia", "name": "스페인·포르투갈", "continent": "europe", "population": 58, "order": "given_first", "surnameCount": [1, 2]},
+  {"id": "nordic", "name": "북유럽", "continent": "europe", "population": 28, "order": "given_first", "surnameCount": [1, 1]},
+  {"id": "eastern_europe", "name": "동유럽", "continent": "europe", "population": 90, "order": "given_first", "surnameCount": [1, 1]},
+  {"id": "russia_ukraine", "name": "러시아·우크라이나", "continent": "europe", "population": 185, "order": "given_first", "surnameCount": [1, 1]},
+  {"id": "greece_balkans", "name": "그리스·발칸", "continent": "europe", "population": 40, "order": "given_first", "surnameCount": [1, 1]}
 ]
