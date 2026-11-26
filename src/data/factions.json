@@ -1,12 +1,14 @@
 [
   { "id": "rrb",      "name": "리프트 대응국",     "type": "public",       "typeName": "공공기관 용병",
-    "recruitCostMultiplier": 1.0, "cityInfluence": { "seoul": 0.5, "tokyo": 0.25, "newyork": 0.25 } },
+    "cityInfluence": { "seoul": 0.5, "tokyo": 0.25, "newyork": 0.25 } },
   { "id": "archon",   "name": "아르콘 에너지",     "type": "megacorp",     "typeName": "메가코프 용병",
-    "recruitCostMultiplier": 1.3, "cityInfluence": { "seoul": 0.2, "tokyo": 0.5, "newyork": 0.3 } },
-  { "id": "dokkaebi", "name": "도깨비불",         "type": "elite",        "typeName": "초강력 개방자 소수 용병단",
-    "recruitCostMultiplier": 1.2, "cityInfluence": { "seoul": 0.45, "tokyo": 0.2, "newyork": 0.35 } },
+    "cityInfluence": { "seoul": 0.2, "tokyo": 0.5, "newyork": 0.3 } },
+  { "id": "bulwark",  "name": "불워크 시스템즈",   "type": "megacorp",     "typeName": "메가코프 용병",
+    "cityInfluence": { "seoul": 0.15, "tokyo": 0.4, "newyork": 0.45 } },
+  { "id": "indie",    "name": "독립 강자 모임",     "type": "elite",        "typeName": "독립 강자 모임",
+    "cityInfluence": { "seoul": 0.45, "tokyo": 0.2, "newyork": 0.35 } },
   { "id": "waypoint", "name": "웨이포인트 컴퍼니", "type": "private",      "typeName": "민간 용병단",
-    "recruitCostMultiplier": 0.9, "cityInfluence": { "seoul": 0.15, "tokyo": 0.2, "newyork": 0.65 } },
+    "cityInfluence": { "seoul": 0.15, "tokyo": 0.2, "newyork": 0.65 } },
   { "id": "free",     "name": "무소속",           "type": "unaffiliated", "typeName": "무소속 개방자",
-    "recruitCostMultiplier": 0.8, "cityInfluence": { "seoul": 0.35, "tokyo": 0.35, "newyork": 0.3 } }
+    "cityInfluence": { "seoul": 0.35, "tokyo": 0.35, "newyork": 0.3 } }
 ]

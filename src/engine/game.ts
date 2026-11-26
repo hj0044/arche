@@ -43,7 +43,7 @@ export interface MercenaryState {
   unpaidUpkeep?: { days: number; zero: number };
   /** 충성도. 모든 계약자가 같은 틀로 갖는다. 시뮬레이션은 데이터가 정한 소속만(지금은 길드). */
   loyalty?: LoyaltyState;
-  /** 충성도로 길드를 이탈한 날(무소속 이동 보호 기간 판정) */
+  /** 충성도로 길드를 이탈한 날(이탈 기록) */
   departedDay?: number;
   /** 특성 단계(지시서 016, 강화 대비). 없으면 1단계 */
   traitRanks?: Record<string, number>;
@@ -142,7 +142,6 @@ export type DayEvent =
   | { type: 'facilityBuilt'; facilityId: string; level: number }
   | { type: 'trained'; facilityId: string; mercId: string; exp: number }
   | { type: 'unassigned'; facilityId: string; mercId: string; reason: string }
-  | { type: 'poached'; mercId: string; fromFactionId: string; toFactionId: string; wasDeparted: boolean }
   | { type: 'refused'; mercId: string }
   /** 외곽 임무(지시서 022): 자동 배치 결과와 충성도 변동(불만) */
   | { type: 'outerMission'; results: (OuterResult & { loyaltyDelta: number })[] };
@@ -238,7 +237,7 @@ function unlockProgress(state: GameState, rule: UnlockRule): { current: number; 
   return { current, required: rule.count };
 }
 
-/** 영입비는 용병마다 다르고 성장 한계가 높을수록 비싸다. 세력 배율, 거점 도시 밖 고향 배율을 곱한다. */
+/** 영입비는 용병마다 다르고 성장 한계가 높을수록 비싸다. 거점 도시 밖 고향 배율만 곱한다(세력은 수치에 개입하지 않는다, 지시서 026). */
 export function recruitInfo(tables: GameTables, state: GameState, mercId: string): RecruitInfo {
   const m = getMerc(state, mercId);
   const aff = m.affiliation;
@@ -247,7 +246,7 @@ export function recruitInfo(tables: GameTables, state: GameState, mercId: string
   const city = tables.cities.find((x) => x.id === state.baseCityId);
   const away = m.profile.hometown !== state.baseCityId ? (city?.recruitment.otherHometownCostMultiplier ?? 1) : 1;
   const raw = c.base + c.perCapAbove30 * Math.max(0, m.growth.cap - c.capBaseline) + c.perLevel * (m.level - 1);
-  const cost = Math.round(raw * (faction?.recruitCostMultiplier ?? 1) * away);
+  const cost = Math.round(raw * away);
   const rule = tables.roster.find((r) => r.id === m.id)?.unlock;
   const progress = rule && unlockProgress(state, rule);
   return {
@@ -804,32 +803,6 @@ export function advanceDay(tables: GameTables, prev: GameState): { state: GameSt
       else keep.push(id);
     }
     state.facilities.assignments[facilityId] = keep;
-  }
-
-  // ── 무소속 용병의 다른 세력 영입 이동(하루가 끝날 때, 이탈 판정 뒤). 영구 소멸 없음.
-  const poach = tables.poaching;
-  for (const m of state.mercenaries) {
-    if (m.affiliation.kind !== 'faction' || !poach.fromFactions.includes(m.affiliation.factionId)) continue;
-    if (m.departedDay !== undefined && state.day - m.departedDay <= poach.protectionDaysAfterDeparture) continue;
-    const prng = createRng(`${state.seed}:poach:${state.day}:${m.id}`);
-    if (!prng.chance(poach.dailyChance)) continue;
-    const targets = tables.factions.filter((f) => !poach.excludeTargets.includes(f.id));
-    if (targets.length === 0) continue;
-    // 가중치: 용병 고향 도시에서의 세력 영향력. 모두 0이면(또는 고향 없음) 동률.
-    const weights = targets.map((f) => Math.max(0, f.cityInfluence[m.profile.hometown ?? ''] ?? 0));
-    const total = weights.reduce((a, w) => a + w, 0);
-    let roll = prng.next() * (total > 0 ? total : targets.length);
-    let to = targets[targets.length - 1];
-    for (let i = 0; i < targets.length; i++) {
-      roll -= total > 0 ? weights[i] : 1;
-      if (roll < 0) {
-        to = targets[i];
-        break;
-      }
-    }
-    const from = m.affiliation.factionId;
-    m.affiliation = { kind: 'faction', factionId: to.id };
-    events.push({ type: 'poached', mercId: m.id, fromFactionId: from, toFactionId: to.id, wasDeparted: m.departedDay !== undefined });
   }
 
   const limit = tables.progression.reportHistoryLimit;

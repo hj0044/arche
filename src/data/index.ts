@@ -26,7 +26,6 @@ import autoPartyJson from './auto-party.json';
 import saveLimitsJson from './save-limits.json';
 import loyaltyJson from './loyalty.json';
 import outerMissionsJson from './outerMissions.json';
-import poachingJson from './poaching.json';
 import facilitiesJson from './facilities.json';
 import autoplayJson from './autoplay.json';
 import combatPowerJson from './combat-power.json';
@@ -217,7 +216,7 @@ export interface ProgressionTable {
   expTierMultiplier: Record<string, number>;
   rewardRatioByOutcome: Record<Outcome, number>;
   levelUpArcheCost: { base: number; perLevel: number };
-  /** 영입비 = (base + perCapAbove30 × (한계 − capBaseline) + perLevel × (레벨 − 1)) × 세력 배율 × 도시 배율 */
+  /** 영입비 = (base + perCapAbove30 × (한계 − capBaseline) + perLevel × (레벨 − 1)) × 도시 배율(세력 배율 없음, 지시서 026) */
   recruitZeroCost: { base: number; perCapAbove30: number; perLevel: number; capBaseline: number };
   /** 보상 = 등급 보상 × (1 + rewardLevelScale × 몬스터 레벨) */
   rewardLevelScale: number;
@@ -247,8 +246,7 @@ export interface FactionRow {
   name: string;
   type: string;
   typeName: string;
-  recruitCostMultiplier: number;
-  /** 도시별 영향력 비중(1단계는 표시용). 세력은 도시에 고정되지 않는다. */
+  /** 그 세력 인물이 어느 도시에 자주 나오는지 정하는 연출 가중치(리프트 영역 세력 표시). 세력은 게임 수치에 개입하지 않는다(지시서 026). */
   cityInfluence: Record<string, number>;
 }
 
@@ -351,7 +349,6 @@ export interface GameTables {
   autoParty: AutoPartyTable;
   loyalty: LoyaltyTable;
   outerMissions: OuterMissionsTable;
-  poaching: PoachingTable;
   facilities: FacilitiesTable;
   autoplay: AutoplayPolicy;
   combatPower: CombatPowerTable;
@@ -483,17 +480,6 @@ export interface AutoplayPolicy {
   recruitReserveZero: number;
   facilitiesBeforeRecruit: boolean;
   assignIdleToTraining: boolean;
-}
-
-/** 무소속 용병의 다른 세력 영입 이동 */
-export interface PoachingTable {
-  dailyChance: number;
-  /** 충성도 이탈 직후 이동 판정에서 빼는 일수 */
-  protectionDaysAfterDeparture: number;
-  /** 이동 판정 대상 소속 세력 */
-  fromFactions: string[];
-  /** 이동할 수 없는 세력 */
-  excludeTargets: string[];
 }
 
 /** 충성도 변동 요인 키. victoryHard는 상급 이상 몬스터가 나오는 리프트의 승리(성향 가중치 전용, 기본값은 victory) */
@@ -634,7 +620,6 @@ export const tables: GameTables = {
   autoParty: autoPartyJson,
   loyalty: loyaltyJson as unknown as LoyaltyTable,
   outerMissions: outerMissionsJson as unknown as OuterMissionsTable,
-  poaching: poachingJson,
   facilities: facilitiesJson as unknown as FacilitiesTable,
   autoplay: autoplayJson,
   combatPower: combatPowerJson as unknown as CombatPowerTable,

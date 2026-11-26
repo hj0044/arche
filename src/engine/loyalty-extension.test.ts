@@ -1,12 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { type GameTables } from '../data';
 import { legacyTables as tables } from '../testing/legacyTables';
-import { advanceDay, dispatch, getMerc, newGame, recruit, recruitInfo, type DayEvent, type GameState } from './game';
+import { advanceDay, dispatch, getMerc, newGame, recruit, recruitInfo, type GameState } from './game';
 import { isLoyaltySimulated, loyaltyDelta } from './loyalty';
 import type { Rift } from './rift';
 
 const L = tables.loyalty;
-const P = tables.poaching;
 const gm = (seed = 'ext') =>
   newGame(tables, { seed, guildName: 'g', baseCityId: 'seoul', protagonist: { name: 'gm' } });
 const opener = (seed = 'ext') =>
@@ -29,8 +28,6 @@ const rift = (id: string): Rift => ({
   enemies: [{ monsterId: 'void_hound', grade: 'low', level: 1, row: 'front' }],
   reward: { zero: 100, arche: 10, materials: {} },
 });
-/** 이동 확률을 바꾼 표 */
-const withPoach = (chance: number): GameTables => ({ ...tables, poaching: { ...tables.poaching, dailyChance: chance } });
 
 describe('대기 하락', () => {
   /** 매일 쉬기만 하는 길드에서 n일 동안 m01의 변동 요인을 모은다 */
@@ -100,91 +97,33 @@ describe('대기 하락', () => {
   });
 });
 
-describe('무소속 용병 영입 이동', () => {
-  const freeIds = (s: GameState) => s.mercenaries.filter((m) => m.affiliation.kind === 'faction' && m.affiliation.factionId === 'free').map((m) => m.id);
-  const run = (t: GameTables, s: GameState, days: number) => {
-    const events: DayEvent[] = [];
-    for (let i = 0; i < days; i++) {
-      const r = advanceDay(t, rich(s));
+describe('세력은 수치에 개입하지 않는다(지시서 026)', () => {
+  it('무소속 계약자는 며칠이 지나도 다른 세력으로 옮기지 않는다(스카우트 이동 폐지)', () => {
+    let s = opener('poach');
+    const before = s.mercenaries.map((m) => [m.id, m.affiliation]);
+    const kinds = new Set<string>();
+    for (let i = 0; i < 40; i++) {
+      const r = advanceDay(tables, rich(s));
       s = r.state;
-      events.push(...r.events);
+      for (const e of r.events) kinds.add(e.type);
     }
-    return { s, events };
-  };
-
-  it('같은 시드면 같은 이동', () => {
-    expect(run(withPoach(0.3), gm('same'), 15)).toEqual(run(withPoach(0.3), gm('same'), 15));
+    expect(kinds.has('poached')).toBe(false);
+    expect(s.mercenaries.map((m) => [m.id, m.affiliation])).toEqual(before);
   });
 
-  it('무소속만 대상이고, 길드·다른 세력은 이동하지 않으며, 영구 소멸 없음', () => {
-    const start = opener('poach');
-    const { s, events } = run(withPoach(1), start, 3);
-    const moved = events.filter((e): e is Extract<DayEvent, { type: 'poached' }> => e.type === 'poached');
-    const before = freeIds(start);
-    expect(new Set(moved.map((e) => e.mercId))).toEqual(new Set(before)); // 확률 1이면 첫날 전원 이동
-    for (const e of moved) {
-      expect(e.fromFactionId).toBe('free');
-      expect(P.excludeTargets).not.toContain(e.toFactionId);
-    }
-    expect(s.mercenaries).toHaveLength(start.mercenaries.length);
-    expect(getMerc(s, 'm01').affiliation).toEqual({ kind: 'guild' });
-    for (const m of start.mercenaries.filter((x) => x.affiliation.kind === 'guild')) expect(getMerc(s, m.id).affiliation).toEqual({ kind: 'guild' });
-    for (const m of start.mercenaries.filter((x) => x.affiliation.kind === 'faction' && x.affiliation.factionId !== 'free')) {
-      expect(getMerc(s, m.id).affiliation).toEqual(m.affiliation);
-    }
-    expect(freeIds(s)).toEqual([]);
-  });
-
-  it('이동하면 소속만 바뀌고 다시 영입할 수 있으며, 영입비는 새 세력 배율로 달라진다', () => {
+  it('영입비는 세력과 무관하다: 같은 계약자를 다른 세력으로 바꿔도 비용이 같다', () => {
     const start = gm('cost');
-    const id = 'm28'; // 무소속 안예린
-    const before = recruitInfo(tables, start, id);
-    const { s } = run(withPoach(1), start, 1);
-    const m = getMerc(s, id);
-    expect(m.affiliation.kind).toBe('faction');
-    const to = m.affiliation.kind === 'faction' ? m.affiliation.factionId : '';
-    const mult = (fid: string) => tables.factions.find((f) => f.id === fid)!.recruitCostMultiplier;
-    const after = recruitInfo(tables, s, id);
-    expect(after.eligible).toBe(true);
-    expect(after.unlock).toEqual(before.unlock);
-    expect(after.cost).toBe(Math.round((before.cost / mult('free')) * mult(to)));
-    expect(getMerc(recruit(tables, s, id), id).affiliation).toEqual({ kind: 'guild' });
-  });
-
-  it('이탈 직후 보호 기간에는 이동하지 않고, 지나면 이동하며 이탈했던 용병임을 알린다', () => {
-    let s = patch(gm('protect'), 'm02', () => ({ affiliation: { kind: 'faction', factionId: 'free' }, departedDay: 1 }));
-    const t = withPoach(1);
-    const moves: DayEvent[] = [];
-    for (let i = 0; i < P.protectionDaysAfterDeparture + 1; i++) {
-      const r = advanceDay(t, rich(s));
-      s = r.state;
-      const mine = r.events.filter((e) => e.type === 'poached' && e.mercId === 'm02');
-      if (s.day - 1 <= P.protectionDaysAfterDeparture) expect(mine).toEqual([]);
-      moves.push(...mine);
+    for (const id of ['m28', 'm16', 'm05']) {
+      const costs = tables.factions.map((f) => recruitInfo(tables, patch(start, id, () => ({ affiliation: { kind: 'faction', factionId: f.id } })), id).cost);
+      expect(new Set(costs).size).toBe(1);
     }
-    expect(moves).toHaveLength(1);
-    expect(moves[0]).toMatchObject({ type: 'poached', mercId: 'm02', wasDeparted: true });
-    expect(s.day - 1).toBe(P.protectionDaysAfterDeparture + 1);
-  });
-
-  it('고향 도시에서 영향력이 모두 0이면 동률로 고른다', () => {
-    const zero: GameTables = { ...withPoach(1), factions: tables.factions.map((f) => ({ ...f, cityInfluence: {} })) };
-    const counts = new Map<string, number>();
-    for (let i = 0; i < 200; i++) {
-      const { events } = run(zero, gm(`tie-${i}`), 1);
-      for (const e of events) if (e.type === 'poached') counts.set(e.toFactionId, (counts.get(e.toFactionId) ?? 0) + 1);
-    }
-    const targets = tables.factions.filter((f) => !P.excludeTargets.includes(f.id)).map((f) => f.id);
-    expect([...counts.keys()].sort()).toEqual([...targets].sort());
-  });
-
-  it('영향력이 큰 세력으로 더 자주 간다', () => {
-    const counts = new Map<string, number>();
-    for (let i = 0; i < 200; i++) {
-      const { events } = run(withPoach(1), gm(`w-${i}`), 1);
-      for (const e of events) if (e.type === 'poached' && e.mercId === 'm28') counts.set(e.toFactionId, (counts.get(e.toFactionId) ?? 0) + 1);
-    }
-    // 안예린 고향 서울: 리프트 대응국 0.5 > 웨이포인트 0.15
-    expect(counts.get('rrb') ?? 0).toBeGreaterThan(counts.get('waypoint') ?? 0);
+    const id = 'm28';
+    const m = getMerc(start, id);
+    const c = tables.progression.recruitZeroCost;
+    const raw = c.base + c.perCapAbove30 * Math.max(0, m.growth.cap - c.capBaseline) + c.perLevel * (m.level - 1);
+    const city = tables.cities.find((x) => x.id === start.baseCityId)!;
+    const away = m.profile.hometown !== start.baseCityId ? city.recruitment.otherHometownCostMultiplier : 1;
+    expect(recruitInfo(tables, start, id).cost).toBe(Math.round(raw * away));
+    expect(getMerc(recruit(tables, start, id), id).affiliation).toEqual({ kind: 'guild' });
   });
 });
