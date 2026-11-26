@@ -8,7 +8,7 @@
     "refRetakeMismatch": 0.0049
   },
   "Recruit": {
-    "mismatchRatio": 0.1181,
+    "mismatchRatio": 0.1179,
     "refRetakeMismatch": 0
   },
   "Party": {
@@ -56,7 +56,7 @@
     "refRetakeMismatch": 0.0065
   },
   "RecruitSheet": {
-    "mismatchRatio": 0.0721,
+    "mismatchRatio": 0.0719,
     "refRetakeMismatch": 0
   },
   "PartyDrag": {

@@ -91,8 +91,8 @@ describe('023 정렬(구역 안)', () => {
 });
 
 describe('026b 세력 칩은 소속 계약자가 있는 세력만', () => {
-  it('지금 로스터: 불워크만 빠지고 세력 9개, 그 뒤에 무소속 칩이 따로 있다(026c)', () => {
-    expect(recruitChips(tables).factions.map((f) => f.id)).toEqual(['rrb', 'archon', 'indie', 'lantern', 'prism', 'rose', 'beacon', 'anchor', 'gray', UNAFFILIATED_CHIP]);
+  it('지금 로스터: 세력 10개 모두 소속 계약자가 있어 칩이 10개, 그 뒤에 무소속 칩이 따로 있다(026c·026d)', () => {
+    expect(recruitChips(tables).factions.map((f) => f.id)).toEqual([...tables.factions.map((f) => f.id), UNAFFILIATED_CHIP]);
     expect(recruitChips(tables).factions.at(-1)!.name).toBe('무소속');
   });
   // recruitChips는 게임 상태를 받지 않는다: 영입·잠김 같은 진행 상태와 무관하게 로스터 데이터로만 정한다

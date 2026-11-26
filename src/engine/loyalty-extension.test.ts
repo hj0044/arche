@@ -93,7 +93,7 @@ describe('대기 하락', () => {
     const t: GameTables = { ...tables, loyalty: { ...tables.loyalty, simulatedAffiliations: ['guild', 'rrb'] } };
     let s = gm();
     for (let i = 0; i < 3; i++) s = advanceDay(t, rich(s)).state;
-    expect(getMerc(s, 'm05').loyalty!.restStreak).toBe(3); // 리프트 대응국 소속
+    expect(getMerc(s, 'm06').loyalty!.restStreak).toBe(3); // 리프트 대응국 소속(026d)
   });
 });
 
