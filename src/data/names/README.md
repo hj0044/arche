@@ -9,6 +9,7 @@
 | 배치 | 문화권 |
 |---|---|
 | 1 | 한국, 일본, 중국, 베트남, 태국, 인도네시아·말레이시아, 필리핀 |
+| 2 | 인도 북부, 인도 남부, 파키스탄·방글라데시, 몽골·중앙아시아, 아랍 걸프·레반트, 이집트·마그레브, 튀르키예, 이란 |
 
 ## 배치 1 확인 자료
 
@@ -16,3 +17,7 @@
 - 베트남은 [이름 표기와 성씨 관습](https://hnou.edu.vn/gai-vu-to-viet-nam-a7119.html), [중성 이름 목록](https://www.behindthename.com/names/gender/unisex/usage/vietnamese)을 참고했다.
 - 인도네시아 가문명은 [가문명 표기 안내](https://perpus.ahmaddahlan.ac.id/app/uploads/2024/07/Pedoman-Penulisan-Daftar-Marga-Adat-dan-Gelar-Kebangsawanan-1.pdf)를 참고했다. 말레이시아 내부의 부칭과 성 표기 차이는 [말레이시아 외교부 안내](https://www.kln.gov.my/web/are_dubai/faqs)를 따랐다.
 - 필리핀은 [필리핀 통계청 등록 이름 통계](https://psa.gov.ph/sites/default/files/infographics/Infographics_2024%20Most%20Common%20Baby%20Names-signed.pdf)와 [성씨 분포](https://forebears.io/philippines/surnames)를 참고했다.
+
+## 배치 2 확인 자료
+
+- 중성 이름은 인도·펀자브권, 몽골, 아랍권, 튀르키예, 이란에서 쓰이는 이름 목록을 참고했다. [인도](https://www.behindthename.com/names/gender/unisex/usage/indian) · [몽골](https://www.behindthename.com/names/gender/unisex/usage/mongolian) · [아랍권](https://www.behindthename.com/names/gender/unisex/usage/arabic) · [튀르키예](https://www.behindthename.com/names/gender/unisex/usage/turkish) · [이란](https://www.behindthename.com/names/gender/unisex/usage/persian)
