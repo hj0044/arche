@@ -128,12 +128,12 @@
     {"text": "하나", "gender": "f", "tones": ["modern"]},
     {"text": "누룰이만", "gender": "f", "tones": ["modern"]},
     {"text": "아즈라", "gender": "f", "tones": ["modern"]},
-    {"text": "사라", "gender": "f", "tones": ["modern"]},
+    {"text": "티아라", "gender": "f", "tones": ["modern"]},
     {"text": "누룰후다", "gender": "f", "tones": ["modern"]},
     {"text": "누룰아인", "gender": "f", "tones": ["modern"]},
     {"text": "시티하와", "gender": "f", "tones": ["modern"]},
     {"text": "아이니", "gender": "f", "tones": ["modern"]},
-    {"text": "파라", "gender": "f", "tones": ["modern"]},
+    {"text": "아말리아", "gender": "f", "tones": ["modern"]},
     {"text": "수하일라", "gender": "f", "tones": ["modern"]},
     {"text": "자리아", "gender": "f", "tones": ["modern"]},
     {"text": "아말리나", "gender": "f", "tones": ["modern"]},
@@ -152,7 +152,7 @@
     {"text": "푸르나마", "gender": "n", "tones": ["modern"]},
     {"text": "티르타", "gender": "n", "tones": ["modern"]},
     {"text": "유스리", "gender": "n", "tones": ["modern"]},
-    {"text": "누르", "gender": "n", "tones": ["modern"]},
+    {"text": "메가", "gender": "n", "tones": ["modern"]},
     {"text": "이만", "gender": "n", "tones": ["modern"]},
     {"text": "아말", "gender": "n", "tones": ["modern"]},
     {"text": "아디", "gender": "n", "tones": ["modern"]},
@@ -160,8 +160,8 @@
     {"text": "조이", "gender": "n", "tones": ["modern"]},
     {"text": "제이미", "gender": "n", "tones": ["modern"]},
     {"text": "켈리", "gender": "n", "tones": ["modern"]},
-    {"text": "알렉스", "gender": "n", "tones": ["modern"]},
-    {"text": "다니", "gender": "n", "tones": ["modern"]},
-    {"text": "카이", "gender": "n", "tones": ["modern"]}
+    {"text": "디안", "gender": "n", "tones": ["modern"]},
+    {"text": "에카", "gender": "n", "tones": ["modern"]},
+    {"text": "앙군", "gender": "n", "tones": ["modern"]}
   ]
 }

@@ -7,7 +7,7 @@
     {"text": "오마로프", "tones": ["modern"]},
     {"text": "이브라예프", "tones": ["modern"]},
     {"text": "사르센바예프", "tones": ["modern"]},
-    {"text": "알리예프", "tones": ["modern"]},
+    {"text": "이스켄데로프", "tones": ["modern"]},
     {"text": "이스카코프", "tones": ["modern"]},
     {"text": "카나트바예프", "tones": ["modern"]},
     {"text": "쿠다이베르게노프", "tones": ["modern"]},
@@ -160,7 +160,7 @@
     {"text": "메레이", "gender": "n", "tones": ["modern"]},
     {"text": "아나르", "gender": "n", "tones": ["modern"]},
     {"text": "알마스", "gender": "n", "tones": ["modern"]},
-    {"text": "누르", "gender": "n", "tones": ["modern"]},
+    {"text": "엔흐자르갈", "gender": "n", "tones": ["modern"]},
     {"text": "술탄", "gender": "n", "tones": ["modern"]},
     {"text": "쿠르시드", "gender": "n", "tones": ["modern"]}
   ]
