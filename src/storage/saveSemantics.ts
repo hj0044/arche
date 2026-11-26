@@ -134,7 +134,7 @@ export function validateSemantics(state: GameState, t: SemanticTables): string[]
     ref(`${p}.profile.world`, t.worlds, m.profile.world, '세계');
     ref(`${p}.profile.race`, t.races, m.profile.race, '종족');
     if (m.affiliation.kind === 'faction') ref(`${p}.affiliation.factionId`, t.factions, m.affiliation.factionId, '세력');
-    else if (m.affiliation.kind !== 'guild') errors.push(`${p}.affiliation.kind: 허용되지 않은 값 "${m.affiliation.kind}"`);
+    else if (m.affiliation.kind !== 'guild' && m.affiliation.kind !== 'unaffiliated') errors.push(`${p}.affiliation.kind: 허용되지 않은 값 "${m.affiliation.kind}"`);
     atLeast(`${p}.growth.cap`, m.growth.cap, L.minMercLevel);
     atLeast(`${p}.initialLevel`, m.initialLevel, L.minMercLevel);
     within(`${p}.level`, m.level, [L.minMercLevel, Math.max(L.minMercLevel, m.growth.cap)]);

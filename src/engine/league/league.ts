@@ -21,7 +21,8 @@ export interface LeagueTeam {
   id: string;
   name: string;
   kind: 'named' | 'civil';
-  faction: string;
+  /** 세력 id, null은 무소속 */
+  faction: string | null;
   homeCity: string | null;
   /** 규모 단계 1~5 */
   scaleTier: number;

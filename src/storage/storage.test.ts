@@ -162,9 +162,30 @@ describe('세이브 v6(리프트 영역 세력)', () => {
   });
 });
 
+describe('세이브 v15(지시서 026c, AGENTS.md: 마이그레이션 없음)', () => {
+  it('버전은 15이고 v14 세이브는 지원하지 않는 세이브로 거절한다', () => {
+    expect(SAVE_VERSION).toBe(15);
+    const file = JSON.parse(serializeSave(createSaveFile(playedState(), 'manual')));
+    expect(() => parseSave(JSON.stringify({ ...file, version: 14 }))).toThrow(/지원하지 않는 세이브/);
+  });
+  it('삭제한 세력 id(웨이포인트·옛 무소속 행)가 들어 있는 세이브는 의미 검증에서 거절한다', () => {
+    const s = playedState();
+    for (const bad of ['way' + 'point', 'fr' + 'ee']) {
+      const c = structuredClone(s);
+      c.mercenaries.find((m) => m.affiliation.kind === 'unaffiliated')!.affiliation = { kind: 'faction', factionId: bad };
+      expect(() => parseSave(serializeSave(createSaveFile(c, 'manual')), { ...tables, limits: saveLimits })).toThrow(/세력/);
+    }
+  });
+  it('무소속 계약자(affiliation.kind unaffiliated)를 저장하고 불러올 수 있다', () => {
+    const s = playedState();
+    expect(s.mercenaries.filter((m) => m.affiliation.kind === 'unaffiliated')).toHaveLength(7);
+    const back = parseSave(serializeSave(createSaveFile(s, 'manual')), { ...tables, limits: saveLimits });
+    expect(back.state).toEqual(s);
+  });
+});
+
 describe('세이브 v14(지시서 028a, AGENTS.md: 마이그레이션 없음)', () => {
-  it('버전은 14이고 v13 세이브는 지원하지 않는 세이브로 거절한다', () => {
-    expect(SAVE_VERSION).toBe(14);
+  it('v13 세이브는 지원하지 않는 세이브로 거절한다', () => {
     const file = JSON.parse(serializeSave(createSaveFile(playedState(), 'manual')));
     expect(() => parseSave(JSON.stringify({ ...file, version: 13 }))).toThrow(/지원하지 않는 세이브/);
   });

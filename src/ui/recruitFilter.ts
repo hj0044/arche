@@ -62,7 +62,8 @@ export function matchesRecruit(row: RecruitRow, view: Pick<RecruitView, 'query' 
   }
   if (f.roles.length && (hidden || !f.roles.includes(row.m.role))) return false;
   if (f.elements.length && (hidden || !f.elements.includes(row.m.element))) return false;
-  const faction = row.m.affiliation.kind === 'faction' ? row.m.affiliation.factionId : '';
+  const aff = row.m.affiliation;
+  const faction = aff.kind === 'faction' ? aff.factionId : aff.kind === 'unaffiliated' ? UNAFFILIATED_CHIP : '';
   if (f.factions.length && (hidden || !f.factions.includes(faction))) return false;
   return true;
 }
@@ -100,14 +101,21 @@ export function recruitSections(rows: RecruitRow[], view: RecruitView): RecruitS
   return { counts, sections };
 }
 
-/** 필터 시트 칩: 역할·속성은 표에서, 도시는 도시 표, 소속은 세력 표 중 로스터에 소속 계약자가 한 명 이상 있는 세력(지시서 026b).
+/** 소속 필터의 '무소속' 칩 id. 무소속은 세력이 아니라 상태다(지시서 026c) */
+export const UNAFFILIATED_CHIP = 'unaffiliated';
+
+/** 필터 시트 칩: 역할·속성은 표에서, 도시는 도시 표, 소속은 세력 표 중 로스터에 소속 계약자가 한 명 이상 있는 세력(지시서 026b)
+ * 뒤에 '무소속' 칩을 늘 따로 둔다(지시서 026c, 소속 계약자 규칙은 세력 칩에만).
  * 진행 상태(영입·잠김)와 무관하게 로스터 데이터 기준이라 칩이 생기거나 사라지지 않는다. */
 export function recruitChips(tables: GameTables) {
   return {
     roles: tables.roles.filter((r) => r.enabled).map((r) => ({ id: r.id, name: r.name })),
     elements: tables.elements.map((e) => ({ id: e.id, name: e.name })),
     cities: tables.cities.map((c) => ({ id: c.id, name: c.name })),
-    factions: tables.factions.filter((f) => tables.roster.some((r) => r.faction === f.id)).map((f) => ({ id: f.id, name: f.name })),
+    factions: [
+      ...tables.factions.filter((f) => tables.roster.some((r) => r.faction === f.id)).map((f) => ({ id: f.id, name: f.name })),
+      { id: UNAFFILIATED_CHIP, name: '무소속' },
+    ],
   };
 }
 

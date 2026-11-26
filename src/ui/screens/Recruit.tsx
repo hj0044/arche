@@ -43,7 +43,7 @@ function useView(ctx: Ctx): [RecruitView, (p: Partial<RecruitView>) => void] {
 const KIND_NAME: Record<RecruitKind, string> = { ready: '영입 가능', progress: '진행 중', locked: '잠김' };
 const affText = (m: MercenaryState) => {
   const f = m.affiliation.kind === 'faction' ? m.affiliation.factionId : null;
-  return f === 'free' ? '소속 없음' : f ? factionName(f) : '';
+  return m.affiliation.kind === 'unaffiliated' ? '무소속' : f ? factionName(f) : '';
 };
 
 /** 고정 머리: 한 줄 요약 · 검색줄(검색·필터·정렬) · 상태 칩 */

@@ -11,12 +11,13 @@ import { validateSemantics, type SemanticTables } from './saveSemantics';
  * v9: 스킬 구조(기본 공격 + 액티브 3)·자객·기만자·계약자 36명(지시서 020). 전투 안의 상태 효과는 저장하지 않는다.
  * v10: 성장 속도 삭제(growth.speed 없음)·계약자별 성장률(지시서 021).
  * v11: 주인공 캐릭터·개방자 모드 폐지(protagonist는 이름·배경만), 외곽 임무·자동 배치 설정(지시서 022). v10은 불러오지 않는다(마이그레이션 없음).
+ * v15: 세력 10개(웨이포인트·무소속 행 삭제, 랜턴·프리즘·장미·비컨·앵커·그레이 추가, indie는 '에지 서클'), 무소속은 세력이 아닌 상태(affiliation.kind 'unaffiliated'), NPC 팀 세력은 id 또는 null(지시서 026c). v14는 불러오지 않는다(마이그레이션 없음).
  * v14: 리그 세계(league: NPC 용병단 39팀·명단·시즌 곡선 파라미터·간이 정산·최근 5시즌 이력, 지시서 028a). v13은 불러오지 않는다(마이그레이션 없음).
  * v13: 계약자 활약도 기록(activity: 시즌·통산 합계, 지난 시즌, 최근 공략, 지시서 027). v12는 불러오지 않는다(마이그레이션 없음).
- * v12: 세력 정리(지시서 026). 옛 소수 용병단 세력 삭제(소속 계약자는 독립 강자 모임 indie), 불워크 시스템즈 추가, 무소속 스카우트 이동 폐지. v11은 불러오지 않는다(마이그레이션 없음).
+ * v12: 세력 정리(지시서 026). 옛 소수 용병단 세력 삭제(소속 계약자는 indie), 불워크 시스템즈 추가, 무소속 스카우트 이동 폐지. v11은 불러오지 않는다(마이그레이션 없음).
  */
 export const SAVE_FORMAT = 'arche-save';
-export const SAVE_VERSION = 14;
+export const SAVE_VERSION = 15;
 
 export type SaveKind = 'manual' | 'auto';
 

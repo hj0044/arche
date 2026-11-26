@@ -130,7 +130,7 @@ describe('영역 세력', () => {
     const seen = new Set<string | null>();
     for (let i = 0; i < 300; i++) seen.add(pickTerritoryFaction(t, 'seoul', createRng(`w${i}`)));
     expect(seen.has('rrb')).toBe(false);
-    expect(seen.has('free')).toBe(false);
+    for (const f of seen) expect(tables.factions.some((x) => x.id === f)).toBe(true); // 무소속은 세력 행이 없어 후보에 없다(026c)
     expect(seen.has(null)).toBe(false);
     expect(seen.size).toBeGreaterThan(1);
   });

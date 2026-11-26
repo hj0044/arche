@@ -144,7 +144,8 @@ export type DayEvent =
   | { type: 'preempted'; riftId: string; name: string; cityId: string; factionId: string | null }
   | { type: 'upkeep'; paid: number; unpaid: number; unpaidMercIds: string[] }
   | { type: 'loyaltyTier'; mercId: string; from: string; to: string }
-  | { type: 'departed'; mercId: string; factionId: string }
+  /** 충성도 이탈: 무소속이 된다(지시서 026c) */
+  | { type: 'departed'; mercId: string }
   | { type: 'facilityBuilt'; facilityId: string; level: number }
   | { type: 'trained'; facilityId: string; mercId: string; exp: number }
   | { type: 'unassigned'; facilityId: string; mercId: string; reason: string }
@@ -247,7 +248,8 @@ function unlockProgress(state: GameState, rule: UnlockRule): { current: number; 
 export function recruitInfo(tables: GameTables, state: GameState, mercId: string): RecruitInfo {
   const m = getMerc(state, mercId);
   const aff = m.affiliation;
-  const faction = aff.kind === 'faction' ? tables.factions.find((f) => f.id === aff.factionId) : undefined;
+  // 영입 대상: 세력 소속이거나 무소속(지시서 026c). 길드원은 아니다
+  const eligible = aff.kind === 'unaffiliated' || (aff.kind === 'faction' && tables.factions.some((f) => f.id === aff.factionId));
   const c = tables.progression.recruitZeroCost;
   const city = tables.cities.find((x) => x.id === state.baseCityId);
   const away = m.profile.hometown !== state.baseCityId ? (city?.recruitment.otherHometownCostMultiplier ?? 1) : 1;
@@ -256,7 +258,7 @@ export function recruitInfo(tables: GameTables, state: GameState, mercId: string
   const rule = tables.roster.find((r) => r.id === m.id)?.unlock;
   const progress = rule && unlockProgress(state, rule);
   return {
-    eligible: !!faction,
+    eligible,
     cost,
     unlock: rule,
     progress,
@@ -345,7 +347,7 @@ export function newGame(tables: GameTables, opts: NewGameOptions): GameState {
     growth: { ...r.growth },
     initialLevel: r.initialLevel,
     profile: { age: r.age, gender: r.gender, hometown: r.hometown, background: r.background, world: r.world, race: r.race },
-    affiliation: r.faction === 'guild' ? { kind: 'guild' } : { kind: 'faction', factionId: r.faction },
+    affiliation: r.faction === 'guild' ? { kind: 'guild' } : r.faction === null ? { kind: 'unaffiliated' } : { kind: 'faction', factionId: r.faction },
     loyalty: newLoyalty(tables),
   }));
 
@@ -811,10 +813,10 @@ export function advanceDay(tables: GameTables, prev: GameState): { state: GameSt
     if (cfg.departure.excludeOnExpedition && isOnExpedition(state, m.id)) continue;
     if (!createRng(`${state.seed}:depart:${state.day}:${m.id}`).chance(cfg.departure.chance)) continue;
     // 이탈하면 무소속으로 옮기고 충성도는 시작값으로 되돌려 보관한다.
-    m.affiliation = { kind: 'faction', factionId: cfg.departure.toFaction };
+    m.affiliation = { kind: 'unaffiliated' };
     m.loyalty = newLoyalty(tables);
     m.departedDay = state.day;
-    events.push({ type: 'departed', mercId: m.id, factionId: cfg.departure.toFaction });
+    events.push({ type: 'departed', mercId: m.id });
   }
 
   // 배치 정리: 길드를 떠났거나 부상·파견 중이거나 칸이 줄어든 배치는 자동으로 해제한다.
