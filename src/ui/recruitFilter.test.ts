@@ -2,7 +2,7 @@
 import { describe, expect, it } from 'vitest';
 import { tables } from '../data';
 import { newGame, type GameState } from '../engine/game';
-import { defaultRecruitView, emptyRecruitSheet, matchesRecruit, recruitRows, recruitSections, type RecruitView } from './recruitFilter';
+import { defaultRecruitView, emptyRecruitSheet, recruitChips, matchesRecruit, recruitRows, recruitSections, type RecruitView } from './recruitFilter';
 
 const base = (): GameState => newGame(tables, { seed: 'rec', guildName: 'g', baseCityId: 'seoul', protagonist: { name: 'm' } });
 /** 총 승리 2번: m07·m17(5번 조건)은 진행 중, 관문 조건(m12·m18·m26)은 잠김 */
@@ -87,5 +87,19 @@ describe('023 정렬(구역 안)', () => {
     const g = ready('capDesc');
     for (let i = 1; i < g.length; i++) expect(g[i - 1].m.growth.cap).toBeGreaterThanOrEqual(g[i].m.growth.cap);
     expect(tables.ui.recruitSort.map((x) => x.id)).toEqual(['recruit', 'costAsc', 'levelDesc', 'capDesc']);
+  });
+});
+
+describe('026b 세력 칩은 소속 계약자가 있는 세력만', () => {
+  it('지금 로스터: 불워크는 빠지고 나머지 5개 세력이 보인다', () => {
+    expect(recruitChips(tables).factions.map((f) => f.id)).toEqual(['rrb', 'archon', 'indie', 'waypoint', 'free']);
+  });
+  // recruitChips는 게임 상태를 받지 않는다: 영입·잠김 같은 진행 상태와 무관하게 로스터 데이터로만 정한다
+  it('소속 0명인 세력은 칩에 없고, 한 명이라도 생기면 코드 수정 없이 나온다', () => {
+    const roster = tables.roster.map((r, i) => (i === tables.roster.findIndex((x) => x.faction === 'rrb') ? { ...r, faction: 'bulwark' } : r));
+    const withBulwark = recruitChips({ ...tables, roster }).factions.map((f) => f.id);
+    expect(withBulwark).toContain('bulwark');
+    const none = recruitChips({ ...tables, roster: tables.roster.map((r) => (r.faction === 'archon' ? { ...r, faction: 'free' } : r)) }).factions.map((f) => f.id);
+    expect(none).not.toContain('archon');
   });
 });
