@@ -55,8 +55,8 @@ describe('018 5: 행동 순서 흔들림', () => {
   it('speedJitter 0이면 변경 전(main)과 전투 결과가 같다', () => {
     const h = createHash('sha256');
     for (let i = 0; i < 300; i++) h.update(JSON.stringify(resolveCombat(withJitter(0), fightOf(i)).events));
-    // 기준 해시는 지시서 025(표식 ×1.4, 속박·현혹·약점 노출 수치)에서 다시 잡았다. 그 뒤로 전투 규칙이 바뀌면 이 값도 바뀐다
-    expect(h.digest('hex')).toBe('8e8184728a8df0b480355219f58083907c9be12d9e688ebb4be18c96a201c717');
+    // 기준 해시는 지시서 025(표식 ×1.4, 속박·현혹·약점 노출 수치)와 025 후속(방패 강타 위력 1.2)에서 다시 잡았다. 그 뒤로 전투 규칙이 바뀌면 이 값도 바뀐다
+    expect(h.digest('hex')).toBe('9aed32da6270b277a3cb2d539b1c67fff05a378d095123df2b01d75257c42e4c');
   });
 
   it('speedJitter > 0에서도 같은 시드 = 같은 결과(2,000개 시드)', () => {
