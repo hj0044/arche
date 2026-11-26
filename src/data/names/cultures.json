@@ -1,0 +1,9 @@
+[
+  {"id": "korea", "name": "한국", "continent": "east_asia", "population": 52, "order": "family_first", "surnameCount": [1, 1]},
+  {"id": "japan", "name": "일본", "continent": "east_asia", "population": 125, "order": "family_first", "surnameCount": [1, 1]},
+  {"id": "china", "name": "중국", "continent": "east_asia", "population": 1400, "order": "family_first", "surnameCount": [1, 1]},
+  {"id": "vietnam", "name": "베트남", "continent": "southeast_asia", "population": 100, "order": "family_first", "surnameCount": [1, 1]},
+  {"id": "thailand", "name": "태국", "continent": "southeast_asia", "population": 70, "order": "given_first", "surnameCount": [1, 1]},
+  {"id": "indonesia_malaysia", "name": "인도네시아·말레이시아", "continent": "southeast_asia", "population": 300, "order": "given_first", "surnameCount": [1, 1], "note": "가문명과 성을 쓰는 경우의 재료를 담았다."},
+  {"id": "philippines", "name": "필리핀", "continent": "southeast_asia", "population": 115, "order": "given_first", "surnameCount": [1, 1]}
+]
