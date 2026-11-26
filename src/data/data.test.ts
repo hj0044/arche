@@ -92,7 +92,7 @@ describe('지시서 027: 활약도 데이터', () => {
     for (const r of tables.roles.filter((x) => x.enabled)) {
       for (const it of c.items) {
         expect(c.weights[r.id]?.[it.id] ?? -1, `${r.id}.${it.id} 가중치`).toBeGreaterThanOrEqual(0);
-        expect(c.baselines[r.id]?.[it.id] ?? -1, `${r.id}.${it.id} 기준값`).toBeGreaterThanOrEqual(0);
+        for (const b of c.levelBands) expect(c.baselines[r.id]?.[b.id]?.[it.id] ?? -1, `${r.id}.${b.id}.${it.id} 기준값`).toBeGreaterThanOrEqual(0);
       }
       // 처치 가중치는 피해보다 낮다(마무리만 노리는 쪽이 유리하지 않게)
       expect(c.weights[r.id].kill).toBeLessThan(c.weights[r.id].damage);

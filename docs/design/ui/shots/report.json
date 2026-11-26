@@ -64,7 +64,7 @@
     "refRetakeMismatch": 0
   },
   "Records": {
-    "mismatchRatio": 0.0363,
-    "refRetakeMismatch": 0
+    "mismatchRatio": 0.0408,
+    "refRetakeMismatch": null
   }
 }

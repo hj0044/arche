@@ -1,6 +1,6 @@
 {
  "format": "arche-save",
- "version": 16,
+ "version": 17,
  "savedAt": "2026-11-23T00:00:00.000Z",
  "kind": "manual",
  "summary": {
@@ -266,6 +266,26 @@
        "cleanse": 0,
        "buff": 30,
        "debuff": 0
+      },
+      "ratios": {
+       "damage": 2.3776223776223775,
+       "kill": 0,
+       "guard": 0,
+       "heal": 0,
+       "status": 3.4129692832764507,
+       "cleanse": 0,
+       "buff": 3.3036009250082596,
+       "debuff": 0
+      },
+      "ratioCounts": {
+       "damage": 4,
+       "kill": 4,
+       "guard": 4,
+       "heal": 0,
+       "status": 4,
+       "cleanse": 0,
+       "buff": 4,
+       "debuff": 4
       }
      },
      "season": {
@@ -282,6 +302,26 @@
        "cleanse": 0,
        "buff": 30,
        "debuff": 0
+      },
+      "ratios": {
+       "damage": 2.3776223776223775,
+       "kill": 0,
+       "guard": 0,
+       "heal": 0,
+       "status": 3.4129692832764507,
+       "cleanse": 0,
+       "buff": 3.3036009250082596,
+       "debuff": 0
+      },
+      "ratioCounts": {
+       "damage": 4,
+       "kill": 4,
+       "guard": 4,
+       "heal": 0,
+       "status": 4,
+       "cleanse": 0,
+       "buff": 4,
+       "debuff": 4
       }
      },
      "pastSeasons": [],
@@ -290,28 +330,28 @@
        "day": 10,
        "riftName": "뉴욕 심야 편의점 뒷문 균열",
        "tier": "crack",
-       "score": 48,
+       "score": 52,
        "outcome": "victory"
       },
       {
        "day": 8,
        "riftName": "서울 지하 배수로 균열",
        "tier": "crack",
-       "score": 48,
+       "score": 53,
        "outcome": "defeat"
       },
       {
        "day": 6,
        "riftName": "도쿄 지하 배수로 균열",
        "tier": "crack",
-       "score": 30,
+       "score": 34,
        "outcome": "defeat"
       },
       {
        "day": 4,
        "riftName": "서울 폐역 승강장 균열",
        "tier": "crack",
-       "score": 31,
+       "score": 34,
        "outcome": "victory"
       }
      ]
@@ -362,6 +402,26 @@
        "cleanse": 0,
        "buff": 0,
        "debuff": 0
+      },
+      "ratios": {
+       "damage": 2.871794871794872,
+       "kill": 0.9041591320072332,
+       "guard": 0,
+       "heal": 0,
+       "status": 12.847965738758027,
+       "cleanse": 0,
+       "buff": 0,
+       "debuff": 0
+      },
+      "ratioCounts": {
+       "damage": 4,
+       "kill": 4,
+       "guard": 0,
+       "heal": 0,
+       "status": 4,
+       "cleanse": 0,
+       "buff": 0,
+       "debuff": 0
       }
      },
      "season": {
@@ -378,6 +438,26 @@
        "cleanse": 0,
        "buff": 0,
        "debuff": 0
+      },
+      "ratios": {
+       "damage": 2.871794871794872,
+       "kill": 0.9041591320072332,
+       "guard": 0,
+       "heal": 0,
+       "status": 12.847965738758027,
+       "cleanse": 0,
+       "buff": 0,
+       "debuff": 0
+      },
+      "ratioCounts": {
+       "damage": 4,
+       "kill": 4,
+       "guard": 0,
+       "heal": 0,
+       "status": 4,
+       "cleanse": 0,
+       "buff": 0,
+       "debuff": 0
       }
      },
      "pastSeasons": [],
@@ -386,28 +466,28 @@
        "day": 10,
        "riftName": "뉴욕 심야 편의점 뒷문 균열",
        "tier": "crack",
-       "score": 80,
+       "score": 118,
        "outcome": "victory"
       },
       {
        "day": 8,
        "riftName": "서울 지하 배수로 균열",
        "tier": "crack",
-       "score": 6,
+       "score": 12,
        "outcome": "defeat"
       },
       {
        "day": 6,
        "riftName": "도쿄 지하 배수로 균열",
        "tier": "crack",
-       "score": 90,
+       "score": 137,
        "outcome": "defeat"
       },
       {
        "day": 4,
        "riftName": "서울 폐역 승강장 균열",
        "tier": "crack",
-       "score": 114,
+       "score": 161,
        "outcome": "victory"
       }
      ]
@@ -458,6 +538,26 @@
        "cleanse": 0,
        "buff": 0,
        "debuff": 0
+      },
+      "ratios": {
+       "damage": 8.934085388447444,
+       "kill": 4.761904761904762,
+       "guard": 0,
+       "heal": 4.2367781228184205,
+       "status": 0,
+       "cleanse": 0,
+       "buff": 0,
+       "debuff": 0
+      },
+      "ratioCounts": {
+       "damage": 4,
+       "kill": 4,
+       "guard": 4,
+       "heal": 4,
+       "status": 0,
+       "cleanse": 0,
+       "buff": 0,
+       "debuff": 0
       }
      },
      "season": {
@@ -474,6 +574,26 @@
        "cleanse": 0,
        "buff": 0,
        "debuff": 0
+      },
+      "ratios": {
+       "damage": 8.934085388447444,
+       "kill": 4.761904761904762,
+       "guard": 0,
+       "heal": 4.2367781228184205,
+       "status": 0,
+       "cleanse": 0,
+       "buff": 0,
+       "debuff": 0
+      },
+      "ratioCounts": {
+       "damage": 4,
+       "kill": 4,
+       "guard": 4,
+       "heal": 4,
+       "status": 0,
+       "cleanse": 0,
+       "buff": 0,
+       "debuff": 0
       }
      },
      "pastSeasons": [],
@@ -482,28 +602,28 @@
        "day": 10,
        "riftName": "뉴욕 심야 편의점 뒷문 균열",
        "tier": "crack",
-       "score": 53,
+       "score": 91,
        "outcome": "victory"
       },
       {
        "day": 8,
        "riftName": "서울 지하 배수로 균열",
        "tier": "crack",
-       "score": 29,
+       "score": 68,
        "outcome": "defeat"
       },
       {
        "day": 6,
        "riftName": "도쿄 지하 배수로 균열",
        "tier": "crack",
-       "score": 36,
+       "score": 93,
        "outcome": "defeat"
       },
       {
        "day": 4,
        "riftName": "서울 폐역 승강장 균열",
        "tier": "crack",
-       "score": 34,
+       "score": 80,
        "outcome": "victory"
       }
      ]
@@ -554,6 +674,26 @@
        "cleanse": 0,
        "buff": 0,
        "debuff": 2
+      },
+      "ratios": {
+       "damage": 2.666666666666667,
+       "kill": 2.1691973969631233,
+       "guard": 0,
+       "heal": 0,
+       "status": 2.159827213822894,
+       "cleanse": 0,
+       "buff": 0,
+       "debuff": 51.282051282051285
+      },
+      "ratioCounts": {
+       "damage": 4,
+       "kill": 4,
+       "guard": 0,
+       "heal": 0,
+       "status": 4,
+       "cleanse": 0,
+       "buff": 0,
+       "debuff": 4
       }
      },
      "season": {
@@ -570,6 +710,26 @@
        "cleanse": 0,
        "buff": 0,
        "debuff": 2
+      },
+      "ratios": {
+       "damage": 2.666666666666667,
+       "kill": 2.1691973969631233,
+       "guard": 0,
+       "heal": 0,
+       "status": 2.159827213822894,
+       "cleanse": 0,
+       "buff": 0,
+       "debuff": 51.282051282051285
+      },
+      "ratioCounts": {
+       "damage": 4,
+       "kill": 4,
+       "guard": 0,
+       "heal": 0,
+       "status": 4,
+       "cleanse": 0,
+       "buff": 0,
+       "debuff": 4
       }
      },
      "pastSeasons": [],
@@ -578,7 +738,7 @@
        "day": 10,
        "riftName": "뉴욕 심야 편의점 뒷문 균열",
        "tier": "crack",
-       "score": 158,
+       "score": 415,
        "outcome": "victory"
       },
       {
@@ -599,7 +759,7 @@
        "day": 4,
        "riftName": "서울 폐역 승강장 균열",
        "tier": "crack",
-       "score": 163,
+       "score": 436,
        "outcome": "victory"
       }
      ]

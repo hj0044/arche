@@ -2,7 +2,7 @@
 import { describe, expect, it } from 'vitest';
 import { getRole, tables, type GameTables, type Row } from '../data';
 import { CONTRIBUTION_MEASURES, emptyTally, resolveCombat, type CombatEvent, type CombatSlot, type ContributionTally } from './combat';
-import { activityScore, currentSeasonTally, itemRatio, recordSortie, seasonOf, type SortieInput } from './contribution';
+import { activityScore, currentSeasonTally, emptyActivityTally, isApplicableAt, levelBandOf, recordSortie, seasonOf, sortieScore, type SortieInput } from './contribution';
 import { advanceDay, dispatch, mercToUnit, newGame } from './game';
 import { createRng } from './rng';
 import { createMonster } from './unit';
@@ -157,56 +157,69 @@ describe('027 기여 측정값(전투 로그와 대조)', () => {
 
 describe('027 활약도 계산', () => {
   const c = tables.contribution;
-  const baselineOf = (role: string) => Object.fromEntries(c.items.map((i) => [i.id, c.baselines[role]?.[i.id] ?? 0]));
+  const L = 25; // 21-30 구간
+  const bandOf = (level: number) => c.levelBands.find((b) => level >= b.min && level <= b.max)!.id;
+  const baselineOf = (role: string, level = L) => Object.fromEntries(c.items.map((i) => [i.id, c.baselines[role]?.[bandOf(level)]?.[i.id] ?? 0]));
 
-  it('역할 평균(기준값)을 넣으면 100', () => {
-    for (const role of tables.roles.filter((r) => r.enabled).map((r) => r.id)) {
-      expect(activityScore(tables, role, baselineOf(role), 1)).toBeCloseTo(100, 6);
-      const three = Object.fromEntries(Object.entries(baselineOf(role)).map(([k, v]) => [k, v * 3]));
-      expect(activityScore(tables, role, three, 3)).toBeCloseTo(100, 6);
-    }
+  it('레벨 구간 찾기: 경계 10/11, 20/21, 70', () => {
+    expect(levelBandOf(tables, 1).id).toBe('1-10');
+    expect(levelBandOf(tables, 10).id).toBe('1-10');
+    expect(levelBandOf(tables, 11).id).toBe('11-20');
+    expect(levelBandOf(tables, 20).id).toBe('11-20');
+    expect(levelBandOf(tables, 21).id).toBe('21-30');
+    expect(levelBandOf(tables, 70).id).toBe('61-70');
+    expect(levelBandOf(tables, 99).id).toBe('61-70'); // 범위 밖은 가장 가까운 구간
+  });
+
+  it('같은 역할·같은 레벨대 평균(기준값)을 넣으면 모든 구간에서 100', () => {
+    for (const role of tables.roles.filter((r) => r.enabled).map((r) => r.id))
+      for (const b of c.levelBands) expect(sortieScore(tables, role, b.min, baselineOf(role, b.min)), `${role} ${b.id}`).toBeCloseTo(100, 6);
   });
 
   it('가중치 0인 항목은 점수에 영향이 없다(해당 없음 = 불이익 없음)', () => {
     const role = 'warrior';
     const zero = c.items.find((i) => (c.weights[role][i.id] ?? 0) === 0)!;
-    const base = activityScore(tables, role, baselineOf(role), 1)!;
-    expect(activityScore(tables, role, { ...baselineOf(role), [zero.id]: 9999 }, 1)).toBeCloseTo(base, 9);
-    expect(itemRatio(tables, role, zero.id, 9999, 1)).toBeNull();
+    const base = sortieScore(tables, role, L, baselineOf(role))!;
+    expect(sortieScore(tables, role, L, { ...baselineOf(role), [zero.id]: 9999 })).toBeCloseTo(base, 9);
+    expect(isApplicableAt(tables, role, L, zero.id)).toBe(false);
   });
 
   it('기준값이 0인 항목도 계산에서 빠진다(가중치가 있어도)', () => {
-    const t: GameTables = { ...tables, contribution: { ...c, baselines: { ...c.baselines, archer: { ...c.baselines.archer, status: 0 } } } };
-    const b = baselineOf('archer');
-    expect(activityScore(t, 'archer', { ...b, status: 0 }, 1)).toBeCloseTo(100, 6);
+    const band = bandOf(L);
+    const t: GameTables = { ...tables, contribution: { ...c, baselines: { ...c.baselines, archer: { ...c.baselines.archer, [band]: { ...c.baselines.archer[band], status: 0 } } } } };
+    expect(sortieScore(t, 'archer', L, { ...baselineOf('archer'), status: 0 })).toBeCloseTo(100, 6);
   });
 
   it('피해와 처치 가중치가 다르면 같은 비율 변화라도 점수가 달라진다(처치 < 피해)', () => {
     const role = 'mage';
     expect(c.weights[role].kill).toBeLessThan(c.weights[role].damage);
     const b = baselineOf(role);
-    const moreDamage = activityScore(tables, role, { ...b, damage: b.damage * 2 }, 1)!;
-    const moreKill = activityScore(tables, role, { ...b, kill: b.kill * 2 }, 1)!;
-    expect(moreDamage).toBeGreaterThan(moreKill);
+    expect(sortieScore(tables, role, L, { ...b, damage: b.damage * 2 })!).toBeGreaterThan(sortieScore(tables, role, L, { ...b, kill: b.kill * 2 })!);
+  });
+
+  it('같은 원값이라도 레벨 구간이 높으면 점수가 낮다(높은 레벨은 기준값이 크다)', () => {
+    const b = baselineOf('archer', 15);
+    expect(sortieScore(tables, 'archer', 15, b)!).toBeCloseTo(100, 6);
+    expect(sortieScore(tables, 'archer', 65, b)!).toBeLessThan(70);
   });
 
   it('출전 0이면 점수 없음(null, 화면 —)', () => {
-    expect(activityScore(tables, 'mage', baselineOf('mage'), 0)).toBeNull();
+    expect(activityScore(tables, 'mage', emptyActivityTally(tables))).toBeNull();
   });
 
-  it('모든 역할에 계산할 항목이 하나 이상 있고, 가중치 표는 항목 id만 쓴다', () => {
+  it('모든 역할·구간에 계산할 항목이 하나 이상 있고, 표는 항목 id만 쓴다', () => {
     const ids = new Set(c.items.map((i) => i.id));
     expect([...ids].sort()).toEqual([...CONTRIBUTION_MEASURES].sort());
     for (const role of tables.roles.filter((r) => r.enabled)) {
       expect(Object.keys(c.weights[role.id]).every((k) => ids.has(k))).toBe(true);
-      expect(c.items.some((i) => (c.weights[role.id][i.id] ?? 0) > 0 && (c.baselines[role.id]?.[i.id] ?? 0) > 0), role.id).toBe(true);
+      for (const b of c.levelBands) expect(c.items.some((i) => isApplicableAt(tables, role.id, b.min, i.id)), `${role.id} ${b.id}`).toBe(true);
     }
   });
 });
 
 describe('027 시즌·통산 기록', () => {
   const tally = (dmg: number): ContributionTally => ({ ...emptyTally(), damage: dmg, kill: 1 });
-  const sortie = (day: number, dmg = 100, over: Partial<SortieInput> = {}): SortieInput => ({ day, role: 'mage', riftName: `r${day}`, tier: 'crack', outcome: 'victory', downed: false, tally: tally(dmg), ...over });
+  const sortie = (day: number, dmg = 100, over: Partial<SortieInput> = {}): SortieInput => ({ day, role: 'mage', level: 25, riftName: `r${day}`, tier: 'crack', outcome: 'victory', downed: false, tally: tally(dmg), ...over });
 
   it('시즌 번호 = floor((일차 − 1) ÷ 60) + 1(리그 시즌 길이로 일원화, 028a)', () => {
     expect(seasonOf(tables, 1)).toBe(1);
@@ -228,15 +241,27 @@ describe('027 시즌·통산 기록', () => {
     expect(rec.pastSeasons.map((p) => [p.no, p.items.damage])).toEqual([[1, 150]]);
   });
 
-  it('누적 활약도는 항목 합계로 다시 계산한다(최근 10건 점수가 아니라 전체 합계 ÷ 출전)', () => {
-    let rec = recordSortie(tables, undefined, sortie(1, 2000));
-    for (let d = 2; d <= 12; d++) rec = recordSortie(tables, rec, sortie(d, 10));
+  it('누적 활약도는 비율 합계로 다시 계산한다(최근 10건 점수가 아니라 전체 공략, 레벨이 섞여도 각자 구간으로)', () => {
+    let rec = recordSortie(tables, undefined, sortie(1, 2000, { level: 8 }));
+    for (let d = 2; d <= 12; d++) rec = recordSortie(tables, rec, sortie(d, 10, { level: d < 7 ? 15 : 45 }));
     expect(rec.recent).toHaveLength(10);
-    const cumulative = activityScore(tables, 'mage', rec.career.items, rec.career.sorties)!;
-    const expected = activityScore(tables, 'mage', { ...emptyTally(), damage: (2000 + 11 * 10) / 12, kill: 1 }, 1)!;
-    expect(cumulative).toBeCloseTo(expected, 6);
+    const cumulative = activityScore(tables, 'mage', rec.career)!;
+    // 공략별 점수(반올림 전)의 평균과 같다(활약도가 항목 비율에 대해 선형이고 모든 공략에 같은 항목이 들어갈 때)
+    const per = [sortieScore(tables, 'mage', 8, { ...tally(2000) })!, ...Array.from({ length: 11 }, (_, k) => sortieScore(tables, 'mage', k + 2 < 7 ? 15 : 45, { ...tally(10) })!)];
+    expect(cumulative).toBeCloseTo(per.reduce((a, x) => a + x, 0) / per.length, 6);
     const recentAvg = rec.recent.reduce((a, r) => a + r.score!, 0) / rec.recent.length;
     expect(cumulative).toBeGreaterThan(recentAvg + 10);
+    expect(rec.career.ratioCounts.damage).toBe(12);
+  });
+
+  it('최근 공략 점수는 그 시점 기준값으로 저장되고 나중에 기준값이 바뀌어도 그대로다', () => {
+    const rec = recordSortie(tables, undefined, sortie(3, 300));
+    const saved = rec.recent[0].score;
+    const c = tables.contribution;
+    const t: GameTables = { ...tables, contribution: { ...c, baselines: { ...c.baselines, mage: Object.fromEntries(Object.entries(c.baselines.mage).map(([k, v]) => [k, { ...v, damage: v.damage * 2 }])) } } };
+    const rec2 = recordSortie(t, rec, sortie(4, 300));
+    expect(rec2.recent[1].score).toBe(saved);
+    expect(rec2.recent[0].score).toBeLessThan(saved!);
   });
 
   it('최근 공략은 최신이 앞, 최대 10건. 지난 시즌은 최근 5시즌만', () => {

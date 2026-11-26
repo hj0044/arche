@@ -162,9 +162,34 @@ describe('세이브 v6(리프트 영역 세력)', () => {
   });
 });
 
+describe('세이브 v17(지시서 027b, AGENTS.md: 마이그레이션 없음)', () => {
+  const withActivity = (): GameState => {
+    let s = playedState();
+    for (let i = 0; i < 6 && !s.mercenaries.some((m) => m.activity); i++) s = advanceDay(tables, s).state;
+    return s;
+  };
+  it('버전은 17이고 v16 세이브는 지원하지 않는 세이브로 거절한다', () => {
+    expect(SAVE_VERSION).toBe(17);
+    const file = JSON.parse(serializeSave(createSaveFile(playedState(), 'manual')));
+    expect(() => parseSave(JSON.stringify({ ...file, version: 16 }))).toThrow(/지원하지 않는 세이브/);
+  });
+  it('비율 합계·공략 수를 저장하고 불러오면 그대로이고, 어긋나면 거절한다', () => {
+    const s = withActivity();
+    const id = s.mercenaries.find((x) => x.activity)!.id;
+    expect(parseSave(serializeSave(createSaveFile(s, 'manual')), { ...tables, limits: saveLimits }).state).toEqual(s);
+    const bad = (f: (a: NonNullable<GameState['mercenaries'][number]['activity']>) => void) => {
+      const c = structuredClone(s);
+      f(c.mercenaries.find((x) => x.id === id)!.activity!);
+      return () => parseSave(serializeSave(createSaveFile(c, 'manual')), { ...tables, limits: saveLimits });
+    };
+    expect(bad((a) => (a.career.ratioCounts.damage = a.career.sorties + 1))).toThrow(/출전/);
+    expect(bad((a) => (a.career.ratios.damage = -1))).toThrow(/ratios/);
+    expect(bad((a) => (a.career.ratioCounts.damage = 0.5))).toThrow(/정수/);
+  });
+});
+
 describe('세이브 v16(지시서 026d, AGENTS.md: 마이그레이션 없음)', () => {
-  it('버전은 16이고 v15 세이브는 지원하지 않는 세이브로 거절한다', () => {
-    expect(SAVE_VERSION).toBe(16);
+  it('v15 세이브는 지원하지 않는 세이브로 거절한다', () => {
     const file = JSON.parse(serializeSave(createSaveFile(playedState(), 'manual')));
     expect(() => parseSave(JSON.stringify({ ...file, version: 15 }))).toThrow(/지원하지 않는 세이브/);
   });

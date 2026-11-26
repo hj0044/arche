@@ -31,7 +31,7 @@ export function Records({ ctx, mercId, back }: { ctx: Ctx; mercId: string; back?
   const [range, setRange] = useState<Range>('season');
   const rec = m.activity;
   const t: ActivityTally = range === 'season' ? currentSeasonTally(tables, rec, s.day) : (rec?.career ?? currentSeasonTally(tables, undefined, s.day));
-  const score = activityScore(tables, m.role, t.items, t.sorties);
+  const score = activityScore(tables, m.role, t);
   const role = roleName(m.role);
   const items = tables.contribution.items;
   const rows: (typeof items)[] = [];
@@ -70,7 +70,7 @@ export function Records({ ctx, mercId, back }: { ctx: Ctx; mercId: string; back?
                 </span>
               </span>
               <span className="col" style={{ textAlign: 'right' }}>
-                <span className="rec-cap">{role} 평균 100 대비</span>
+                <span className="rec-cap">같은 역할·레벨대 평균 100 대비</span>
                 {score !== null && (
                   <span className="rec-delta" data-tone={score >= 100 ? 'up' : 'down'}>
                     {pct(score / 100)}
@@ -95,13 +95,13 @@ export function Records({ ctx, mercId, back }: { ctx: Ctx; mercId: string; back?
           </div>
 
           <div className="col" style={{ gap: 6 }} data-ui="Records.metrics">
-            <span className="rec-label">항목별 기여 (역할 평균 대비)</span>
+            <span className="rec-label">항목별 기여 (같은 역할·레벨대 평균 대비)</span>
             {rows.map((pair) => (
               <div key={pair[0].id} className="row" style={{ gap: 6 }}>
                 {pair.map((it) => {
                   const v = t.items[it.id] ?? 0;
-                  const na = !isApplicable(tables, m.role, it.id);
-                  const ratio = itemRatio(tables, m.role, it.id, v, t.sorties);
+                  const na = !isApplicable(tables, m.role, it.id, t, m.level);
+                  const ratio = itemRatio(t, it.id);
                   return (
                     <div key={it.id} className="rec-metric" data-na={na || undefined} data-item={it.id}>
                       <span className="rec-cap">{it.name}</span>

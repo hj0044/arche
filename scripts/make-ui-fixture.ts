@@ -130,7 +130,7 @@ s = { ...s, rifts: [...seoul, ...others], counters: { ...s.counters, rift: count
     const res = resolveCombat(t, { allies: slots, enemies: riftEnemySlots(t, rift), seed: `fx-records:${k}` });
     for (const id of party)
       patch(id, (m) => ({
-        activity: recordSortie(t, m.activity, { day, role: m.role, riftName: rift.name, tier: rift.tier, outcome: res.outcome, downed: res.downedUnitIds.includes(id), tally: res.contributions[id] }),
+        activity: recordSortie(t, m.activity, { day, role: m.role, level: m.level, riftName: rift.name, tier: rift.tier, outcome: res.outcome, downed: res.downedUnitIds.includes(id), tally: res.contributions[id] }),
       }));
   });
 }

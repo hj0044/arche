@@ -78,7 +78,7 @@
   - 상태 효과를 뺀 데이터와 승률 비교(지시서 020): `npm run status-impact -- [시드 수]`
   - 역할별 계약자 스탯 분포(성장률 전후, 지시서 021): `npm run growth-spread -- [레벨,레벨,...]`
   - 역할별 파티 기여도·기절·표식 효과(지시서 025): `npm run role-balance -- [구성당 시드 수(기본 800)] [--json 출력.json]`
-  - 활약도 역할별 기준값 다시 뽑기(지시서 027): `npm run contribution-baseline -- [전투 수(기본 4000)] [--write]` (`--write`면 `src/data/contribution.json` 기준값을 고쳐 쓴다)
+  - 활약도 역할 × 레벨 구간별 기준값 다시 뽑기(지시서 027·027b): `npm run contribution-baseline -- [구간당 전투 수(기본 2000)] [--write]` (`--write`면 `src/data/contribution.json` 기준값을 고쳐 쓴다)
   - 리그 세계 시즌 요약(지시서 028a: 격진 상위 3, 승강, 규모 분포, 명단 변동, 문화권 분포): `npm run league -- [시즌 수] [시드]`
   - 이름 생성기 샘플(문화권 비율 확인): `npm run names -- [개수] [시드]`
   - 용병 표 다시 만들기(CSV → `src/data/roster.json`): `npm run import-roster`

@@ -590,6 +590,7 @@ function settleExpedition(tables: GameTables, state: GameState, ex: Expedition):
     m.activity = recordSortie(tables, m.activity, {
       day: state.day,
       role: m.role,
+      level: m.level,
       riftName: ex.rift.name,
       tier: ex.rift.tier,
       outcome,
