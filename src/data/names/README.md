@@ -10,6 +10,7 @@
 |---|---|
 | 1 | 한국, 일본, 중국, 베트남, 태국, 인도네시아·말레이시아, 필리핀 |
 | 2 | 인도 북부, 인도 남부, 파키스탄·방글라데시, 몽골·중앙아시아, 아랍 걸프·레반트, 이집트·마그레브, 튀르키예, 이란 |
+| 3 | 영국·아일랜드, 프랑스, 독일·네덜란드, 이탈리아, 스페인·포르투갈 |
 
 ## 배치 1 확인 자료
 
@@ -23,3 +24,7 @@
 - 남인도의 중성 이름은 [타밀어 이름 목록](https://www.behindthename.com/names/gender/unisex/usage/tamil)과 [말라얄람어 이름 목록](https://www.behindthename.com/names/gender/unisex/usage/malayalam)을 참고했다. 파키스탄·방글라데시 중성 이름은 [우르두어 목록](https://www.behindthename.com/names/gender/unisex/usage/urdu)과 [벵골어 목록](https://www.behindthename.com/names/gender/unisex/usage/bengali)을 참고했다.
 - 몽골 가문명은 [몽골 국가통계청의 성씨 자료](https://www.1212.mn/en/statistic/fun-statistic/family-name)를 참고했다. 중성 이름은 [몽골어 목록](https://www.behindthename.com/names/gender/unisex/usage/mongolian)과 [카자흐어 목록](https://www.behindthename.com/names/gender/unisex/usage/kazakh)을 참고했다.
 - 서아시아와 북아프리카의 중성 이름은 [아랍어 목록](https://www.behindthename.com/names/gender/unisex/usage/arabic), [튀르키예어 목록](https://www.behindthename.com/names/gender/unisex/usage/turkish), [페르시아어 목록](https://www.behindthename.com/names/gender/unisex/usage/persian)을 참고했다.
+
+## 배치 3 확인 자료
+
+- 지역별 중성 이름 목록과 현대에 통용되는 축약형을 참고했다. [아일랜드](https://www.behindthename.com/names/gender/unisex/usage/irish) · [프랑스](https://www.behindthename.com/names/gender/unisex/usage/french) · [독일](https://www.behindthename.com/names/gender/unisex/usage/german) · [스페인](https://www.behindthename.com/names/gender/unisex/usage/spanish) · [포르투갈](https://www.behindthename.com/names/gender/unisex/usage/portuguese)
