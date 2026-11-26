@@ -21,7 +21,7 @@
     {"text": "무리이티", "tones": ["modern"]},
     {"text": "은조로게", "tones": ["modern"]},
     {"text": "은두구", "tones": ["modern"]},
-    {"text": "무가베", "tones": ["modern"]},
+    {"text": "나카토", "tones": ["modern"]},
     {"text": "오켈로", "tones": ["modern"]},
     {"text": "오콜로", "tones": ["modern"]},
     {"text": "오첸", "tones": ["modern"]},
@@ -160,8 +160,8 @@
     {"text": "무루", "gender": "n", "tones": ["modern"]},
     {"text": "셀람", "gender": "n", "tones": ["modern"]},
     {"text": "아마르", "gender": "n", "tones": ["modern"]},
-    {"text": "누르", "gender": "n", "tones": ["modern"]},
-    {"text": "나심", "gender": "n", "tones": ["modern"]},
+    {"text": "살람", "gender": "n", "tones": ["modern"]},
+    {"text": "이크람", "gender": "n", "tones": ["modern"]},
     {"text": "샴스", "gender": "n", "tones": ["modern"]}
   ]
 }

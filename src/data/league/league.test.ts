@@ -24,7 +24,7 @@ const backgroundIds = backgrounds.map(({ id }) => id);
 const rosterNames = roster.map(({ name }) => name.replaceAll(' ', ''));
 const teamIdPattern = /^[a-z]+(?:-[a-z]+)*$/u;
 const hangulNamePattern = /^[가-힣]+(?: [가-힣]+)*$/u;
-const forbiddenLore = /사망|전사|죽|아르케의 포식자|공허|징조/u;
+const forbiddenLore = /사망|전사|죽|아르케의 포식자|공허|흑막|징조/u;
 
 function expectText(text: string, maxLength: number) {
   expect(text.trim()).not.toBe('');
@@ -88,6 +88,22 @@ describe('대표 인물', () => {
     expect(featured.length).toBeLessThanOrEqual(40);
     expect(new Set(featured.map(({ id }) => id)).size).toBe(featured.length);
     expect(new Set(featured.map(({ name }) => name.replaceAll(' ', ''))).size).toBe(featured.length);
+  });
+
+  it('모든 속성에 대표 인물이 네 명에서 일곱 명 있다', () => {
+    for (const element of elementIds) {
+      const count = featured.filter((person) => person.element === element).length;
+      expect(count, element).toBeGreaterThanOrEqual(4);
+      expect(count, element).toBeLessThanOrEqual(7);
+    }
+  });
+
+  it('모든 고향 도시에 대표 인물이 두 명에서 여섯 명 있다', () => {
+    for (const city of cities) {
+      const count = featured.filter(({ hometown }) => hometown === city).length;
+      expect(count, city).toBeGreaterThanOrEqual(2);
+      expect(count, city).toBeLessThanOrEqual(6);
+    }
   });
 
   it.each(namedTeams)('$name 팀에 역할이 겹치지 않는 대표 인물 두세 명이 있다', ({ id }) => {
