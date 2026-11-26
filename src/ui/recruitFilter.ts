@@ -100,13 +100,14 @@ export function recruitSections(rows: RecruitRow[], view: RecruitView): RecruitS
   return { counts, sections };
 }
 
-/** 필터 시트 칩: 역할·속성은 표에서, 도시는 도시 표, 소속은 세력 표(영입 대상이 되는 세력) */
+/** 필터 시트 칩: 역할·속성은 표에서, 도시는 도시 표, 소속은 세력 표 중 로스터에 소속 계약자가 한 명 이상 있는 세력(지시서 026b).
+ * 진행 상태(영입·잠김)와 무관하게 로스터 데이터 기준이라 칩이 생기거나 사라지지 않는다. */
 export function recruitChips(tables: GameTables) {
   return {
     roles: tables.roles.filter((r) => r.enabled).map((r) => ({ id: r.id, name: r.name })),
     elements: tables.elements.map((e) => ({ id: e.id, name: e.name })),
     cities: tables.cities.map((c) => ({ id: c.id, name: c.name })),
-    factions: tables.factions.map((f) => ({ id: f.id, name: f.name })),
+    factions: tables.factions.filter((f) => tables.roster.some((r) => r.faction === f.id)).map((f) => ({ id: f.id, name: f.name })),
   };
 }
 

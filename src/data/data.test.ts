@@ -76,3 +76,9 @@ describe('지시서 026: 세력 정리', () => {
     expect(hits).toEqual([]);
   });
 });
+
+describe('지시서 026b: 충성도 시뮬레이션 대상', () => {
+  it('simulatedAffiliations는 길드만 담는다(세력은 세계관 전용)', () => {
+    expect(tables.loyalty.simulatedAffiliations).toEqual(['guild']);
+  });
+});
