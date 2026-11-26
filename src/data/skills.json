@@ -118,7 +118,7 @@
     "name": "방패 강타",
     "kind": "attack",
     "target": "enemy",
-    "power": 0.9,
+    "power": 1.2,
     "cooldown": 5,
     "damageType": "physical",
     "applies": [
