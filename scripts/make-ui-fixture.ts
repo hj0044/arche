@@ -4,8 +4,10 @@
 // 진행 중 파견 2건, 의무실 공사 중, 거점 리프트 목록에 위험도 5구간이 모두, 마감 D-1 리프트, 도시 3곳.
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { tables } from '../src/data';
-import { advanceDay, assignToFacility, dispatch, expToNextLevel, newGame, type GameState, type MercenaryState } from '../src/engine/game';
-import { generateRift, type Rift } from '../src/engine/rift';
+import { advanceDay, assignToFacility, dispatch, expToNextLevel, getMerc, mercToUnit, newGame, type GameState, type MercenaryState } from '../src/engine/game';
+import { generateRift, riftEnemySlots, type Rift } from '../src/engine/rift';
+import { resolveCombat } from '../src/engine/combat';
+import { recordSortie } from '../src/engine/contribution';
 import { createRng } from '../src/engine/rng';
 import { riftAutoRisk } from '../src/engine/status';
 import { createSaveFile } from '../src/storage/saveFile';
@@ -113,6 +115,24 @@ s = { ...s, rifts: [...seoul, ...others], counters: { ...s.counters, rift: count
   const tmp: GameState = { ...s, day: DAY - 1, expeditions: [{ ...s.expeditions[0], returnDay: DAY }] };
   const rep = advanceDay(t, tmp).state.reports.at(-1)!;
   s = { ...s, reports: [{ ...rep, expeditionId: 'e0', day: DAY - 1 }] };
+}
+
+// 지시서 027 기록 화면: 첫 파견 파티(guildIds[6~9])가 지난 며칠 동안 공략 4번을 다녀온 기록. 실제 전투 결과로 쌓는다
+{
+  const party = [guildIds[6], guildIds[7], guildIds[8], guildIds[9]];
+  const targets = [seoul[0], others[0], seoul[2], others[3]];
+  targets.forEach((rift, k) => {
+    const day = DAY - 8 + 2 * k;
+    const slots = party.map((id) => {
+      const m = getMerc(s, id);
+      return { unit: mercToUnit(t, m), row: t.roles.find((x) => x.id === m.role)!.defaultRow };
+    });
+    const res = resolveCombat(t, { allies: slots, enemies: riftEnemySlots(t, rift), seed: `fx-records:${k}` });
+    for (const id of party)
+      patch(id, (m) => ({
+        activity: recordSortie(t, m.activity, { day, role: m.role, riftName: rift.name, tier: rift.tier, outcome: res.outcome, downed: res.downedUnitIds.includes(id), tally: res.contributions[id] }),
+      }));
+  });
 }
 
 const file = createSaveFile(s, 'manual', new Date('2026-11-23T00:00:00Z'));

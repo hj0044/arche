@@ -8,6 +8,8 @@ import type { Ctx, Game, Route } from './nav';
 import { saves } from '../app/saves';
 import { BattleReplay } from './screens/BattleReplay';
 import { Help } from './screens/Help';
+import { Records } from './screens/Records';
+import { activityScore } from '../engine/contribution';
 import { Base } from './screens/Base';
 import { DayResult } from './screens/DayResult';
 import { GuildHome } from './screens/GuildHome';
@@ -129,6 +131,9 @@ export function App() {
     case 'help':
       screen = <Help ctx={ctx} topic={route.topic} back={route.back} />;
       break;
+    case 'records':
+      screen = <Records ctx={ctx} mercId={route.mercId} back={route.back} />;
+      break;
   }
   return (
     <>
@@ -165,6 +170,9 @@ function fixtureRoute(screen: string, s: GameState, events?: DayEvent[]): Route 
       return { name: 'replay', expeditionId: s.reports.at(-1)?.expeditionId ?? '', back: { name: 'home' }, ...(screen === 'helpSheet' ? { openStatus: true } : {}) };
     case 'help':
       return { name: 'help', topic: 'status', back: { name: 'saves' } };
+    case 'records':
+      // 기록이 있는 계약자 중 통산 활약도가 가장 높은 쪽(시안 예시처럼 평균 위)
+      return { name: 'records', mercId: ([...guild].filter((m) => m.activity).sort((a, b) => (activityScore(tables, b.role, b.activity!.career.items, b.activity!.career.sorties) ?? 0) - (activityScore(tables, a.role, a.activity!.career.items, a.activity!.career.sorties) ?? 0))[0] ?? guild[0]).id };
     case 'base':
       return { name: 'base' };
     case 'saves':

@@ -1,6 +1,7 @@
 import { getRiftTier, travelDays, type GameTables, type Outcome, type Row, type Stats, type UnlockRule } from '../data';
 import { activeTraits, newlyUnlockedTraits, roleBaseStats, statsAtLevel, type GrowthRates } from './stats';
-import { resolveCombat, validateParty, type CombatEvent, type CombatSlot } from './combat';
+import { emptyTally, resolveCombat, validateParty, type CombatEvent, type CombatSlot } from './combat';
+import { recordSortie, type ActivityRecord } from './contribution';
 import { rollInjuries, type Injury } from './injury';
 import { rollPreemption } from './preemption';
 import { expShare, generateRift, riftEnemySlots, riftModifiers, riftReward, type Rift, type RiftReward } from './rift';
@@ -47,6 +48,8 @@ export interface MercenaryState {
   departedDay?: number;
   /** 특성 단계(지시서 016, 강화 대비). 없으면 1단계 */
   traitRanks?: Record<string, number>;
+  /** 활약도 기록(지시서 027). 첫 출전 때 생기고 길드를 떠나도 남는다 */
+  activity?: ActivityRecord;
 }
 
 export interface MercProfile {
@@ -570,6 +573,20 @@ function settleExpedition(tables: GameTables, state: GameState, ex: Expedition):
     seed: combatSeed,
   });
   const outcome = result.outcome;
+
+  // 활약도 기록(지시서 027): 파티원(길드 계약자)마다 이번 공략의 기여를 시즌·통산에 더한다
+  for (const p of ex.party) {
+    const m = getMerc(state, p.mercId);
+    m.activity = recordSortie(tables, m.activity, {
+      day: state.day,
+      role: m.role,
+      riftName: ex.rift.name,
+      tier: ex.rift.tier,
+      outcome,
+      downed: result.downedUnitIds.includes(m.id),
+      tally: result.contributions[m.id] ?? emptyTally(),
+    });
+  }
 
   if (outcome === 'victory') {
     state.records.victories += 1;

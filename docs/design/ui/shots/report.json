@@ -24,7 +24,7 @@
     "refRetakeMismatch": 0.0255
   },
   "MercDetail": {
-    "mismatchRatio": 0.0621,
+    "mismatchRatio": 0.0656,
     "refRetakeMismatch": 0.0176
   },
   "Battle": {
@@ -61,6 +61,10 @@
   },
   "PartyDrag": {
     "mismatchRatio": 0.0636,
+    "refRetakeMismatch": 0
+  },
+  "Records": {
+    "mismatchRatio": 0.0363,
     "refRetakeMismatch": 0
   }
 }

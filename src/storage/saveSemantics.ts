@@ -29,6 +29,7 @@ export type SemanticTables = Pick<
   | 'facilities'
   | 'terms'
   | 'traits'
+  | 'contribution'
 > & { limits: SaveLimits };
 
 export function validateSemantics(state: GameState, t: SemanticTables): string[] {
@@ -48,6 +49,50 @@ export function validateSemantics(state: GameState, t: SemanticTables): string[]
     else if (v < lo || v > hi) errors.push(`${path}: 범위 ${lo}~${hi} 밖(${v})`);
   };
   const L = t.limits;
+
+  /**
+   * 활약도 기록(지시서 027) 무결성: 항목 id는 contribution.json에 있고 값은 0 이상, 클리어·쓰러짐 ≤ 출전,
+   * 이번 시즌과 남은 지난 시즌 합계의 합은 통산을 넘지 않는다(지난 시즌은 최근 몇 개만 남기므로 ≤), 시즌 번호는 오름차순이고 오늘 시즌 이하.
+   */
+  const itemIds = new Set(t.contribution.items.map((i) => i.id));
+  const checkTally = (p: string, x: { sorties: number; clears: number; downs: number; items: Record<string, number> }) => {
+    atLeast(`${p}.sorties`, x.sorties, 0);
+    atLeast(`${p}.clears`, x.clears, 0);
+    atLeast(`${p}.downs`, x.downs, 0);
+    if (x.clears > x.sorties) errors.push(`${p}.clears: 출전(${x.sorties})보다 많음(${x.clears})`);
+    if (x.downs > x.sorties) errors.push(`${p}.downs: 출전(${x.sorties})보다 많음(${x.downs})`);
+    for (const [k, v] of Object.entries(x.items)) {
+      if (!itemIds.has(k)) errors.push(`${p}.items.${k}: 없는 활약도 항목 id`);
+      atLeast(`${p}.items.${k}`, v, 0);
+    }
+  };
+  const checkActivity = (p: string, a: NonNullable<GameState['mercenaries'][number]['activity']>) => {
+    checkTally(`${p}.career`, a.career);
+    checkTally(`${p}.season`, a.season);
+    a.pastSeasons.forEach((x, j) => checkTally(`${p}.pastSeasons[${j}]`, x));
+    const parts = [a.season, ...a.pastSeasons];
+    const eps = 1e-6;
+    for (const k of ['sorties', 'clears', 'downs'] as const) {
+      const sum = parts.reduce((acc, x) => acc + x[k], 0);
+      if (sum > a.career[k]) errors.push(`${p}.career.${k}: 시즌 합계(${sum})가 통산(${a.career[k]})보다 큼`);
+    }
+    for (const k of itemIds) {
+      const sum = parts.reduce((acc, x) => acc + (x.items[k] ?? 0), 0);
+      if (sum > (a.career.items[k] ?? 0) + eps) errors.push(`${p}.career.items.${k}: 시즌 합계(${sum})가 통산(${a.career.items[k] ?? 0})보다 큼`);
+    }
+    const nos = [...a.pastSeasons.map((x) => x.no), a.season.no];
+    if (nos.some((n, j) => j > 0 && n <= nos[j - 1])) errors.push(`${p}.pastSeasons: 시즌 번호가 오름차순이 아님`);
+    const today = Math.floor((Math.max(1, state.day) - 1) / t.contribution.seasonDays) + 1;
+    if (a.season.no > today) errors.push(`${p}.season.no: 오늘 시즌(${today})보다 큼(${a.season.no})`);
+    if (a.recent.length > t.contribution.recentLimit) errors.push(`${p}.recent: ${t.contribution.recentLimit}건보다 많음`);
+    if (a.pastSeasons.length > t.contribution.pastSeasonsLimit) errors.push(`${p}.pastSeasons: ${t.contribution.pastSeasonsLimit}개보다 많음`);
+    if (a.recent.length > a.career.sorties) errors.push(`${p}.recent: 통산 출전(${a.career.sorties})보다 많음`);
+    a.recent.forEach((r, j) => {
+      ref(`${p}.recent[${j}].tier`, t.riftTiers, r.tier, '리프트 등급');
+      atLeast(`${p}.recent[${j}].day`, r.day, L.minDay);
+      if (r.score !== null) atLeast(`${p}.recent[${j}].score`, r.score, 0);
+    });
+  };
 
   // ── 기본 값
   atLeast('state.day', state.day, L.minDay);
@@ -106,6 +151,7 @@ export function validateSemantics(state: GameState, t: SemanticTables): string[]
       });
     }
     if (m.departedDay !== undefined) atLeast(`${p}.departedDay`, m.departedDay, L.minDay);
+    if (m.activity) checkActivity(`${p}.activity`, m.activity);
     if (m.unpaidUpkeep) {
       atLeast(`${p}.unpaidUpkeep.days`, m.unpaidUpkeep.days, 0);
       atLeast(`${p}.unpaidUpkeep.zero`, m.unpaidUpkeep.zero, 0);

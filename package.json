@@ -29,7 +29,8 @@
     "make-ui-fixture": "tsx scripts/make-ui-fixture.ts",
     "status-impact": "tsx scripts/status-impact.ts",
     "growth-spread": "tsx scripts/growth-spread.ts",
-    "role-balance": "tsx scripts/role-balance.ts"
+    "role-balance": "tsx scripts/role-balance.ts",
+    "contribution-baseline": "tsx scripts/contribution-baseline.ts"
   },
   "dependencies": {
     "react": "^19.3.1",

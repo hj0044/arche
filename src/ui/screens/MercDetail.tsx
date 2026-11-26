@@ -262,9 +262,13 @@ export function MercDetail({ ctx, mercId }: { ctx: Ctx; mercId: string }) {
         </div>
       </main>
       <div className="foot" style={{ paddingTop: 0, paddingBottom: 12 }} data-ui="MercDetail.actions">
+        {/* 지시서 027: 기록 화면으로(하단 버튼 영역에만 더한다) */}
+        <button className="btn-act" style={{ width: 56, flex: 'none', fontSize: 15, fontWeight: 500 }} data-ui="merc.records" onClick={() => ctx.go({ name: 'records', mercId: m.id })}>
+          기록
+        </button>
         {isGuild ? (
           <>
-            <button className="btn-act" style={{ width: '30%', flex: 'none', fontSize: 15, fontWeight: 500 }} disabled={!training} onClick={() => setSheet('training')}>
+            <button className="btn-act" style={{ width: 64, flex: 'none', fontSize: 15, fontWeight: 500 }} disabled={!training} onClick={() => setSheet('training')}>
               훈련
             </button>
             <button className="btn-big" style={{ height: 48, fontSize: 15 }} disabled={onExpedition || capped || m.exp < need} onClick={doLevelUp}>
