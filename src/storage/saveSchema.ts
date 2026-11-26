@@ -85,6 +85,79 @@ const mercenary: Schema = {
   },
 };
 
+/** 리그 세계(지시서 028a). 곡선은 파라미터만 저장하고 값은 시드로 다시 계산한다 */
+const standingRows: Schema = { record: { arrayOf: { fields: { id: 'string', score: 'number' } } } };
+const leagueMove: Schema = { arrayOf: { fields: { id: 'string', from: 'string', to: 'string' } } };
+const league: Schema = {
+  fields: {
+    seed: 'string',
+    season: 'number',
+    teams: {
+      arrayOf: {
+        fields: {
+          id: 'string',
+          name: 'string',
+          kind: { oneOf: ['named', 'civil'] },
+          faction: 'string',
+          homeCity: { nullable: 'string' },
+          scaleTier: 'number',
+          tier: 'string',
+          total: 'number',
+          shape: 'number',
+        },
+      },
+    },
+    members: {
+      arrayOf: {
+        fields: {
+          id: 'string',
+          teamId: 'string',
+          name: 'string',
+          cultureId: 'string',
+          gender: { oneOf: ['m', 'f', 'n'] },
+          age: 'number',
+          role: 'string',
+          element: 'string',
+          hometown: 'string',
+          background: 'string',
+          cap: 'number',
+          talent: 'number',
+          act: 'number',
+          career: { fields: { seasons: 'number', activitySum: 'number', transfers: 'number' } },
+        },
+        optional: { post: 'string', featuredId: 'string', unit: 'object' },
+      },
+    },
+    player: { fields: { tier: 'string', score: 'number' } },
+    checkpoints: {
+      arrayOf: {
+        fields: {
+          season: 'number',
+          day: 'number',
+          standings: standingRows,
+          topByRole: { record: { arrayOf: { fields: { memberId: 'string', activity: 'number' } } } },
+        },
+      },
+    },
+    history: {
+      arrayOf: {
+        fields: {
+          season: 'number',
+          standings: standingRows,
+          promoted: leagueMove,
+          relegated: leagueMove,
+          renamed: leagueMove,
+          scaleMoves: { arrayOf: { fields: { id: 'string', from: 'number', to: 'number' } } },
+          transfers: 'number',
+          retired: 'number',
+          recruits: 'number',
+        },
+      },
+    },
+    counters: { fields: { member: 'number' } },
+  },
+};
+
 const state: Schema = {
   fields: {
     seed: 'string',
@@ -127,6 +200,7 @@ const state: Schema = {
       },
     },
     settings: { fields: { autoOuter: 'boolean' } },
+    league,
   },
 };
 

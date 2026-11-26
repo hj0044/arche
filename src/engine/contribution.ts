@@ -47,9 +47,13 @@ export const newActivityRecord = (tables: GameTables, day: number): ActivityReco
   recent: [],
 });
 
-/** 시즌 번호(한 곳에서만 정한다. 028 리그 시즌이 생기면 여기를 바꾼다): floor((일차 − 1) ÷ 시즌 길이) + 1 */
-export function seasonOf(tables: GameTables, day: number): number {
-  return Math.floor((Math.max(1, day) - 1) / tables.contribution.seasonDays) + 1;
+/** 시즌 번호(한 곳에서만 정한다): floor((일차 − 1) ÷ 시즌 길이) + 1. 시즌 길이는 리그 규칙(지시서 028a, 60일) */
+export function seasonOf(tables: Pick<GameTables, 'league'>, day: number): number {
+  return Math.floor((Math.max(1, day) - 1) / tables.league.rules.season.length) + 1;
+}
+/** 시즌 안의 일차(1 ~ 시즌 길이) */
+export function seasonDayOf(tables: Pick<GameTables, 'league'>, day: number): number {
+  return ((Math.max(1, day) - 1) % tables.league.rules.season.length) + 1;
 }
 
 /** 이 역할에서 계산에 넣는 항목인가(가중치와 기준값이 모두 0보다 크다). 아니면 화면에 '이 역할은 해당 없음' */

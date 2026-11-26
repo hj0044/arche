@@ -5,6 +5,10 @@ import rolesJson from './roles.json';
 import skillsJson from './skills.json';
 import statusEffectsJson from './statusEffects.json';
 import contributionJson from './contribution.json';
+import leagueRulesJson from './league/rules.json';
+import leagueTeamsJson from './league/teams.json';
+import leagueFeaturedJson from './league/featured.json';
+import { namePool, type NamePoolTables } from './namePool';
 import helpJson from './help.json';
 import statsJson from './stats.json';
 import monsterGradesJson from './monster-grades.json';
@@ -325,7 +329,6 @@ export interface InjuryTable {
 /** 규칙 엔진이 받는 데이터 표 묶음. 테스트에서는 일부를 바꿔 넣을 수 있다. */
 /** 활약도(지시서 027): 항목 행, 역할별 가중치·기준값(공략 1회 평균), 시즌 길이 */
 export interface ContributionTable {
-  seasonDays: number;
   recentLimit: number;
   pastSeasonsLimit: number;
   items: { id: string; name: string }[];
@@ -335,7 +338,105 @@ export interface ContributionTable {
   baselineSample: { fights: number; levels: number[]; seed: string } | null;
 }
 
+/** 리그 규칙(지시서 028a, league/rules.json) */
+export interface LeagueTierRow {
+  id: string;
+  name: string;
+  /** 1(미진) ~ 5(격진) */
+  order: number;
+  /** 우리 용병단 자리를 포함한 팀 수 */
+  teams: number;
+  promote: number;
+  relegate: number;
+  /** NPC 시즌 총점 목표(성장하지 않음) */
+  targetScore: number;
+  /** 시즌마다 팀별 총점 난수 폭(±비율) */
+  spread: number;
+  /** 이 등급 계약자 활약도 기준 */
+  activityBase: number;
+}
+export interface LeagueScaleRow {
+  tier: number;
+  min: number;
+  max: number;
+  individualMul: number;
+  stars: number;
+}
+export interface LeagueRules {
+  tiers: LeagueTierRow[];
+  playerStartTier: string;
+  hintTiers: Record<string, string[]>;
+  scaleTiers: LeagueScaleRow[];
+  initialScaleTarget: number[];
+  season: { length: number; checkpoints: number[]; historyLimit: number; seasonsPerYear: number };
+  curve: { shapeMin: number; shapeMax: number; dailyNoise: number; activityDailyNoise: number };
+  members: { starMul: number; talentSpread: number; capInfluence: number; ageMin: number; ageMax: number; recruitAgeMin: number; recruitAgeMax: number };
+  changes: {
+    scaleMoveChance: number;
+    promotedGrowChance: number;
+    relegatedShrinkChance: number;
+    neutralGrowChance: number;
+    distributionCorrection: number;
+    distributionFloor: number;
+    distributionCeil: number;
+    sizeDrift: number;
+    retireBase: number;
+    retireAgeStart: number;
+    retirePerYearOver: number;
+    retireLowActivity: number;
+    promotedRetireMul: number;
+    relegatedRetireMul: number;
+    transferBase: number;
+    relegatedStarTransfer: number;
+    promotedExtraRecruits: [number, number];
+    civilRenameChance: number;
+  };
+  civilNameParts: { first: string[]; second: string[] };
+  names: {
+    populationShare: number;
+    cultureCap: number;
+    continentMin: number;
+    multiSurnameChance: number;
+    joiner: Record<string, string>;
+    cities: string[];
+    maxRetries: number;
+  };
+}
+export interface LeagueTeamRow {
+  id: string;
+  name: string;
+  kind: 'named' | 'civil';
+  faction: string;
+  sizeTier: number;
+  leagueHint: string;
+  homeCity: string | null;
+  concept: string;
+  intro: string;
+}
+export interface LeagueFeaturedRow {
+  id: string;
+  teamId: string;
+  name: string;
+  cultureId: string;
+  gender: 'm' | 'f' | 'n';
+  age: number;
+  role: string;
+  element: string;
+  hometown: string;
+  background: string;
+  post: string;
+  oneLine: string;
+  voice: string;
+}
+export interface LeagueTables {
+  rules: LeagueRules;
+  teams: LeagueTeamRow[];
+  featured: LeagueFeaturedRow[];
+}
+
 export interface GameTables {
+  league: LeagueTables;
+  namePool: NamePoolTables;
   contribution: ContributionTable;
   elements: ElementRow[];
   roles: RoleRow[];
@@ -609,6 +710,8 @@ export interface UiTable {
 export const cities: readonly CityRow[] = citiesJson as CityRow[];
 
 export const tables: GameTables = {
+  league: { rules: leagueRulesJson as unknown as LeagueRules, teams: leagueTeamsJson as LeagueTeamRow[], featured: leagueFeaturedJson as LeagueFeaturedRow[] },
+  namePool,
   contribution: contributionJson as ContributionTable,
   elements: elementsJson,
   roles: rolesJson as RoleRow[],

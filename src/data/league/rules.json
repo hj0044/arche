@@ -1,0 +1,234 @@
+{
+  "_note": "리그 규칙(지시서 028a, 설계서 '리그와 세계 확장'). [확정]: 등급 5개와 팀 수·승강 수, 시즌 60일과 간이 정산 15·30·45일. 나머지는 [제안] 임시값. 점수가 먼저고 명단은 나중이다: 팀 시즌 총점 = 등급 목표 점수 × (1 + 난수 폭 × u), u는 −1~1. NPC는 성장하지 않는다(시즌 성장률·상한 곡선 없음). 하루 누적은 (일/시즌 길이)^shape 모양에 하루 난수(dailyNoise)를 더해 시즌 총점으로 맞춘다. 계약자 활약도 = 등급 활약도 기준 × 규모 단계 개인 계수 × 재능 × (상위 강자면 starMul) × (팀 총점 ÷ 목표). 이적·은퇴·신입은 점수에 영향이 없는 연출이다. 규모 분포 보정: 무작위 이동 뒤 규모 단계별 팀 수가 목표(initialScaleTarget) × distributionFloor보다 적거나 × distributionCeil보다 많으면 이웃 단계와 한 팀씩 맞바꿔 옮긴다(위로 올릴 때는 인원이 가장 많은 팀, 아래로 내릴 때는 가장 적은 팀).",
+  "tiers": [
+    {
+      "id": "mijin",
+      "name": "미진",
+      "order": 1,
+      "teams": 10,
+      "promote": 2,
+      "relegate": 0,
+      "targetScore": 1000,
+      "spread": 0.1,
+      "activityBase": 70
+    },
+    {
+      "id": "yakjin",
+      "name": "약진",
+      "order": 2,
+      "teams": 10,
+      "promote": 2,
+      "relegate": 2,
+      "targetScore": 1800,
+      "spread": 0.14,
+      "activityBase": 82
+    },
+    {
+      "id": "jungjin",
+      "name": "중진",
+      "order": 3,
+      "teams": 8,
+      "promote": 2,
+      "relegate": 2,
+      "targetScore": 3000,
+      "spread": 0.18,
+      "activityBase": 95
+    },
+    {
+      "id": "gangjin",
+      "name": "강진",
+      "order": 4,
+      "teams": 8,
+      "promote": 1,
+      "relegate": 2,
+      "targetScore": 4600,
+      "spread": 0.22,
+      "activityBase": 110
+    },
+    {
+      "id": "gyeokjin",
+      "name": "격진",
+      "order": 5,
+      "teams": 4,
+      "promote": 0,
+      "relegate": 1,
+      "targetScore": 6800,
+      "spread": 0.26,
+      "activityBase": 130
+    }
+  ],
+  "playerStartTier": "mijin",
+  "hintTiers": {
+    "top": [
+      "gyeokjin"
+    ],
+    "upper": [
+      "gangjin"
+    ],
+    "mid": [
+      "jungjin",
+      "yakjin"
+    ],
+    "lower": [
+      "yakjin",
+      "mijin"
+    ],
+    "any": [
+      "gyeokjin",
+      "gangjin",
+      "jungjin",
+      "yakjin",
+      "mijin"
+    ]
+  },
+  "scaleTiers": [
+    {
+      "tier": 1,
+      "min": 4,
+      "max": 5,
+      "individualMul": 1.5,
+      "stars": 5
+    },
+    {
+      "tier": 2,
+      "min": 5,
+      "max": 10,
+      "individualMul": 1.25,
+      "stars": 5
+    },
+    {
+      "tier": 3,
+      "min": 10,
+      "max": 20,
+      "individualMul": 1.0,
+      "stars": 5
+    },
+    {
+      "tier": 4,
+      "min": 20,
+      "max": 40,
+      "individualMul": 0.85,
+      "stars": 5
+    },
+    {
+      "tier": 5,
+      "min": 41,
+      "max": 70,
+      "individualMul": 0.75,
+      "stars": 5
+    }
+  ],
+  "initialScaleTarget": [
+    6,
+    11,
+    11,
+    8,
+    3
+  ],
+  "season": {
+    "length": 60,
+    "checkpoints": [
+      15,
+      30,
+      45
+    ],
+    "historyLimit": 5,
+    "seasonsPerYear": 6
+  },
+  "curve": {
+    "shapeMin": 0.85,
+    "shapeMax": 1.2,
+    "dailyNoise": 0.35,
+    "activityDailyNoise": 0.25
+  },
+  "members": {
+    "starMul": 1.6,
+    "talentSpread": 0.35,
+    "capInfluence": 0.5,
+    "ageMin": 19,
+    "ageMax": 45,
+    "recruitAgeMin": 18,
+    "recruitAgeMax": 28
+  },
+  "changes": {
+    "scaleMoveChance": 0.22,
+    "promotedGrowChance": 0.75,
+    "relegatedShrinkChance": 0.75,
+    "neutralGrowChance": 0.5,
+    "distributionCorrection": 0.6,
+    "sizeDrift": 0.12,
+    "retireBase": 0.02,
+    "retireAgeStart": 38,
+    "retirePerYearOver": 0.02,
+    "retireLowActivity": 0.02,
+    "promotedRetireMul": 0.5,
+    "relegatedRetireMul": 1.3,
+    "transferBase": 0.03,
+    "relegatedStarTransfer": 0.35,
+    "promotedExtraRecruits": [
+      1,
+      3
+    ],
+    "civilRenameChance": 0.08,
+    "distributionFloor": 0.6,
+    "distributionCeil": 1.7
+  },
+  "civilNameParts": {
+    "first": [
+      "새벽",
+      "북풍",
+      "은빛",
+      "검은 돛",
+      "푸른 등대",
+      "붉은 매",
+      "잿빛",
+      "철새",
+      "돌풍",
+      "달빛",
+      "황혼",
+      "한파",
+      "들불",
+      "청동",
+      "해무",
+      "모래폭풍",
+      "유성",
+      "남십자",
+      "서리",
+      "천둥"
+    ],
+    "second": [
+      "용병단",
+      "회사",
+      "작전대",
+      "조합",
+      "경비대",
+      "원정대",
+      "수색대",
+      "길잡이",
+      "파수대",
+      "동맹"
+    ]
+  },
+  "names": {
+    "populationShare": 0.5,
+    "cultureCap": 0.15,
+    "continentMin": 0.05,
+    "multiSurnameChance": 0.5,
+    "joiner": {
+      "korea": "",
+      "china": ""
+    },
+    "cities": [
+      "seoul",
+      "tokyo",
+      "newyork",
+      "london",
+      "lagos",
+      "saopaulo",
+      "mumbai",
+      "dubai",
+      "sydney"
+    ],
+    "maxRetries": 60
+  }
+}

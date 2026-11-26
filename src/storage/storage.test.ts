@@ -162,6 +162,35 @@ describe('세이브 v6(리프트 영역 세력)', () => {
   });
 });
 
+describe('세이브 v14(지시서 028a, AGENTS.md: 마이그레이션 없음)', () => {
+  it('버전은 14이고 v13 세이브는 지원하지 않는 세이브로 거절한다', () => {
+    expect(SAVE_VERSION).toBe(14);
+    const file = JSON.parse(serializeSave(createSaveFile(playedState(), 'manual')));
+    expect(() => parseSave(JSON.stringify({ ...file, version: 13 }))).toThrow(/지원하지 않는 세이브/);
+  });
+  it('리그 상태(시즌 정산 뒤 이력 포함)를 저장하고 불러오면 그대로 돌아오고 의미 검증을 통과한다', async () => {
+    const { settleSeason } = await import('../engine/league/league');
+    const s = playedState();
+    settleSeason(tables, s.league);
+    expect(s.league.history).toHaveLength(1);
+    const raw = serializeSave(createSaveFile(s, 'manual'));
+    const back = parseSave(raw, { ...tables, limits: saveLimits });
+    expect(back.state).toEqual(s);
+  });
+  it('리그 무결성: 등급 팀 수·규모 인원·이름 중복이 어긋나면 거절한다', () => {
+    const s = playedState();
+    const bad = (f: (lg: GameState['league']) => void) => {
+      const c = structuredClone(s);
+      f(c.league);
+      return () => parseSave(serializeSave(createSaveFile(c, 'manual')), { ...tables, limits: saveLimits });
+    };
+    expect(bad((lg) => (lg.teams[0].tier = lg.teams[0].tier === 'mijin' ? 'gyeokjin' : 'mijin'))).toThrow(/팀 수/);
+    expect(bad((lg) => (lg.members = lg.members.filter((m) => m.teamId !== lg.teams[0].id)))).toThrow(/인원/);
+    expect(bad((lg) => (lg.members[1].name = lg.members[0].name))).toThrow(/이름 중복/);
+    expect(bad(() => {})).not.toThrow();
+  });
+});
+
 describe('세이브 v13(지시서 027, AGENTS.md: 마이그레이션 없음)', () => {
   /** 파견에서 돌아와 활약도 기록이 생길 때까지 진행 */
   const withActivity = (): GameState => {
@@ -169,8 +198,7 @@ describe('세이브 v13(지시서 027, AGENTS.md: 마이그레이션 없음)', (
     for (let i = 0; i < 6 && !s.mercenaries.some((m) => m.activity); i++) s = advanceDay(tables, s).state;
     return s;
   };
-  it('버전은 13이고 v12 세이브는 지원하지 않는 세이브로 거절한다', () => {
-    expect(SAVE_VERSION).toBe(13);
+  it('v12 세이브는 지원하지 않는 세이브로 거절한다', () => {
     const file = JSON.parse(serializeSave(createSaveFile(playedState(), 'manual')));
     expect(() => parseSave(JSON.stringify({ ...file, version: 12 }))).toThrow(/지원하지 않는 세이브/);
   });

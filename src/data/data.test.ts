@@ -84,9 +84,9 @@ describe('지시서 026b: 충성도 시뮬레이션 대상', () => {
 });
 
 describe('지시서 027: 활약도 데이터', () => {
-  it('항목·가중치·기준값이 모든 사용 역할에 있고 값은 0 이상, 시즌 길이 30일', () => {
+  it('항목·가중치·기준값이 모든 사용 역할에 있고 값은 0 이상, 시즌 길이는 리그 규칙 60일(028a 일원화)', () => {
     const c = tables.contribution;
-    expect(c.seasonDays).toBe(30);
+    expect(tables.league.rules.season.length).toBe(60);
     expect(c.items).toHaveLength(8);
     for (const r of tables.roles.filter((x) => x.enabled)) {
       for (const it of c.items) {

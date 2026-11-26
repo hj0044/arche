@@ -8,7 +8,7 @@ type NamePool = { id: string; surnames: Surname[]; names: GivenName[] };
 
 const directory = new URL('./', import.meta.url);
 const poolFiles = readdirSync(directory)
-  .filter((file) => file.endsWith('.json') && file !== 'cultures.json');
+  .filter((file) => file.endsWith('.json') && file !== 'cultures.json' && file !== 'blocklist.json'); // blocklist.json: 유명 인물 조합 거르기(지시서 028a)
 const continents = [
   'east_asia', 'southeast_asia', 'south_asia', 'central_asia',
   'west_asia_north_africa', 'europe', 'sub_saharan_africa', 'americas', 'oceania',

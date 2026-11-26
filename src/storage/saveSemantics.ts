@@ -6,6 +6,7 @@
  */
 import type { GameTables, Range, SaveLimits } from '../data';
 import { facilitySlots } from '../engine/facilities';
+import { seasonOf } from '../engine/contribution';
 import type { GameState } from '../engine/game';
 
 /** 의미 검증에 필요한 데이터 표 */
@@ -30,6 +31,8 @@ export type SemanticTables = Pick<
   | 'terms'
   | 'traits'
   | 'contribution'
+  | 'league'
+  | 'namePool'
 > & { limits: SaveLimits };
 
 export function validateSemantics(state: GameState, t: SemanticTables): string[] {
@@ -82,7 +85,7 @@ export function validateSemantics(state: GameState, t: SemanticTables): string[]
     }
     const nos = [...a.pastSeasons.map((x) => x.no), a.season.no];
     if (nos.some((n, j) => j > 0 && n <= nos[j - 1])) errors.push(`${p}.pastSeasons: 시즌 번호가 오름차순이 아님`);
-    const today = Math.floor((Math.max(1, state.day) - 1) / t.contribution.seasonDays) + 1;
+    const today = seasonOf(t, state.day);
     if (a.season.no > today) errors.push(`${p}.season.no: 오늘 시즌(${today})보다 큼(${a.season.no})`);
     if (a.recent.length > t.contribution.recentLimit) errors.push(`${p}.recent: ${t.contribution.recentLimit}건보다 많음`);
     if (a.pastSeasons.length > t.contribution.pastSeasonsLimit) errors.push(`${p}.pastSeasons: ${t.contribution.pastSeasonsLimit}개보다 많음`);
@@ -157,6 +160,52 @@ export function validateSemantics(state: GameState, t: SemanticTables): string[]
       atLeast(`${p}.unpaidUpkeep.zero`, m.unpaidUpkeep.zero, 0);
     }
   });
+  // ── 리그(지시서 028a): 등급별 팀 수(우리 자리 포함), 규모 단계 인원 범위, 참조 id, 이름 중복 없음
+  {
+    const lg = state.league;
+    const p = 'state.league';
+    const rules = t.league.rules;
+    const tierIds = new Set(rules.tiers.map((x) => x.id));
+    atLeast(`${p}.season`, lg.season, 1);
+    if (!tierIds.has(lg.player.tier)) errors.push(`${p}.player.tier: 없는 리그 등급 id "${lg.player.tier}"`);
+    for (const tier of rules.tiers) {
+      const n = lg.teams.filter((x) => x.tier === tier.id).length + (lg.player.tier === tier.id ? 1 : 0);
+      if (n !== tier.teams) errors.push(`${p}.teams: ${tier.name} 팀 수 ${n}(규칙 ${tier.teams})`);
+    }
+    const teamIds = new Set(lg.teams.map((x) => x.id));
+    if (teamIds.size !== lg.teams.length) errors.push(`${p}.teams: 팀 id 중복`);
+    const cultureIds = new Set(t.namePool.cultures.map((c) => c.id));
+    const sizes = new Map<string, number>();
+    const ids = new Set<string>();
+    const names = new Set<string>();
+    lg.members.forEach((m, j) => {
+      const mp = `${p}.members[${j}]`;
+      if (!teamIds.has(m.teamId)) errors.push(`${mp}.teamId: 없는 팀 "${m.teamId}"`);
+      if (!cultureIds.has(m.cultureId)) errors.push(`${mp}.cultureId: 없는 문화권 "${m.cultureId}"`);
+      ref(`${mp}.role`, t.roles, m.role, '역할');
+      ref(`${mp}.element`, t.elements, m.element, '속성');
+      if (ids.has(m.id)) errors.push(`${mp}.id: 중복 "${m.id}"`);
+      ids.add(m.id);
+      const key = m.name.replace(/\s+/g, '');
+      if (names.has(key)) errors.push(`${mp}.name: 이름 중복 "${m.name}"`);
+      names.add(key);
+      atLeast(`${mp}.act`, m.act, 0);
+      atLeast(`${mp}.talent`, m.talent, 0);
+      sizes.set(m.teamId, (sizes.get(m.teamId) ?? 0) + 1);
+    });
+    lg.teams.forEach((x, j) => {
+      const tp = `${p}.teams[${j}]`;
+      if (!tierIds.has(x.tier)) errors.push(`${tp}.tier: 없는 리그 등급 id "${x.tier}"`);
+      const sc = rules.scaleTiers.find((r) => r.tier === x.scaleTier);
+      if (!sc) errors.push(`${tp}.scaleTier: 없는 규모 단계 ${x.scaleTier}`);
+      else {
+        const n = sizes.get(x.id) ?? 0;
+        if (n < sc.min || n > sc.max) errors.push(`${tp}: 인원 ${n}명이 규모 단계 ${x.scaleTier}(${sc.min}~${sc.max}) 밖`);
+      }
+    });
+    if (lg.history.length > rules.season.historyLimit) errors.push(`${p}.history: ${rules.season.historyLimit}개보다 많음`);
+  }
+
   const isGuild = (id: string) => state.mercenaries.find((m) => m.id === id)?.affiliation.kind === 'guild';
 
   // ── 리프트(목록, 파견, 보고가 같은 검사를 쓴다)

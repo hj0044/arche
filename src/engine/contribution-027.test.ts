@@ -208,19 +208,19 @@ describe('027 시즌·통산 기록', () => {
   const tally = (dmg: number): ContributionTally => ({ ...emptyTally(), damage: dmg, kill: 1 });
   const sortie = (day: number, dmg = 100, over: Partial<SortieInput> = {}): SortieInput => ({ day, role: 'mage', riftName: `r${day}`, tier: 'crack', outcome: 'victory', downed: false, tally: tally(dmg), ...over });
 
-  it('시즌 번호 = floor((일차 − 1) ÷ 30) + 1', () => {
+  it('시즌 번호 = floor((일차 − 1) ÷ 60) + 1(리그 시즌 길이로 일원화, 028a)', () => {
     expect(seasonOf(tables, 1)).toBe(1);
-    expect(seasonOf(tables, 30)).toBe(1);
-    expect(seasonOf(tables, 31)).toBe(2);
-    expect(seasonOf(tables, 61)).toBe(3);
+    expect(seasonOf(tables, 60)).toBe(1);
+    expect(seasonOf(tables, 61)).toBe(2);
+    expect(seasonOf(tables, 121)).toBe(3);
   });
 
-  it('시즌 경계(30 → 31일)에서 시즌 합계는 새로 시작하고 통산은 유지한다', () => {
-    let rec = recordSortie(tables, undefined, sortie(29, 100));
-    rec = recordSortie(tables, rec, sortie(30, 50, { outcome: 'defeat', downed: true }));
+  it('시즌 경계(60 → 61일)에서 시즌 합계는 새로 시작하고 통산은 유지한다', () => {
+    let rec = recordSortie(tables, undefined, sortie(59, 100));
+    rec = recordSortie(tables, rec, sortie(60, 50, { outcome: 'defeat', downed: true }));
     expect(rec.season).toMatchObject({ no: 1, sorties: 2, clears: 1, downs: 1 });
     expect(rec.season.items.damage).toBe(150);
-    rec = recordSortie(tables, rec, sortie(31, 70));
+    rec = recordSortie(tables, rec, sortie(61, 70));
     expect(rec.season).toMatchObject({ no: 2, sorties: 1, clears: 1, downs: 0 });
     expect(rec.season.items.damage).toBe(70);
     expect(rec.career).toMatchObject({ sorties: 3, clears: 2, downs: 1 });
@@ -244,7 +244,7 @@ describe('027 시즌·통산 기록', () => {
     for (let d = 2; d <= 15; d++) rec = recordSortie(tables, rec, sortie(d));
     expect(rec.recent).toHaveLength(10);
     expect(rec.recent[0].day).toBe(15);
-    for (let k = 1; k <= 8; k++) rec = recordSortie(tables, rec, sortie(30 * k + 1));
+    for (let k = 1; k <= 8; k++) rec = recordSortie(tables, rec, sortie(60 * k + 1));
     expect(rec.pastSeasons.map((p) => p.no)).toEqual([4, 5, 6, 7, 8]);
     expect(rec.season.no).toBe(9);
   });
@@ -252,8 +252,8 @@ describe('027 시즌·통산 기록', () => {
   it('이번 시즌 보기: 기록이 지난 시즌에 멈춰 있으면 0', () => {
     const rec = recordSortie(tables, undefined, sortie(5));
     expect(currentSeasonTally(tables, rec, 20).sorties).toBe(1);
-    expect(currentSeasonTally(tables, rec, 40).sorties).toBe(0);
-    expect(currentSeasonTally(tables, undefined, 40).sorties).toBe(0);
+    expect(currentSeasonTally(tables, rec, 70).sorties).toBe(0);
+    expect(currentSeasonTally(tables, undefined, 70).sorties).toBe(0);
   });
 });
 
