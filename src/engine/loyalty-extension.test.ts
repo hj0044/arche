@@ -86,14 +86,14 @@ describe('대기 하락', () => {
     for (let i = 0; i < 12; i++) s = advanceDay(tables, rich(s)).state;
     expect(getMerc(s, 'm05').loyalty!.restStreak).toBe(0);
     expect(isLoyaltySimulated(tables, { kind: 'guild' })).toBe(true);
-    expect(isLoyaltySimulated(tables, { kind: 'faction', factionId: 'rrb' })).toBe(false);
+    expect(isLoyaltySimulated(tables, { kind: 'unaffiliated' })).toBe(false);
   });
 
-  it('시뮬레이션 대상은 데이터로 정한다(세력을 켜면 그 세력 용병도 변한다)', () => {
-    const t: GameTables = { ...tables, loyalty: { ...tables.loyalty, simulatedAffiliations: ['guild', 'rrb'] } };
+  it('시뮬레이션 대상은 데이터로 정한다(소속 종류를 켜면 그 계약자도 변한다, 구조 확장 확인)', () => {
+    const t: GameTables = { ...tables, loyalty: { ...tables.loyalty, simulatedAffiliations: ['guild', 'unaffiliated'] } };
     let s = gm();
     for (let i = 0; i < 3; i++) s = advanceDay(t, rich(s)).state;
-    expect(getMerc(s, 'm06').loyalty!.restStreak).toBe(3); // 리프트 대응국 소속(026d)
+    expect(getMerc(s, 'm06').loyalty!.restStreak).toBe(3); // 무소속(길드 밖) 계약자
   });
 });
 
@@ -111,10 +111,10 @@ describe('세력은 수치에 개입하지 않는다(지시서 026)', () => {
     expect(s.mercenaries.map((m) => [m.id, m.affiliation])).toEqual(before);
   });
 
-  it('영입비는 세력과 무관하다: 같은 계약자를 다른 세력으로 바꿔도 비용이 같다', () => {
+  it('영입비는 세력과 무관하다: 같은 계약자의 출신 세력을 바꿔도 비용이 같다(026d)', () => {
     const start = gm('cost');
     for (const id of ['m28', 'm16', 'm05']) {
-      const costs = tables.factions.map((f) => recruitInfo(tables, patch(start, id, () => ({ affiliation: { kind: 'faction', factionId: f.id } })), id).cost);
+      const costs = [...tables.factions.map((f) => f.id), null].map((f) => recruitInfo(tables, patch(start, id, (m) => ({ profile: { ...m.profile, originFaction: f } })), id).cost);
       expect(new Set(costs).size).toBe(1);
     }
     const id = 'm28';
@@ -125,5 +125,22 @@ describe('세력은 수치에 개입하지 않는다(지시서 026)', () => {
     const away = m.profile.hometown !== start.baseCityId ? city.recruitment.otherHometownCostMultiplier : 1;
     expect(recruitInfo(tables, start, id).cost).toBe(Math.round(raw * away));
     expect(getMerc(recruit(tables, start, id), id).affiliation).toEqual({ kind: 'guild' });
+  });
+});
+
+describe('지시서 026d: 출신 세력(연고)', () => {
+  it('영입 후보는 시작 길드 4명을 뺀 32명 그대로이고, 출신 세력은 영입해도 이탈해도 바뀌지 않는다', () => {
+    const start = gm('origin');
+    const candidates = start.mercenaries.filter((m) => recruitInfo(tables, start, m.id).eligible).map((m) => m.id);
+    expect(candidates).toEqual(tables.roster.filter((r) => !r.startingCandidate).map((r) => r.id));
+    const origin = getMerc(start, 'm28').profile.originFaction;
+    let s = recruit(tables, rich(start), 'm28');
+    expect(getMerc(s, 'm28').affiliation).toEqual({ kind: 'guild' });
+    expect(getMerc(s, 'm28').profile.originFaction).toBe(origin);
+    const t: GameTables = { ...tables, loyalty: { ...tables.loyalty, departure: { ...tables.loyalty.departure, chance: 1, afterConsecutiveDays: 0 } } };
+    s = { ...s, mercenaries: s.mercenaries.map((m) => (m.id === 'm28' ? { ...m, loyalty: { ...m.loyalty!, value: 0 } } : m)) };
+    for (let i = 0; i < 5 && getMerc(s, 'm28').affiliation.kind === 'guild'; i++) s = advanceDay(t, rich(s)).state;
+    expect(getMerc(s, 'm28').affiliation).toEqual({ kind: 'unaffiliated' });
+    expect(getMerc(s, 'm28').profile.originFaction).toBe(origin);
   });
 });

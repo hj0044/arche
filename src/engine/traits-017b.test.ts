@@ -11,7 +11,7 @@ const merc = (id: string, level: number) => {
   const state: MercenaryState = {
     id: m.id, name: m.name, role: m.role, element: m.element, level, exp: 0,
     initialLevel: m.initialLevel, growth: m.growth, affiliation: { kind: 'guild' },
-    profile: { background: m.background, world: m.world, race: m.race },
+    profile: { background: m.background, world: m.world, race: m.race, originFaction: m.originFaction },
   };
   return mercToUnit(tables, state);
 };

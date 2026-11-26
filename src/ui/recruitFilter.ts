@@ -1,7 +1,7 @@
 /**
  * 영입 화면의 검색·필터·정렬·구역 나눔(지시서 023). React에 의존하지 않는 순수 함수라 단위 테스트한다(riftFilter 방식).
  * 엔진(recruitInfo, 영입 규칙·비용·해금)은 그대로 쓰고 바꾸지 않는다.
- * 잠김 계약자는 정체를 모르므로 이름 검색과 역할·속성·소속 필터에 걸리지 않고, 도시(공개 정보)로만 걸린다.
+ * 잠김 계약자는 정체를 모르므로 이름 검색과 역할·속성·출신 세력 필터에 걸리지 않고, 도시(공개 정보)로만 걸린다.
  */
 import type { GameTables } from '../data';
 import { recruitInfo, type GameState, type MercenaryState, type RecruitInfo } from '../engine/game';
@@ -38,7 +38,7 @@ export interface RecruitRow {
   ratio: number;
 }
 
-/** 영입 후보(세력 소속으로 영입 대상인 계약자)와 상태. 진행 중 = 해금 조건이 1 이상 진행된 것 */
+/** 영입 후보(길드가 아닌 계약자)와 상태. 진행 중 = 해금 조건이 1 이상 진행된 것 */
 export function recruitRows(tables: GameTables, state: GameState): RecruitRow[] {
   return state.mercenaries
     .map((m) => ({ m, info: recruitInfo(tables, state, m.id) }))
@@ -51,7 +51,7 @@ export function recruitRows(tables: GameTables, state: GameState): RecruitRow[] 
     });
 }
 
-/** 검색·필터 시트에 맞는가. 잠김은 이름·역할·속성·소속 조건이 있으면 빠지고 도시로만 걸린다 */
+/** 검색·필터 시트에 맞는가. 잠김은 이름·역할·속성·출신 세력 조건이 있으면 빠지고 도시로만 걸린다 */
 export function matchesRecruit(row: RecruitRow, view: Pick<RecruitView, 'query' | 'sheet'>): boolean {
   const f = view.sheet;
   const city = row.m.profile.hometown ?? '';
@@ -62,8 +62,7 @@ export function matchesRecruit(row: RecruitRow, view: Pick<RecruitView, 'query' 
   }
   if (f.roles.length && (hidden || !f.roles.includes(row.m.role))) return false;
   if (f.elements.length && (hidden || !f.elements.includes(row.m.element))) return false;
-  const aff = row.m.affiliation;
-  const faction = aff.kind === 'faction' ? aff.factionId : aff.kind === 'unaffiliated' ? UNAFFILIATED_CHIP : '';
+  const faction = row.m.profile.originFaction ?? ORIGIN_NONE_CHIP;
   if (f.factions.length && (hidden || !f.factions.includes(faction))) return false;
   return true;
 }
@@ -101,11 +100,11 @@ export function recruitSections(rows: RecruitRow[], view: RecruitView): RecruitS
   return { counts, sections };
 }
 
-/** 소속 필터의 '무소속' 칩 id. 무소속은 세력이 아니라 상태다(지시서 026c) */
-export const UNAFFILIATED_CHIP = 'unaffiliated';
+/** 출신 세력 필터의 '연고 없음' 칩 id(지시서 026d) */
+export const ORIGIN_NONE_CHIP = 'none';
 
-/** 필터 시트 칩: 역할·속성은 표에서, 도시는 도시 표, 소속은 세력 표 중 로스터에 소속 계약자가 한 명 이상 있는 세력(지시서 026b)
- * 뒤에 '무소속' 칩을 늘 따로 둔다(지시서 026c, 소속 계약자 규칙은 세력 칩에만).
+/** 필터 시트 칩: 역할·속성은 표에서, 도시는 도시 표, 출신 세력은 세력 표 중 로스터에 그 세력 출신 계약자가 한 명 이상 있는 세력(지시서 026b·026d)
+ * 뒤에 '연고 없음' 칩을 늘 따로 둔다(출신 계약자 규칙은 세력 칩에만).
  * 진행 상태(영입·잠김)와 무관하게 로스터 데이터 기준이라 칩이 생기거나 사라지지 않는다. */
 export function recruitChips(tables: GameTables) {
   return {
@@ -113,8 +112,8 @@ export function recruitChips(tables: GameTables) {
     elements: tables.elements.map((e) => ({ id: e.id, name: e.name })),
     cities: tables.cities.map((c) => ({ id: c.id, name: c.name })),
     factions: [
-      ...tables.factions.filter((f) => tables.roster.some((r) => r.faction === f.id)).map((f) => ({ id: f.id, name: f.name })),
-      { id: UNAFFILIATED_CHIP, name: '무소속' },
+      ...tables.factions.filter((f) => tables.roster.some((r) => r.originFaction === f.id)).map((f) => ({ id: f.id, name: f.name })),
+      { id: ORIGIN_NONE_CHIP, name: '연고 없음' },
     ],
   };
 }

@@ -26,6 +26,8 @@ export const backgroundShort = (id: string) => tables.backgrounds.find((b) => b.
 export const worldName = (id: string) => tables.worlds.find((w) => w.id === id)?.name ?? id;
 export const severityName = (id: string) => tables.injuries.severities.find((s) => s.id === id)?.name ?? id;
 export const factionName = (id: string) => tables.factions.find((f) => f.id === id)?.name ?? id;
+/** 출신 세력(연고, 지시서 026d) 표시: 세력 이름, 없으면 '연고 없음' */
+export const originName = (originFaction: string | null | undefined) => (originFaction ? factionName(originFaction) : '연고 없음');
 
 export const outcomeName: Record<Outcome, string> = { victory: '승리', retreat: '철수', defeat: '패배' };
 /** 홈 '최근 보고' 카드의 결과 글자(시안 Main) */

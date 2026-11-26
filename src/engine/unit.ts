@@ -5,7 +5,6 @@ export { levelScale } from './stats';
 /** 유닛의 소속. 용병·몬스터·(이후) 일반병사·라이벌 병력이 같은 틀을 쓴다. */
 export type Affiliation =
   | { kind: 'guild' }
-  | { kind: 'faction'; factionId: string }
   | { kind: 'monster' }
   | { kind: 'unaffiliated' };
 

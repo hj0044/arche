@@ -389,11 +389,11 @@ test('영입 상세 시트와 필터 시트', async ({ page }) => {
   expect(Math.round((await buy.boundingBox())!.height)).toBe(52);
   await sheet.getByRole('button', { name: '상세 보기' }).click();
   await expect(page.locator('[data-ui="MercDetail.identity"]')).toBeVisible();
-  // 필터 시트: 역할·속성·도시·소속, 적용하면 칩 숫자가 줄고 잠김은 도시로만 걸린다
+  // 필터 시트: 역할·속성·도시·출신 세력, 적용하면 칩 숫자가 줄고 잠김은 도시로만 걸린다
   await open(page, 'recruit');
   const allChip = await page.locator('[data-ui="Recruit.chips"] .chip').first().innerText();
   await page.locator('[data-ui="recruit.filter"]').click();
-  for (const g of ['역할', '속성', '도시', '소속']) await expect(page.getByRole('group', { name: g })).toBeVisible();
+  for (const g of ['역할', '속성', '도시', '출신 세력']) await expect(page.getByRole('group', { name: g })).toBeVisible();
   await page.getByRole('group', { name: '역할' }).getByRole('button', { name: '수호자' }).click();
   await page.getByRole('button', { name: /명 보기$/ }).click();
   expect(await page.locator('[data-ui="Recruit.chips"] .chip').first().innerText()).not.toBe(allChip);

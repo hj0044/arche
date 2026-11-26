@@ -62,6 +62,8 @@ export interface MercProfile {
   background: string;
   /** 조합 축 "세계" id */
   world: string;
+  /** 출신 세력(연고, 지시서 026d): 세력 id 또는 null(연고 없음). 영입·이탈로 바뀌지 않는다. 지금은 세계관 전용(수치 효과 없음) */
+  originFaction: string | null;
   race: string;
 }
 
@@ -248,8 +250,8 @@ function unlockProgress(state: GameState, rule: UnlockRule): { current: number; 
 export function recruitInfo(tables: GameTables, state: GameState, mercId: string): RecruitInfo {
   const m = getMerc(state, mercId);
   const aff = m.affiliation;
-  // 영입 대상: 세력 소속이거나 무소속(지시서 026c). 길드원은 아니다
-  const eligible = aff.kind === 'unaffiliated' || (aff.kind === 'faction' && tables.factions.some((f) => f.id === aff.factionId));
+  // 영입 대상: 길드가 아닌 계약자(지금은 모두 무소속, 지시서 026d)
+  const eligible = aff.kind === 'unaffiliated';
   const c = tables.progression.recruitZeroCost;
   const city = tables.cities.find((x) => x.id === state.baseCityId);
   const away = m.profile.hometown !== state.baseCityId ? (city?.recruitment.otherHometownCostMultiplier ?? 1) : 1;
@@ -346,8 +348,9 @@ export function newGame(tables: GameTables, opts: NewGameOptions): GameState {
     exp: 0,
     growth: { ...r.growth },
     initialLevel: r.initialLevel,
-    profile: { age: r.age, gender: r.gender, hometown: r.hometown, background: r.background, world: r.world, race: r.race },
-    affiliation: r.faction === 'guild' ? { kind: 'guild' } : r.faction === null ? { kind: 'unaffiliated' } : { kind: 'faction', factionId: r.faction },
+    profile: { age: r.age, gender: r.gender, hometown: r.hometown, background: r.background, world: r.world, race: r.race, originFaction: r.originFaction },
+    // 현재 소속은 길드 또는 무소속뿐이다(지시서 026d). 세력은 출신(profile.originFaction)으로만 남는다
+    affiliation: r.startingCandidate ? { kind: 'guild' } : { kind: 'unaffiliated' },
     loyalty: newLoyalty(tables),
   }));
 

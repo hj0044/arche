@@ -279,8 +279,8 @@ export interface RosterRow {
   element: string;
   role: string;
   hometown: string;
-  /** 'guild'는 플레이어 길드(시작 용병 후보), null은 무소속(세력 없음, 지시서 026c), 그 밖에는 factions.json의 id */
-  faction: string | null;
+  /** 출신 세력(연고, 지시서 026d): factions.json의 id, null은 연고 없음. 영입·이탈로 바뀌지 않는다. 시작 길드 여부는 startingCandidate */
+  originFaction: string | null;
   startingCandidate: boolean;
   background: string;
   /** cap: 성장 한계(최대 레벨) */
@@ -624,7 +624,7 @@ export interface TendencyRow {
 export interface LoyaltyTable {
   range: Range;
   start: number;
-  /** 충성도 변동·거부·이탈을 시뮬레이션할 소속('guild' 또는 세력 id). 그 밖의 용병은 시작값을 보관만 한다. */
+  /** 충성도 변동·거부·이탈을 시뮬레이션할 소속. 지금은 'guild'만(지시서 026b·026d). 그 밖의 계약자는 시작값을 보관만 한다. */
   simulatedAffiliations: string[];
   /** 출전 없이 쉬는 날 상승을 주는 최대 연속 일수. 넘기면 대기 하락 */
   restMaxDays: number;

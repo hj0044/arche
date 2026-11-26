@@ -269,7 +269,7 @@ describe('육성과 영입', () => {
     const s = { ...opener(), resources: { zero: 0, arche: 0, materials: {} } };
     const flat = (id: string) => {
       const m = getMerc(s, id);
-      return recruitInfo(tables, { ...s, mercenaries: s.mercenaries.map((x) => (x.id === id ? { ...x, level: 1, profile: { ...x.profile, hometown: 'seoul' }, affiliation: { kind: 'faction', factionId: 'rrb' } } : x)) }, id).cost + m.level * 0;
+      return recruitInfo(tables, { ...s, mercenaries: s.mercenaries.map((x) => (x.id === id ? { ...x, level: 1, profile: { ...x.profile, hometown: 'seoul' }, affiliation: { kind: 'unaffiliated' } } : x)) }, id).cost + m.level * 0;
     };
     expect(flat('m12')).toBeGreaterThan(flat('m13')); // 한계 70 > 40
   });

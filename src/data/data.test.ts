@@ -47,14 +47,15 @@ describe('017b: 카드용 짧은 이름', () => {
 });
 
 describe('지시서 026: 세력 정리', () => {
-  it('모든 계약자의 소속은 길드, 세력 id, 또는 null(무소속)이다', () => {
+  it('모든 계약자의 출신 세력은 세력 id 또는 null(연고 없음)이다(026d)', () => {
     const ids = new Set(tables.factions.map((f) => f.id));
-    expect(tables.roster.filter((r) => r.faction !== 'guild' && r.faction !== null && !ids.has(r.faction)).map((r) => r.id)).toEqual([]);
+    expect(tables.roster.filter((r) => r.originFaction !== null && !ids.has(r.originFaction)).map((r) => r.id)).toEqual([]);
+    expect(tables.roster.filter((r) => r.startingCandidate)).toHaveLength(4);
   });
   it('에지 서클(id indie)과 불워크 시스템즈가 있고 세력 행에 영입 비용 배율이 없다', () => {
     expect(tables.factions.find((f) => f.id === 'indie')).toMatchObject({ name: '에지 서클', type: 'elite', typeName: '독립 강자 모임' });
     expect(tables.factions.find((f) => f.id === 'bulwark')).toMatchObject({ name: '불워크 시스템즈', type: 'megacorp' });
-    expect(tables.roster.filter((r) => r.faction === 'indie')).toHaveLength(4); // 026d 재배분
+    expect(tables.roster.filter((r) => r.originFaction === 'indie')).toHaveLength(4); // 026d 재배분
     for (const f of tables.factions) expect(f).not.toHaveProperty('recruitCostMultiplier');
   });
   it('코드·데이터·화면 문구에 삭제한 세력 이름이 남지 않는다', async () => {
@@ -111,12 +112,12 @@ describe('지시서 026c: 세력 10개, 무소속은 상태', () => {
   });
   it('로스터와 NPC 팀 소속은 세력 id 10개 중 하나이거나 null(무소속). 무소속은 로스터의 약 3분의 1, 모든 세력에 계약자가 있다(026d)', () => {
     const ok = (f: string | null) => f === null || IDS.includes(f);
-    expect(tables.roster.filter((r) => r.faction !== 'guild' && !ok(r.faction)).map((r) => r.id)).toEqual([]);
+    expect(tables.roster.filter((r) => !ok(r.originFaction)).map((r) => r.id)).toEqual([]);
     expect(tables.league.teams.filter((x) => !ok(x.faction)).map((x) => x.id)).toEqual([]);
-    const outside = tables.roster.filter((r) => r.faction !== 'guild');
-    const none = outside.filter((r) => r.faction === null).length;
+    const outside = tables.roster.filter((r) => !r.startingCandidate);
+    const none = outside.filter((r) => r.originFaction === null).length;
     expect(none / outside.length).toBeGreaterThanOrEqual(0.25);
-    for (const id of IDS) expect(tables.roster.filter((r) => r.faction === id).length, id).toBeGreaterThan(0);
+    for (const id of IDS) expect(tables.roster.filter((r) => r.originFaction === id).length, id).toBeGreaterThan(0);
     // 정보·AI 업종 팀은 세력 id가 없다(세계관 요약 3절)
     expect(tables.league.teams.find((x) => x.id === 'observation-unit')!.faction).toBeNull();
   });

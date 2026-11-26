@@ -1,6 +1,6 @@
 {
  "format": "arche-save",
- "version": 15,
+ "version": 16,
  "savedAt": "2026-11-23T00:00:00.000Z",
  "kind": "manual",
  "summary": {
@@ -42,7 +42,8 @@
      "hometown": "seoul",
      "background": "soldier",
      "world": "earth",
-     "race": "human"
+     "race": "human",
+     "originFaction": "rrb"
     },
     "affiliation": {
      "kind": "guild"
@@ -73,7 +74,8 @@
      "hometown": "tokyo",
      "background": "freelancer",
      "world": "earth",
-     "race": "human"
+     "race": "human",
+     "originFaction": null
     },
     "affiliation": {
      "kind": "guild"
@@ -104,7 +106,8 @@
      "hometown": "newyork",
      "background": "researcher",
      "world": "earth",
-     "race": "human"
+     "race": "human",
+     "originFaction": "prism"
     },
     "affiliation": {
      "kind": "guild"
@@ -135,7 +138,8 @@
      "hometown": "seoul",
      "background": "citizen",
      "world": "earth",
-     "race": "human"
+     "race": "human",
+     "originFaction": "lantern"
     },
     "affiliation": {
      "kind": "guild"
@@ -166,7 +170,8 @@
      "hometown": "seoul",
      "background": "soldier",
      "world": "earth",
-     "race": "human"
+     "race": "human",
+     "originFaction": "bulwark"
     },
     "affiliation": {
      "kind": "guild"
@@ -201,7 +206,8 @@
      "hometown": "seoul",
      "background": "agent",
      "world": "earth",
-     "race": "human"
+     "race": "human",
+     "originFaction": "rrb"
     },
     "affiliation": {
      "kind": "guild"
@@ -232,7 +238,8 @@
      "hometown": "seoul",
      "background": "soldier",
      "world": "earth",
-     "race": "human"
+     "race": "human",
+     "originFaction": "rrb"
     },
     "affiliation": {
      "kind": "guild"
@@ -327,7 +334,8 @@
      "hometown": "tokyo",
      "background": "agent",
      "world": "earth",
-     "race": "human"
+     "race": "human",
+     "originFaction": "rrb"
     },
     "affiliation": {
      "kind": "guild"
@@ -422,7 +430,8 @@
      "hometown": "newyork",
      "background": "agent",
      "world": "earth",
-     "race": "human"
+     "race": "human",
+     "originFaction": null
     },
     "affiliation": {
      "kind": "guild"
@@ -517,7 +526,8 @@
      "hometown": "seoul",
      "background": "researcher",
      "world": "earth",
-     "race": "human"
+     "race": "human",
+     "originFaction": "prism"
     },
     "affiliation": {
      "kind": "guild"
@@ -612,7 +622,8 @@
      "hometown": "tokyo",
      "background": "corporate",
      "world": "earth",
-     "race": "human"
+     "race": "human",
+     "originFaction": "bulwark"
     },
     "affiliation": {
      "kind": "guild"
@@ -643,7 +654,8 @@
      "hometown": "tokyo",
      "background": "corporate",
      "world": "earth",
-     "race": "human"
+     "race": "human",
+     "originFaction": "archon"
     },
     "affiliation": {
      "kind": "guild"
@@ -674,7 +686,8 @@
      "hometown": "tokyo",
      "background": "corporate",
      "world": "earth",
-     "race": "human"
+     "race": "human",
+     "originFaction": "bulwark"
     },
     "affiliation": {
      "kind": "guild"
@@ -705,7 +718,8 @@
      "hometown": "tokyo",
      "background": "researcher",
      "world": "earth",
-     "race": "human"
+     "race": "human",
+     "originFaction": "archon"
     },
     "affiliation": {
      "kind": "guild"
@@ -736,7 +750,8 @@
      "hometown": "newyork",
      "background": "corporate",
      "world": "earth",
-     "race": "human"
+     "race": "human",
+     "originFaction": "archon"
     },
     "affiliation": {
      "kind": "guild"
@@ -767,7 +782,8 @@
      "hometown": "seoul",
      "background": "mercenary_company",
      "world": "earth",
-     "race": "human"
+     "race": "human",
+     "originFaction": "indie"
     },
     "affiliation": {
      "kind": "guild"
@@ -798,11 +814,11 @@
      "hometown": "seoul",
      "background": "mercenary_company",
      "world": "earth",
-     "race": "human"
+     "race": "human",
+     "originFaction": "indie"
     },
     "affiliation": {
-     "kind": "faction",
-     "factionId": "indie"
+     "kind": "unaffiliated"
     },
     "loyalty": {
      "value": 60,
@@ -830,7 +846,8 @@
      "hometown": "newyork",
      "background": "mercenary_company",
      "world": "earth",
-     "race": "human"
+     "race": "human",
+     "originFaction": "indie"
     },
     "affiliation": {
      "kind": "guild"
@@ -861,7 +878,8 @@
      "hometown": "tokyo",
      "background": "mercenary_company",
      "world": "earth",
-     "race": "human"
+     "race": "human",
+     "originFaction": null
     },
     "affiliation": {
      "kind": "guild"
@@ -892,7 +910,8 @@
      "hometown": "newyork",
      "background": "mercenary_company",
      "world": "earth",
-     "race": "human"
+     "race": "human",
+     "originFaction": "lantern"
     },
     "affiliation": {
      "kind": "guild"
@@ -923,7 +942,8 @@
      "hometown": "newyork",
      "background": "mercenary_company",
      "world": "earth",
-     "race": "human"
+     "race": "human",
+     "originFaction": "anchor"
     },
     "affiliation": {
      "kind": "guild"
@@ -954,11 +974,11 @@
      "hometown": "newyork",
      "background": "mercenary_company",
      "world": "earth",
-     "race": "human"
+     "race": "human",
+     "originFaction": "rose"
     },
     "affiliation": {
-     "kind": "faction",
-     "factionId": "rose"
+     "kind": "unaffiliated"
     },
     "loyalty": {
      "value": 60,
@@ -986,11 +1006,11 @@
      "hometown": "newyork",
      "background": "freelancer",
      "world": "earth",
-     "race": "human"
+     "race": "human",
+     "originFaction": "beacon"
     },
     "affiliation": {
-     "kind": "faction",
-     "factionId": "beacon"
+     "kind": "unaffiliated"
     },
     "loyalty": {
      "value": 60,
@@ -1018,7 +1038,8 @@
      "hometown": "newyork",
      "background": "mercenary_company",
      "world": "earth",
-     "race": "human"
+     "race": "human",
+     "originFaction": null
     },
     "affiliation": {
      "kind": "unaffiliated"
@@ -1049,7 +1070,8 @@
      "hometown": "tokyo",
      "background": "freelancer",
      "world": "earth",
-     "race": "human"
+     "race": "human",
+     "originFaction": null
     },
     "affiliation": {
      "kind": "unaffiliated"
@@ -1080,11 +1102,11 @@
      "hometown": "seoul",
      "background": "citizen",
      "world": "earth",
-     "race": "human"
+     "race": "human",
+     "originFaction": "lantern"
     },
     "affiliation": {
-     "kind": "faction",
-     "factionId": "lantern"
+     "kind": "unaffiliated"
     },
     "loyalty": {
      "value": 60,
@@ -1112,7 +1134,8 @@
      "hometown": "tokyo",
      "background": "citizen",
      "world": "earth",
-     "race": "human"
+     "race": "human",
+     "originFaction": null
     },
     "affiliation": {
      "kind": "unaffiliated"
@@ -1143,11 +1166,11 @@
      "hometown": "seoul",
      "background": "researcher",
      "world": "earth",
-     "race": "human"
+     "race": "human",
+     "originFaction": "prism"
     },
     "affiliation": {
-     "kind": "faction",
-     "factionId": "prism"
+     "kind": "unaffiliated"
     },
     "loyalty": {
      "value": 60,
@@ -1175,7 +1198,8 @@
      "hometown": "newyork",
      "background": "citizen",
      "world": "earth",
-     "race": "human"
+     "race": "human",
+     "originFaction": null
     },
     "affiliation": {
      "kind": "unaffiliated"
@@ -1206,7 +1230,8 @@
      "hometown": "tokyo",
      "background": "soldier",
      "world": "earth",
-     "race": "human"
+     "race": "human",
+     "originFaction": null
     },
     "affiliation": {
      "kind": "unaffiliated"
@@ -1237,7 +1262,8 @@
      "hometown": "seoul",
      "background": "freelancer",
      "world": "earth",
-     "race": "human"
+     "race": "human",
+     "originFaction": null
     },
     "affiliation": {
      "kind": "unaffiliated"
@@ -1268,11 +1294,11 @@
      "hometown": "tokyo",
      "background": "agent",
      "world": "earth",
-     "race": "human"
+     "race": "human",
+     "originFaction": "gray"
     },
     "affiliation": {
-     "kind": "faction",
-     "factionId": "gray"
+     "kind": "unaffiliated"
     },
     "loyalty": {
      "value": 60,
@@ -1300,11 +1326,11 @@
      "hometown": "newyork",
      "background": "mercenary_company",
      "world": "earth",
-     "race": "human"
+     "race": "human",
+     "originFaction": "indie"
     },
     "affiliation": {
-     "kind": "faction",
-     "factionId": "indie"
+     "kind": "unaffiliated"
     },
     "loyalty": {
      "value": 60,
@@ -1332,11 +1358,11 @@
      "hometown": "seoul",
      "background": "researcher",
      "world": "earth",
-     "race": "human"
+     "race": "human",
+     "originFaction": "rrb"
     },
     "affiliation": {
-     "kind": "faction",
-     "factionId": "rrb"
+     "kind": "unaffiliated"
     },
     "loyalty": {
      "value": 60,
@@ -1364,7 +1390,8 @@
      "hometown": "tokyo",
      "background": "corporate",
      "world": "earth",
-     "race": "human"
+     "race": "human",
+     "originFaction": null
     },
     "affiliation": {
      "kind": "unaffiliated"
@@ -1395,7 +1422,8 @@
      "hometown": "newyork",
      "background": "citizen",
      "world": "earth",
-     "race": "human"
+     "race": "human",
+     "originFaction": null
     },
     "affiliation": {
      "kind": "unaffiliated"

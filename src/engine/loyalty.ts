@@ -72,9 +72,8 @@ export function applyLoyalty(
 }
 
 /** 충성도를 시뮬레이션하는 소속인가(데이터 simulatedAffiliations. 지금은 길드만) */
-export function isLoyaltySimulated(tables: GameTables, affiliation: { kind: string; factionId?: string }): boolean {
-  const key = affiliation.kind === 'guild' ? 'guild' : affiliation.kind === 'faction' ? affiliation.factionId : undefined;
-  return key !== undefined && tables.loyalty.simulatedAffiliations.includes(key);
+export function isLoyaltySimulated(tables: GameTables, affiliation: { kind: string }): boolean {
+  return tables.loyalty.simulatedAffiliations.includes(affiliation.kind);
 }
 
 /** 화면 표시용 정수(구간 경계와 어긋나지 않게 내림) */

@@ -162,23 +162,41 @@ describe('세이브 v6(리프트 영역 세력)', () => {
   });
 });
 
+describe('세이브 v16(지시서 026d, AGENTS.md: 마이그레이션 없음)', () => {
+  it('버전은 16이고 v15 세이브는 지원하지 않는 세이브로 거절한다', () => {
+    expect(SAVE_VERSION).toBe(16);
+    const file = JSON.parse(serializeSave(createSaveFile(playedState(), 'manual')));
+    expect(() => parseSave(JSON.stringify({ ...file, version: 15 }))).toThrow(/지원하지 않는 세이브/);
+  });
+  it('계약자 소속 kind는 guild·unaffiliated만: 옛 faction 소속이 남은 세이브는 거절한다', () => {
+    const s = playedState();
+    const c = structuredClone(s) as unknown as { mercenaries: { affiliation: unknown }[] };
+    c.mercenaries[5].affiliation = { kind: 'faction', factionId: 'rrb' };
+    expect(() => parseSave(serializeSave(createSaveFile(c as unknown as GameState, 'manual')), { ...tables, limits: saveLimits })).toThrow(/허용되지 않은 값/);
+  });
+  it('출신 세력이 없는(필드가 빠진) 계약자는 형식 검사에서 거절한다', () => {
+    const c = structuredClone(playedState()) as unknown as { mercenaries: { profile: Record<string, unknown> }[] };
+    delete c.mercenaries[0].profile.originFaction;
+    expect(() => parseSave(serializeSave(createSaveFile(c as unknown as GameState, 'manual')), { ...tables, limits: saveLimits })).toThrow();
+  });
+});
+
 describe('세이브 v15(지시서 026c, AGENTS.md: 마이그레이션 없음)', () => {
-  it('버전은 15이고 v14 세이브는 지원하지 않는 세이브로 거절한다', () => {
-    expect(SAVE_VERSION).toBe(15);
+  it('v14 세이브는 지원하지 않는 세이브로 거절한다', () => {
     const file = JSON.parse(serializeSave(createSaveFile(playedState(), 'manual')));
     expect(() => parseSave(JSON.stringify({ ...file, version: 14 }))).toThrow(/지원하지 않는 세이브/);
   });
-  it('삭제한 세력 id(웨이포인트·옛 무소속 행)가 들어 있는 세이브는 의미 검증에서 거절한다', () => {
+  it('삭제한 세력 id(웨이포인트·옛 무소속 행)가 출신 세력에 들어 있는 세이브는 의미 검증에서 거절한다', () => {
     const s = playedState();
     for (const bad of ['way' + 'point', 'fr' + 'ee']) {
       const c = structuredClone(s);
-      c.mercenaries.find((m) => m.affiliation.kind === 'unaffiliated')!.affiliation = { kind: 'faction', factionId: bad };
+      c.mercenaries[0].profile.originFaction = bad;
       expect(() => parseSave(serializeSave(createSaveFile(c, 'manual')), { ...tables, limits: saveLimits })).toThrow(/세력/);
     }
   });
   it('무소속 계약자(affiliation.kind unaffiliated)를 저장하고 불러올 수 있다', () => {
     const s = playedState();
-    expect(s.mercenaries.filter((m) => m.affiliation.kind === 'unaffiliated')).toHaveLength(10); // 026d 재배분
+    expect(s.mercenaries.filter((m) => m.affiliation.kind === 'unaffiliated')).toHaveLength(32); // 026d: 길드 밖은 모두 무소속
     const back = parseSave(serializeSave(createSaveFile(s, 'manual')), { ...tables, limits: saveLimits });
     expect(back.state).toEqual(s);
   });
@@ -253,11 +271,11 @@ describe('세이브 v12(지시서 026, AGENTS.md: 마이그레이션 없음)', (
     const old = { ...file, version: 11, state: { ...file.state, mercenaries: file.state.mercenaries.map((m: { id: string }) => (m.id === 'm16' ? { ...m, affiliation: { kind: 'faction', factionId: 'dokk' + 'aebi' } } : m)) } };
     expect(() => parseSave(JSON.stringify(old))).toThrow(/지원하지 않는 세이브/);
   });
-  it('v12 세이브에서 없는 세력 id는 의미 검증에서 거절한다', () => {
+  it('없는 세력 id(옛 소수 용병단)는 의미 검증에서 거절한다', () => {
     const file = JSON.parse(serializeSave(createSaveFile(playedState(), 'manual')));
-    const bad = { ...file, state: { ...file.state, mercenaries: file.state.mercenaries.map((m: { id: string }) => (m.id === 'm16' ? { ...m, affiliation: { kind: 'faction', factionId: 'dokk' + 'aebi' } } : m)) } };
+    const bad = { ...file, state: { ...file.state, mercenaries: file.state.mercenaries.map((m: { id: string; profile: object }) => (m.id === 'm16' ? { ...m, profile: { ...m.profile, originFaction: 'dokk' + 'aebi' } } : m)) } };
     expect(() => parseSave(JSON.stringify(bad), { ...tables, limits: saveLimits })).toThrow(SaveFormatError);
-    expect(parseSave(JSON.stringify(file), { ...tables, limits: saveLimits }).state.mercenaries.find((m) => m.id === 'm16')!.affiliation).toEqual({ kind: 'faction', factionId: 'indie' });
+    expect(parseSave(JSON.stringify(file), { ...tables, limits: saveLimits }).state.mercenaries.find((m) => m.id === 'm16')!.profile.originFaction).toBe('indie');
   });
 });
 

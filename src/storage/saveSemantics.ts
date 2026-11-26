@@ -133,8 +133,9 @@ export function validateSemantics(state: GameState, t: SemanticTables): string[]
     }
     ref(`${p}.profile.world`, t.worlds, m.profile.world, '세계');
     ref(`${p}.profile.race`, t.races, m.profile.race, '종족');
-    if (m.affiliation.kind === 'faction') ref(`${p}.affiliation.factionId`, t.factions, m.affiliation.factionId, '세력');
-    else if (m.affiliation.kind !== 'guild' && m.affiliation.kind !== 'unaffiliated') errors.push(`${p}.affiliation.kind: 허용되지 않은 값 "${m.affiliation.kind}"`);
+    // 출신 세력은 세력 id 또는 null, 현재 소속은 길드·무소속만(지시서 026d)
+    if (m.profile.originFaction !== null) ref(`${p}.profile.originFaction`, t.factions, m.profile.originFaction, '세력');
+    if (m.affiliation.kind !== 'guild' && m.affiliation.kind !== 'unaffiliated') errors.push(`${p}.affiliation.kind: 허용되지 않은 값 "${m.affiliation.kind}"`);
     atLeast(`${p}.growth.cap`, m.growth.cap, L.minMercLevel);
     atLeast(`${p}.initialLevel`, m.initialLevel, L.minMercLevel);
     within(`${p}.level`, m.level, [L.minMercLevel, Math.max(L.minMercLevel, m.growth.cap)]);
