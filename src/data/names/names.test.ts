@@ -19,6 +19,7 @@ const displayTextPattern = /^[가-힣\p{Punctuation} ]+$/u;
 const excludedEntries = new Set([
   '똥', '보지치', '후세인', '알리예프', '무가베', '말고자타',
   '벤알리', '부메디엔', '에스코바르', '카스트로',
+  '바레', '프레야', '사비트리', '프리트비',
 ]);
 const previouslyOverrepresentedNames = [
   '알렉스', '다니', '사라', '루카스', '샘', '아리', '로빈', '사샤', '미카', '카이', '누르',
