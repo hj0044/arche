@@ -47,7 +47,7 @@ function contract(t: GameTables, m: (typeof baseTables.roster)[number], level: n
   const state: MercenaryState = {
     id: m.id, name: m.name, role: m.role, element: m.element, level, exp: 0,
     initialLevel: m.initialLevel, growth: m.growth, affiliation: { kind: 'guild' },
-    profile: { background: m.background, world: m.world, race: m.race },
+    profile: { background: m.background, world: m.world, race: m.race, originFaction: m.originFaction },
   };
   return slot(t, mercToUnit(t, state));
 }

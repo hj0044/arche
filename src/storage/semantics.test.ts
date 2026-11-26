@@ -94,7 +94,7 @@ describe('세이브 의미 검증', () => {
 
   it.each([
     ['도시', (r: any) => (r.state.rifts[0].cityId = 'paris'), 'state.rifts[0].cityId: 없는 도시 id "paris"'],
-    ['세력', (r: any) => (r.state.mercenaries.find((m: any) => m.affiliation.kind === 'faction').affiliation.factionId = 'ironhound'), /affiliation\.factionId: 없는 세력 id "ironhound"/],
+    ['세력', (r: any) => (r.state.mercenaries[0].profile.originFaction = 'ironhound'), /profile\.originFaction: 없는 세력 id "ironhound"/],
     ['리프트 등급', (r: any) => (r.state.rifts[0].tier = 'portal'), 'state.rifts[0].tier: 없는 리프트 등급 id "portal"'],
     ['몬스터 등급', (r: any) => (r.state.rifts[0].enemies[0].grade = 'boss'), 'state.rifts[0].enemies[0].grade: 없는 몬스터 등급 id "boss"'],
     ['배경', (r: any) => (r.state.mercenaries[1].profile.background = 'pirate'), 'state.mercenaries[1].profile.background: 없는 배경 id "pirate"'],

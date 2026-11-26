@@ -10,7 +10,7 @@ import { GameError, mercGrowthRates, mercTraitIds, recruit, recruitUpkeepOutlook
 import { growthStars, getTrait } from '../../engine/stats';
 import { deviceSettings } from '../../app/settings';
 import { Chip, ChipRow, Gauge, Icon, LevelBadge, Portrait, Sheet } from '../components';
-import { cityName, elementName, factionName, num, roleName, statName, term } from '../format';
+import { cityName, elementName, num, originName, roleName, statName, term } from '../format';
 import type { Ctx } from '../nav';
 import {
   defaultRecruitView,
@@ -41,10 +41,8 @@ function useView(ctx: Ctx): [RecruitView, (p: Partial<RecruitView>) => void] {
 }
 
 const KIND_NAME: Record<RecruitKind, string> = { ready: '영입 가능', progress: '진행 중', locked: '잠김' };
-const affText = (m: MercenaryState) => {
-  const f = m.affiliation.kind === 'faction' ? m.affiliation.factionId : null;
-  return m.affiliation.kind === 'unaffiliated' ? '무소속' : f ? factionName(f) : '';
-};
+/** 출신 세력(지시서 026d) */
+const affText = (m: MercenaryState) => originName(m.profile.originFaction);
 
 /** 고정 머리: 한 줄 요약 · 검색줄(검색·필터·정렬) · 상태 칩 */
 export function RecruitHead({ ctx }: { ctx: Ctx }) {
@@ -77,7 +75,7 @@ export function RecruitHead({ ctx }: { ctx: Ctx }) {
         <button
           className="filter-btn"
           data-ui="recruit.filter"
-          aria-label={`역할·속성·도시·소속 필터${sheetCount ? ` ${sheetCount}개 적용 중` : ''}`}
+          aria-label={`역할·속성·도시·출신 세력 필터${sheetCount ? ` ${sheetCount}개 적용 중` : ''}`}
           aria-pressed={sheetCount > 0}
           data-touch
           onClick={() => setDraft(view.sheet)}
@@ -112,7 +110,7 @@ export function RecruitHead({ ctx }: { ctx: Ctx }) {
               ['roles', '역할', chips.roles],
               ['elements', '속성', chips.elements],
               ['cities', '도시', chips.cities],
-              ['factions', '소속', chips.factions],
+              ['factions', '출신 세력', chips.factions],
             ] as [keyof RecruitSheetFilter, string, { id: string; name: string }[]][]
           ).map(([axis, title, items]) => (
             <div key={axis} className="filter-group" role="group" aria-label={title}>
@@ -316,7 +314,7 @@ function ProgressCard({ r, onOpen }: { r: RecruitRow; onOpen: () => void }) {
   );
 }
 
-/** 상세 시트(시안 RecruitSheet): 초상, 이름·역할, 도시·소속·속성, 레벨·성장 한계, 성장률 별, 영입 조건, 특성 칩, 상세 보기·영입 */
+/** 상세 시트(시안 RecruitSheet): 초상, 이름·역할, 도시·출신 세력·속성, 레벨·성장 한계, 성장률 별, 영입 조건, 특성 칩, 상세 보기·영입 */
 function RecruitSheet({ ctx, r, onClose, onRecruit }: { ctx: Ctx; r: RecruitRow; onClose: () => void; onRecruit: () => void }) {
   const m = r.m;
   const s = ctx.game.state;

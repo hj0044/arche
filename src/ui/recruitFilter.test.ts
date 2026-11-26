@@ -2,7 +2,7 @@
 import { describe, expect, it } from 'vitest';
 import { tables } from '../data';
 import { newGame, type GameState } from '../engine/game';
-import { defaultRecruitView, emptyRecruitSheet, recruitChips, UNAFFILIATED_CHIP, matchesRecruit, recruitRows, recruitSections, type RecruitView } from './recruitFilter';
+import { defaultRecruitView, emptyRecruitSheet, recruitChips, ORIGIN_NONE_CHIP, matchesRecruit, recruitRows, recruitSections, type RecruitView } from './recruitFilter';
 
 const base = (): GameState => newGame(tables, { seed: 'rec', guildName: 'g', baseCityId: 'seoul', protagonist: { name: 'm' } });
 /** 총 승리 2번: m07·m17(5번 조건)은 진행 중, 관문 조건(m12·m18·m26)은 잠김 */
@@ -54,7 +54,7 @@ describe('023 검색과 필터', () => {
     const both = recruitSections(rows, view({ sheet: { ...emptyRecruitSheet(), roles: ['shield'], elements: ['earth'] } }));
     for (const x of both.sections.ready) expect([x.m.role, x.m.element]).toEqual(['shield', 'earth']);
     const fac = recruitSections(rows, view({ sheet: { ...emptyRecruitSheet(), factions: ['rrb'] } }));
-    for (const x of [...fac.sections.ready, ...fac.sections.progress]) expect(x.m.affiliation).toEqual({ kind: 'faction', factionId: 'rrb' });
+    for (const x of [...fac.sections.ready, ...fac.sections.progress]) expect(x.m.profile.originFaction).toBe('rrb');
     expect(fac.sections.locked).toEqual([]);
   });
 
@@ -92,27 +92,27 @@ describe('023 정렬(구역 안)', () => {
 
 describe('026b 세력 칩은 소속 계약자가 있는 세력만', () => {
   it('지금 로스터: 세력 10개 모두 소속 계약자가 있어 칩이 10개, 그 뒤에 무소속 칩이 따로 있다(026c·026d)', () => {
-    expect(recruitChips(tables).factions.map((f) => f.id)).toEqual([...tables.factions.map((f) => f.id), UNAFFILIATED_CHIP]);
-    expect(recruitChips(tables).factions.at(-1)!.name).toBe('무소속');
+    expect(recruitChips(tables).factions.map((f) => f.id)).toEqual([...tables.factions.map((f) => f.id), ORIGIN_NONE_CHIP]);
+    expect(recruitChips(tables).factions.at(-1)!.name).toBe('연고 없음');
   });
   // recruitChips는 게임 상태를 받지 않는다: 영입·잠김 같은 진행 상태와 무관하게 로스터 데이터로만 정한다
   it('소속 0명인 세력은 칩에 없고, 한 명이라도 생기면 코드 수정 없이 나온다', () => {
-    const roster = tables.roster.map((r, i) => (i === tables.roster.findIndex((x) => x.faction === 'rrb') ? { ...r, faction: 'bulwark' } : r));
+    const roster = tables.roster.map((r, i) => (i === tables.roster.findIndex((x) => x.originFaction === 'rrb') ? { ...r, faction: 'bulwark' } : r));
     const withBulwark = recruitChips({ ...tables, roster }).factions.map((f) => f.id);
     expect(withBulwark).toContain('bulwark');
-    const none = recruitChips({ ...tables, roster: tables.roster.map((r) => (r.faction === 'archon' ? { ...r, faction: null } : r)) }).factions.map((f) => f.id);
+    const none = recruitChips({ ...tables, roster: tables.roster.map((r) => (r.originFaction === 'archon' ? { ...r, originFaction: null } : r)) }).factions.map((f) => f.id);
     expect(none).not.toContain('archon');
-    // 무소속 칩은 무소속 계약자가 없어도 늘 있다
-    expect(recruitChips({ ...tables, roster: tables.roster.map((r) => (r.faction === null ? { ...r, faction: 'rrb' } : r)) }).factions.at(-1)!.id).toBe(UNAFFILIATED_CHIP);
+    // 연고 없음 칩은 연고 없는 계약자가 없어도 늘 있다
+    expect(recruitChips({ ...tables, roster: tables.roster.map((r) => (r.originFaction === null ? { ...r, originFaction: 'rrb' } : r)) }).factions.at(-1)!.id).toBe(ORIGIN_NONE_CHIP);
   });
 });
 
-describe('026c 무소속 필터', () => {
-  it('무소속 칩을 고르면 무소속 계약자만 남는다', () => {
+describe('026d 연고 없음 필터', () => {
+  it('연고 없음 칩을 고르면 출신 세력이 없는 계약자만 남는다', () => {
     const rows = recruitRows(tables, played());
-    const { sections } = recruitSections(rows, view({ sheet: { ...emptyRecruitSheet(), factions: [UNAFFILIATED_CHIP] } }));
+    const { sections } = recruitSections(rows, view({ sheet: { ...emptyRecruitSheet(), factions: [ORIGIN_NONE_CHIP] } }));
     const shown = [...sections.ready, ...sections.progress];
     expect(shown.length).toBeGreaterThan(0);
-    for (const r of shown) expect(r.m.affiliation.kind).toBe('unaffiliated');
+    for (const r of shown) expect(r.m.profile.originFaction).toBeNull();
   });
 });

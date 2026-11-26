@@ -74,7 +74,7 @@ describe('018 1-3: 치명타 피해율 최종 상한', () => {
       const state: MercenaryState = {
         id: m.id, name: m.name, role: m.role, element: m.element, level: m.growth.cap, exp: 0,
         initialLevel: m.initialLevel, growth: m.growth, affiliation: { kind: 'guild' },
-        profile: { background: m.background, world: m.world, race: m.race },
+        profile: { background: m.background, world: m.world, race: m.race, originFaction: m.originFaction },
       };
       const u = mercToUnit(tables, state);
       const s = battleStartStats(tables, [slot(u)])[0];

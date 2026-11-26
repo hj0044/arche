@@ -32,7 +32,7 @@ import { Icon } from '../components';
 import { loyaltyDisplay, loyaltyTier, tendencyOf } from '../../engine/loyalty';
 import { allyAuraRows, computeEffectiveStats, getTrait, growthStars } from '../../engine/stats';
 import { assignedFacility, getFacility } from '../../engine/facilities';
-import { injuryText, loyaltyReasonName, backgroundShort, cityName, factionName, num, tierName, worldName, term, statValue, traitName, traitCategoryName, roleName, elementName, statName } from '../format';
+import { injuryText, loyaltyReasonName, backgroundShort, cityName, originName, num, tierName, worldName, term, statValue, traitName, traitCategoryName, roleName, elementName, statName } from '../format';
 import { statBarMax } from '../mercInfo';
 import type { Ctx } from '../nav';
 
@@ -82,7 +82,8 @@ export function MercDetail({ ctx, mercId }: { ctx: Ctx; mercId: string }) {
         : isGuild
           ? '대기'
           : '';
-  const affiliation = isGuild ? s.guildName : m.affiliation.kind === 'faction' ? factionName(m.affiliation.factionId) : '무소속';
+  // 식별 줄: 도시 · 출신 세력 · 배경(지시서 026d. 길드원이어도 길드 이름 대신 출신 세력)
+  const affiliation = originName(m.profile.originFaction);
   const idLine = [m.profile.hometown ? cityName(m.profile.hometown) : null, affiliation, backgroundShort(m.profile.background)].filter(Boolean).join(' · ');
 
   const unlockText =

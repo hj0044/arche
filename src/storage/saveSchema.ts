@@ -63,7 +63,7 @@ const mercenary: Schema = {
     exp: 'number',
     growth: { fields: { cap: 'number' } },
     initialLevel: 'number',
-    profile: { fields: { background: 'string', world: 'string', race: 'string' } },
+    profile: { fields: { background: 'string', world: 'string', race: 'string', originFaction: { nullable: 'string' } } },
     affiliation: { fields: { kind: 'string' } },
   },
   optional: {

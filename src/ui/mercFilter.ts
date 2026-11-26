@@ -49,7 +49,7 @@ export interface MercListOptions {
   role: string | null;
   element: string | null;
   status: string | null;
-  /** 영입 탭 세력 칩 */
+  /** 출신 세력 칩(세력 id, 'none'은 연고 없음. 지시서 026d) */
   faction: string | null;
   /**
    * 017b 필터 시트: 축마다 여러 개를 고른다(축 안에서는 OR, 비었으면 조건 없음).
@@ -121,7 +121,7 @@ export function filterAndSort(tables: GameTables, state: GameState, list: Mercen
     .filter((m) => !o.role || m.role === o.role)
     .filter((m) => !o.element || m.element === o.element)
     .filter((m) => !o.status || mercStatuses(tables, state, m).includes(o.status as MercStatus))
-    .filter((m) => !o.faction || (m.affiliation.kind === 'faction' && m.affiliation.factionId === o.faction))
+    .filter((m) => !o.faction || (m.profile.originFaction ?? 'none') === o.faction)
     .filter((m) => matchesSheet(tables, state, m, o.sheet))
     .sort((a, b) => cmp(a, b) || byId(a, b));
 }
